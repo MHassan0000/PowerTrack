@@ -1,11 +1,17 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 
 export default async function Home() {
+  // Redirect logged-in users to dashboard
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  if (user) {
+    redirect('/dashboard');
+  }
 
   return (
     <div className="min-h-screen">
@@ -17,66 +23,25 @@ export default async function Home() {
               Transform{" "}
               <span className="glow-text">Your Body</span>
               <br />
-              With Advanced AI Technology
+              With PowerTrack
             </h1>
-
-            <p className="text-xl md:text-2xl text-[rgb(var(--foreground-muted))] max-w-3xl mx-auto">
-              Track workouts, monitor progress, and achieve your fitness goals
-              with PowerTrack - your AI-powered fitness companion.
+            <p className="text-xl md:text-2xl text-[rgb(var(--foreground-muted))] max-w-2xl mx-auto">
+              Your ultimate fitness companion. Track workouts, monitor progress,
+              and achieve your goals with intelligent tracking.
             </p>
-
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              {user ? (
-                <Link
-                  href="/dashboard"
-                  className="px-8 py-4 bg-[rgb(var(--primary))] text-[rgb(var(--background))] font-bold rounded-lg hover:bg-[rgb(var(--primary-hover))] transition-all shadow-lg shadow-[rgb(var(--primary))]/30 text-lg"
-                >
-                  Go to Dashboard
-                </Link>
-              ) : (
-                <>
-                  <Link
-                    href="/signup"
-                    className="px-8 py-4 bg-[rgb(var(--primary))] text-[rgb(var(--background))] font-bold rounded-lg hover:bg-[rgb(var(--primary-hover))] transition-all shadow-lg shadow-[rgb(var(--primary))]/30 text-lg"
-                  >
-                    Build Your Program →
-                  </Link>
-                  <Link
-                    href="/login"
-                    className="px-8 py-4 glow-border bg-transparent font-medium rounded-lg hover:bg-[rgb(var(--card))] transition-all text-lg"
-                  >
-                    Sign In
-                  </Link>
-                </>
-              )}
-            </div>
-          </div>
-
-          {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-20">
-            <div className="text-center">
-              <div className="text-5xl font-bold text-[rgb(var(--primary))] mb-2">
-                500+
-              </div>
-              <div className="text-[rgb(var(--foreground-muted))] uppercase text-sm tracking-wider">
-                Active Users
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="text-5xl font-bold text-[rgb(var(--primary))] mb-2">
-                3min
-              </div>
-              <div className="text-[rgb(var(--foreground-muted))] uppercase text-sm tracking-wider">
-                Generation
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="text-5xl font-bold text-[rgb(var(--primary))] mb-2">
-                100%
-              </div>
-              <div className="text-[rgb(var(--foreground-muted))] uppercase text-sm tracking-wider">
-                Personalized
-              </div>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link
+                href="/signup"
+                className="px-8 py-4 bg-[rgb(var(--primary))] text-[rgb(var(--background))] font-bold rounded-lg hover:bg-[rgb(var(--primary-hover))] transition-all shadow-lg shadow-[rgb(var(--primary))]/30 text-lg"
+              >
+                Get Started Free
+              </Link>
+              <Link
+                href="/login"
+                className="px-8 py-4 border-2 border-[rgb(var(--primary))] text-[rgb(var(--primary))] font-bold rounded-lg hover:bg-[rgb(var(--primary))]/10 transition-all text-lg"
+              >
+                Sign In
+              </Link>
             </div>
           </div>
         </div>
@@ -85,59 +50,52 @@ export default async function Home() {
       {/* Features Section */}
       <section id="features" className="px-4 py-20 bg-[rgb(var(--background-secondary))]">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-4xl md:text-5xl font-bold text-center mb-16">
+          <h2 className="text-4xl font-bold text-center mb-12">
             Everything You Need to <span className="glow-text">Succeed</span>
           </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="glow-border bg-[rgb(var(--card))] backdrop-blur-xl rounded-xl p-8">
-              <div className="w-12 h-12 rounded-lg bg-[rgb(var(--primary))]/20 flex items-center justify-center mb-4">
-                <span className="text-2xl">💪</span>
-              </div>
-              <h3 className="text-xl font-bold mb-3">Workout Tracking</h3>
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="glow-border bg-[rgb(var(--card))] p-6 rounded-xl">
+              <div className="text-4xl mb-4">🏋️</div>
+              <h3 className="text-xl font-bold mb-2">Workout Tracking</h3>
               <p className="text-[rgb(var(--foreground-muted))]">
-                Log your exercises, sets, reps, and weight with our intuitive interface.
+                Log your exercises, sets, and reps with our intuitive interface
               </p>
             </div>
-
-            <div className="glow-border bg-[rgb(var(--card))] backdrop-blur-xl rounded-xl p-8">
-              <div className="w-12 h-12 rounded-lg bg-[rgb(var(--primary))]/20 flex items-center justify-center mb-4">
-                <span className="text-2xl">📊</span>
-              </div>
-              <h3 className="text-xl font-bold mb-3">Progress Analytics</h3>
+            <div className="glow-border bg-[rgb(var(--card))] p-6 rounded-xl">
+              <div className="text-4xl mb-4">📊</div>
+              <h3 className="text-xl font-bold mb-2">Progress Monitoring</h3>
               <p className="text-[rgb(var(--foreground-muted))]">
-                Visualize your gains with detailed charts and statistics.
+                Visualize your gains with comprehensive charts and analytics
               </p>
             </div>
-
-            <div className="glow-border bg-[rgb(var(--card))] backdrop-blur-xl rounded-xl p-8">
-              <div className="w-12 h-12 rounded-lg bg-[rgb(var(--primary))]/20 flex items-center justify-center mb-4">
-                <span className="text-2xl">🍎</span>
-              </div>
-              <h3 className="text-xl font-bold mb-3">Nutrition Logging</h3>
+            <div className="glow-border bg-[rgb(var(--card))] p-6 rounded-xl">
+              <div className="text-4xl mb-4">🎯</div>
+              <h3 className="text-xl font-bold mb-2">Goal Setting</h3>
               <p className="text-[rgb(var(--foreground-muted))]">
-                Track your meals, calories, and macros to fuel your fitness journey.
+                Set and crush your fitness goals with personalized plans
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* About Section */}
-      <section id="about" className="px-4 py-20">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl md:text-5xl font-bold mb-8">
-            Your Fitness, <span className="glow-text">Simplified</span>
+      {/* CTA Section */}
+      <section className="px-4 py-20">
+        <div className="max-w-4xl mx-auto text-center space-y-8">
+          <h2 className="text-4xl md:text-5xl font-bold">
+            Ready to Start Your <span className="glow-text">Journey</span>?
           </h2>
-          <p className="text-xl text-[rgb(var(--foreground-muted))] leading-relaxed">
-            PowerTrack combines cutting-edge technology with intuitive design
-            to help you achieve your fitness goals. Whether you're a beginner
-            or a seasoned athlete, our platform adapts to your needs and grows
-            with you.
+          <p className="text-xl text-[rgb(var(--foreground-muted))]">
+            Join thousands of users achieving their fitness goals with PowerTrack
           </p>
+          <Link
+            href="/signup"
+            className="inline-block px-8 py-4 bg-[rgb(var(--primary))] text-[rgb(var(--background))] font-bold rounded-lg hover:bg-[rgb(var(--primary-hover))] transition-all shadow-lg shadow-[rgb(var(--primary))]/30 text-lg"
+          >
+            Build Your Program
+          </Link>
         </div>
       </section>
     </div>
   );
 }
-

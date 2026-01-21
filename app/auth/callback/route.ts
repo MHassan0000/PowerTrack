@@ -1,28 +1,28 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
+import type { NextRequest } from 'next/server'
 
-/**
- * Auth callback handler for email confirmations and magic links
- * This route is called after user clicks email confirmation or magic link
- */
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
     const requestUrl = new URL(request.url)
     const code = requestUrl.searchParams.get('code')
-    const next = requestUrl.searchParams.get('next') ?? '/dashboard'
+    const origin = requestUrl.origin
 
     if (code) {
-        const cookieStore = await cookies()
         const supabase = await createClient()
 
+        // Exchange the code for a session
         const { error } = await supabase.auth.exchangeCodeForSession(code)
 
-        if (!error) {
-            // Redirect to the specified next URL or dashboard
-            return NextResponse.redirect(new URL(next, request.url))
+        if (error) {
+            console.error('Auth callback error:', error)
+            // Redirect to login with error
+            return NextResponse.redirect(new URL('/login?error=auth_failed', origin))
         }
+
+        // Successful authentication - redirect to dashboard
+        return NextResponse.redirect(new URL('/dashboard', origin))
     }
 
-    // If there's an error or no code, redirect to login with error
-    return NextResponse.redirect(new URL('/login?error=auth_callback_error', request.url))
+    // No code present, redirect to login
+    return NextResponse.redirect(new URL('/login?error=no_code', origin))
 }

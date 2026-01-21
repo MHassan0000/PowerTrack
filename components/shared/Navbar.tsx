@@ -1,94 +1,133 @@
 'use client'
 
-import { User } from '@supabase/supabase-js'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { motion, useScroll, useTransform } from 'framer-motion'
+import { useEffect, useState } from 'react'
 import { UserMenu } from './UserMenu'
-import { motion } from 'framer-motion'
-import { useState, useEffect } from 'react'
+import type { User } from '@supabase/supabase-js'
 
 interface NavbarProps {
     user: User | null
 }
 
-const publicNav = [
-    { name: 'Home', href: '/' },
-    { name: 'Features', href: '/#features' },
-    { name: 'About', href: '/#about' },
-]
-
-const dashboardNav = [
-    { name: 'Dashboard', href: '/dashboard' },
-    { name: 'Workouts', href: '/workouts' },
-    { name: 'Progress', href: '/progress' },
-    { name: 'Nutrition', href: '/nutrition' },
-]
-
-export function Navbar({ user }: NavbarProps) {
+export default function Navbar({ user }: NavbarProps) {
     const pathname = usePathname()
-    const [scrolled, setScrolled] = useState(false)
+    const [isScrolled, setIsScrolled] = useState(false)
+    const { scrollY } = useScroll()
 
-    const navigation = user ? dashboardNav : publicNav
+    const backgroundColor = useTransform(
+        scrollY,
+        [0, 100],
+        ['rgba(10, 10, 15, 0)', 'rgba(10, 10, 15, 0.95)']
+    )
 
     useEffect(() => {
-        const handleScroll = () => {
-            setScrolled(window.scrollY > 20)
+        const updateScroll = () => {
+            setIsScrolled(window.scrollY > 10)
         }
-
-        window.addEventListener('scroll', handleScroll)
-        return () => window.removeEventListener('scroll', handleScroll)
+        window.addEventListener('scroll', updateScroll)
+        return () => window.removeEventListener('scroll', updateScroll)
     }, [])
+
+    // Don't show navbar on auth pages
+    if (pathname?.startsWith('/login') || pathname?.startsWith('/signup') || pathname?.startsWith('/forgot-password') || pathname?.startsWith('/reset-password')) {
+        return null
+    }
 
     return (
         <motion.nav
-            initial={{ y: -100 }}
-            animate={{ y: 0 }}
-            transition={{ duration: 0.5 }}
-            className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled
-                ? 'bg-[rgb(var(--background))]/80 backdrop-blur-xl border-b border-[rgb(var(--border))]'
-                : 'bg-transparent'
+            style={{ backgroundColor }}
+            className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'backdrop-blur-xl shadow-lg' : ''
                 }`}
         >
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="container mx-auto px-4">
                 <div className="flex items-center justify-between h-16">
                     {/* Logo */}
                     <Link href={user ? '/dashboard' : '/'} className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-lg bg-linear-to-br from-[rgb(var(--primary))] to-[rgb(var(--primary-hover))] flex items-center justify-center font-bold text-sm">
-                            PT
-                        </div>
-                        <span className="text-xl font-bold glow-text hidden sm:block">
+                        <motion.span
+                            className="text-2xl font-bold glow-text"
+                            whileHover={{ scale: 1.05 }}
+                            transition={{ type: 'spring', stiffness: 400 }}
+                        >
                             PowerTrack
-                        </span>
+                        </motion.span>
                     </Link>
 
-                    {/* Navigation Links */}
+                    {/* Nav Links */}
                     <div className="hidden md:flex items-center gap-8">
-                        {navigation.map((item) => {
-                            const isActive = pathname === item.href
-                            return (
+                        {user ? (
+                            // Authenticated navigation
+                            <>
                                 <Link
-                                    key={item.name}
-                                    href={item.href}
-                                    className={`text-sm font-medium transition-colors relative ${isActive
+                                    href="/dashboard"
+                                    className={`text-sm font-medium transition-colors ${pathname === '/dashboard'
                                         ? 'text-[rgb(var(--primary))]'
                                         : 'text-[rgb(var(--foreground-secondary))] hover:text-[rgb(var(--primary))]'
                                         }`}
                                 >
-                                    {item.name}
-                                    {isActive && (
-                                        <motion.div
-                                            layoutId="navbar-indicator"
-                                            className="absolute -bottom-1 left-0 right-0 h-0.5 bg-[rgb(var(--primary))]"
-                                            transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                                        />
-                                    )}
+                                    Dashboard
                                 </Link>
-                            )
-                        })}
+                                <Link
+                                    href="/workouts"
+                                    className={`text-sm font-medium transition-colors ${pathname?.startsWith('/workouts')
+                                        ? 'text-[rgb(var(--primary))]'
+                                        : 'text-[rgb(var(--foreground-secondary))] hover:text-[rgb(var(--primary))]'
+                                        }`}
+                                >
+                                    Workouts
+                                </Link>
+                                <Link
+                                    href="/exercises"
+                                    className={`text-sm font-medium transition-colors ${pathname?.startsWith('/exercises')
+                                        ? 'text-[rgb(var(--primary))]'
+                                        : 'text-[rgb(var(--foreground-secondary))] hover:text-[rgb(var(--primary))]'
+                                        }`}
+                                >
+                                    Exercises
+                                </Link>
+                                <Link
+                                    href="/progress"
+                                    className={`text-sm font-medium transition-colors ${pathname === '/progress'
+                                        ? 'text-[rgb(var(--primary))]'
+                                        : 'text-[rgb(var(--foreground-secondary))] hover:text-[rgb(var(--primary))]'
+                                        }`}
+                                >
+                                    Progress
+                                </Link>
+                            </>
+                        ) : (
+                            // Public navigation
+                            <>
+                                <a href="#features" className="text-sm font-medium text-[rgb(var(--foreground-secondary))] hover:text-[rgb(var(--primary))] transition-colors">
+                                    Features
+                                </a>
+                                <a href="#how-it-works" className="text-sm font-medium text-[rgb(var(--foreground-secondary))] hover:text-[rgb(var(--primary))] transition-colors">
+                                    How It Works
+                                </a>
+                            </>
+                        )}
                     </div>
 
-                    {/* User Menu */}
-                    <UserMenu user={user} />
+                    {/* Auth Buttons */}
+                    {user ? (
+                        <UserMenu user={user} />
+                    ) : (
+                        <div className="flex items-center gap-3">
+                            <Link
+                                href="/login"
+                                className="px-4 py-2 text-sm font-medium text-[rgb(var(--foreground-secondary))] hover:text-[rgb(var(--primary))] transition-colors"
+                            >
+                                Log in
+                            </Link>
+                            <Link
+                                href="/signup"
+                                className="px-6 py-2 text-sm font-medium bg-[rgb(var(--primary))] text-[rgb(var(--background))] rounded-lg hover:bg-[rgb(var(--primary-hover))] transition-all shadow-lg shadow-[rgb(var(--primary))]/20"
+                            >
+                                Get Started
+                            </Link>
+                        </div>
+                    )}
                 </div>
             </div>
         </motion.nav>
