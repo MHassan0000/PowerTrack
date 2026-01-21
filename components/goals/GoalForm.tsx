@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { X } from 'lucide-react'
 import { createGoal, type GoalType, type CreateGoalData } from '@/lib/actions/goals'
 import { motion, AnimatePresence } from 'framer-motion'
+import { toast } from 'sonner'
 
 interface GoalFormProps {
     onClose: () => void
@@ -42,17 +43,23 @@ export function GoalForm({ onClose, exercises = [] }: GoalFormProps) {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setLoading(true)
+        const toastId = toast.loading('Creating goal...')
 
-        const result = await createGoal(formData)
+        try {
+            const result = await createGoal(formData)
 
-        if (result.error) {
-            alert('Failed to create goal: ' + result.error)
-        } else {
-            router.refresh()
-            onClose()
+            if (result.error) {
+                toast.error(result.error, { id: toastId })
+            } else {
+                toast.success('Goal created successfully!', { id: toastId })
+                router.refresh()
+                onClose()
+            }
+        } catch (error) {
+            toast.error('Failed to create goal', { id: toastId })
+        } finally {
+            setLoading(false)
         }
-
-        setLoading(false)
     }
 
     return (
@@ -86,8 +93,8 @@ export function GoalForm({ onClose, exercises = [] }: GoalFormProps) {
                                         type="button"
                                         onClick={() => handleTypeChange(type.value)}
                                         className={`p-4 rounded-lg border-2 text-left transition-all ${formData.goal_type === type.value
-                                                ? 'border-[rgb(var(--primary))] bg-[rgb(var(--primary))]/10'
-                                                : 'border-[rgb(var(--border))] hover:border-[rgb(var(--primary))]/50'
+                                            ? 'border-[rgb(var(--primary))] bg-[rgb(var(--primary))]/10'
+                                            : 'border-[rgb(var(--border))] hover:border-[rgb(var(--primary))]/50'
                                             }`}
                                     >
                                         <div className="font-medium mb-1">{type.label}</div>

@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/shared/Navbar";
 import { PageTransition } from "@/components/shared/PageTransition";
 import { createClient } from "@/lib/supabase/server";
+import { Toaster } from "sonner";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -33,6 +34,17 @@ export default async function RootLayout({
         <main className="pt-16 min-h-screen">
           <PageTransition>{children}</PageTransition>
         </main>
+        <Toaster
+          theme="dark"
+          position="top-center"
+          toastOptions={{
+            style: {
+              background: 'rgb(var(--card))',
+              border: '1px solid rgb(var(--border))',
+              color: 'rgb(var(--foreground))',
+            },
+          }}
+        />
       </body>
     </html>
   );
