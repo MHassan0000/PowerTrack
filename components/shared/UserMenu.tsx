@@ -74,7 +74,7 @@ export function UserMenu({ user }: UserMenuProps) {
                 onClick={() => setIsOpen(!isOpen)}
                 className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[rgb(var(--card-hover))] transition-colors"
             >
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[rgb(var(--primary))] to-[rgb(var(--primary-hover))] flex items-center justify-center text-sm font-medium">
+                <div className="w-8 h-8 rounded-full bg-linear-to-br from-[rgb(var(--primary))] to-[rgb(var(--primary-hover))] flex items-center justify-center text-sm font-medium">
                     {getInitials()}
                 </div>
                 <div className="hidden md:flex flex-col items-start">

@@ -109,7 +109,7 @@ export function WorkoutCard({ workout, index = 0 }: WorkoutCardProps) {
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="absolute right-2 top-16 z-20 glow-border bg-[rgb(var(--card))] backdrop-blur-xl rounded-lg shadow-xl overflow-hidden min-w-[150px]"
+                        className="absolute right-2 top-16 z-20 glow-border bg-[rgb(var(--card))] backdrop-blur-xl rounded-lg shadow-xl overflow-hidden min-w-37.5"
                     >
                         <button
                             onClick={(e) => {

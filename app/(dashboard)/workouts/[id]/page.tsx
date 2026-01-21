@@ -87,12 +87,12 @@ export default async function WorkoutDetailPage({ params }: WorkoutDetailPagePro
                                 className="flex gap-4 p-4 bg-[rgb(var(--background-secondary))] rounded-lg hover:bg-[rgb(var(--card-hover))] transition-colors"
                             >
                                 {/* Order Number */}
-                                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[rgb(var(--primary))]/20 border border-[rgb(var(--primary))]/50 flex items-center justify-center font-bold text-[rgb(var(--primary))]">
+                                <div className="shrink-0 w-8 h-8 rounded-full bg-[rgb(var(--primary))]/20 border border-[rgb(var(--primary))]/50 flex items-center justify-center font-bold text-[rgb(var(--primary))]">
                                     {index + 1}
                                 </div>
 
                                 {/* Exercise Image */}
-                                <div className="flex-shrink-0 w-16 h-16 rounded-lg bg-[rgb(var(--background))] overflow-hidden">
+                                <div className="shrink-0 w-16 h-16 rounded-lg bg-[rgb(var(--background))] overflow-hidden">
                                     {ex.exercise_library.media_url ? (
                                         <Image
                                             src={ex.exercise_library.media_url}

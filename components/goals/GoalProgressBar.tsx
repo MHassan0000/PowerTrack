@@ -29,10 +29,10 @@ export function GoalProgressBar({ current, target, unit }: GoalProgressBarProps)
             <div className="relative h-3 bg-[rgb(var(--background-secondary))] rounded-full overflow-hidden">
                 <motion.div
                     className={`absolute inset-y-0 left-0 rounded-full ${isComplete
-                            ? 'bg-gradient-to-r from-green-500 to-green-600'
-                            : isNearComplete
-                                ? 'bg-gradient-to-r from-yellow-500 to-yellow-600'
-                                : 'bg-gradient-to-r from-[rgb(var(--primary))] to-[rgb(var(--primary-hover))]'
+                        ? 'bg-linear-to-r from-green-500 to-green-600'
+                        : isNearComplete
+                            ? 'bg-linear-to-r from-yellow-500 to-yellow-600'
+                            : 'bg-linear-to-r from-[rgb(var(--primary))] to-[rgb(var(--primary-hover))]'
                         }`}
                     initial={{ width: 0 }}
                     animate={{ width: `${progress}%` }}
@@ -41,7 +41,7 @@ export function GoalProgressBar({ current, target, unit }: GoalProgressBarProps)
 
                 {/* Shine effect */}
                 <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                    className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent"
                     initial={{ x: '-100%' }}
                     animate={{ x: '200%' }}
                     transition={{
