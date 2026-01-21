@@ -1,5 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { ProfileCard } from '@/components/shared/ProfileCard'
+import { getDashboardGoals } from '@/lib/actions/goals'
+import { GoalCard } from '@/components/goals/GoalCard'
+import Link from 'next/link'
+import { Target } from 'lucide-react'
 
 export default async function DashboardPage() {
     const supabase = await createClient()
@@ -11,12 +15,15 @@ export default async function DashboardPage() {
         return null
     }
 
-    // Fetch user profile
-    const { data: profile } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', user.id)
-        .single()
+    // Fetch user profile and goals
+    const [profileResult, goalsResult] = await Promise.all([
+        supabase.from('users').select('*').eq('id', user.id).single(),
+        getDashboardGoals(),
+    ])
+
+    const profile = profileResult.data
+    const goals = goalsResult.data || []
+    const topGoals = goals.slice(0, 3)
 
     return (
         <div className="space-y-8">
@@ -32,6 +39,34 @@ export default async function DashboardPage() {
                     Ready to crush your fitness goals today?
                 </p>
             </div>
+
+            {/* Active Goals Section */}
+            {topGoals.length > 0 && (
+                <div className="glow-border bg-[rgb(var(--card))] backdrop-blur-xl rounded-2xl p-8">
+                    <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-2">
+                            <Target className="w-6 h-6 text-[rgb(var(--primary))]" />
+                            <h2 className="text-2xl font-bold">Active Goals</h2>
+                        </div>
+                        <Link
+                            href="/goals"
+                            className="text-[rgb(var(--primary))] hover:underline font-medium"
+                        >
+                            View all →
+                        </Link>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {topGoals.map((goal: any, index: number) => (
+                            <GoalCard
+                                key={goal.id}
+                                goal={goal}
+                                index={index}
+                                compact
+                            />
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* Quick Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
