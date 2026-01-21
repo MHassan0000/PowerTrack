@@ -36,13 +36,13 @@ export default async function Home() {
               ) : (
                 <>
                   <Link
-                    href="/auth/signup"
+                    href="/signup"
                     className="px-8 py-4 bg-[rgb(var(--primary))] text-[rgb(var(--background))] font-bold rounded-lg hover:bg-[rgb(var(--primary-hover))] transition-all shadow-lg shadow-[rgb(var(--primary))]/30 text-lg"
                   >
                     Build Your Program →
                   </Link>
                   <Link
-                    href="/auth/login"
+                    href="/login"
                     className="px-8 py-4 glow-border bg-transparent font-medium rounded-lg hover:bg-[rgb(var(--card))] transition-all text-lg"
                   >
                     Sign In

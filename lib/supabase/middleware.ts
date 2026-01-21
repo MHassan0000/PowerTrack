@@ -52,7 +52,7 @@ export async function updateSession(request: NextRequest) {
     ) {
         // Redirect to login if user is not authenticated
         const url = request.nextUrl.clone()
-        url.pathname = '/auth/login'
+        url.pathname = '/login'
         url.searchParams.set('redirectTo', request.nextUrl.pathname)
         return NextResponse.redirect(url)
     }
@@ -60,8 +60,8 @@ export async function updateSession(request: NextRequest) {
     // Redirect authenticated users away from auth pages
     if (
         user &&
-        (request.nextUrl.pathname.startsWith('/auth/login') ||
-            request.nextUrl.pathname.startsWith('/auth/signup'))
+        (request.nextUrl.pathname.startsWith('/login') ||
+            request.nextUrl.pathname.startsWith('/signup'))
     ) {
         const url = request.nextUrl.clone()
         url.pathname = '/dashboard'

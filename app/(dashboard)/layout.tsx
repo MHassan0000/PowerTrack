@@ -14,7 +14,7 @@ export default async function DashboardLayout({
     // Redirect to login if user is not authenticated
     // (middleware also handles this, but this is a backup)
     if (!user) {
-        redirect('/auth/login')
+        redirect('/login')
     }
 
     return (

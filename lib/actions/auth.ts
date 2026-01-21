@@ -92,7 +92,7 @@ export async function resetPasswordAction(formData: FormData) {
     const email = formData.get('email') as string
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${origin}/auth/reset-password`,
+        redirectTo: `${origin}/reset-password`,
     })
 
     if (error) {
@@ -132,7 +132,7 @@ export async function signOutAction() {
     const supabase = await createClient()
     await supabase.auth.signOut()
     revalidatePath('/', 'layout')
-    redirect('/auth/login')
+    redirect('/login')
 }
 
 /**
@@ -156,4 +156,25 @@ export async function resendConfirmationAction(formData: FormData) {
         success: true,
         message: 'Confirmation email sent!',
     }
+}
+
+/**
+ * Sign in with Google OAuth
+ */
+export async function signInWithGoogle() {
+  const supabase = await createClient()
+  const origin = (await headers()).get('origin') || 'http://localhost:3000'
+
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: `/auth/callback`,
+    },
+  })
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  return { data, error: null }
 }

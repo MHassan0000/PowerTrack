@@ -96,9 +96,9 @@ export default async function ExerciseDetailPage({ params }: ExerciseDetailPageP
                 <div className="glow-border bg-[rgb(var(--card))] backdrop-blur-xl rounded-xl p-8">
                     <h2 className="text-2xl font-bold mb-4">How To Perform</h2>
                     <div className="space-y-2">
-                        {exercise.instructions.split('\n').map((step, index) => (
+                        {exercise.instructions.split('\n').map((step: string, index: number) => (
                             <div key={index} className="flex gap-3">
-                                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[rgb(var(--primary))]/20 border border-[rgb(var(--primary))]/50 flex items-center justify-center text-sm">
+                                <span className="shrink-0 w-6 h-6 rounded-full bg-[rgb(var(--primary))]/20 border border-[rgb(var(--primary))]/50 flex items-center justify-center text-sm">
                                     {index + 1}
                                 </span>
                                 <p className="text-[rgb(var(--foreground-secondary))]">{step}</p>
