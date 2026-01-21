@@ -31,7 +31,7 @@ export function WorkoutCard({ workout, index = 0 }: WorkoutCardProps) {
         setLoading(false)
     }
 
-    const handleDuplicate = async () {
+    const handleDuplicate = async () => {
         setLoading(true)
         const result = await duplicateWorkout(workout.id)
 

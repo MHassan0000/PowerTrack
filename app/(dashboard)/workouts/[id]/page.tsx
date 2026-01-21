@@ -2,6 +2,7 @@ import { getWorkoutById } from '@/lib/actions/workouts'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
+import { StartWorkoutButton } from '@/components/workout/StartWorkoutButton'
 
 interface WorkoutDetailPageProps {
     params: {
@@ -150,14 +151,7 @@ export default async function WorkoutDetailPage({ params }: WorkoutDetailPagePro
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-4">
-                <button className="flex-1 py-3 bg-[rgb(var(--primary))] text-[rgb(var(--background))] font-medium rounded-lg hover:bg-[rgb(var(--primary-hover))] transition-all shadow-lg shadow-[rgb(var(--primary))]/20">
-                    Start Workout
-                </button>
-                <button className="px-6 py-3 bg-[rgb(var(--card-hover))] text-[rgb(var(--foreground-secondary))] font-medium rounded-lg hover:bg-[rgb(var(--border))] transition-all">
-                    Schedule
-                </button>
-            </div>
+            <StartWorkoutButton workoutId={workout.id} workoutName={workout.name} />
         </div>
     )
 }

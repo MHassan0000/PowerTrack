@@ -19,7 +19,7 @@ export async function updateSession(request: NextRequest) {
                     return request.cookies.getAll()
                 },
                 setAll(cookiesToSet) {
-                    cookiesToSet.forEach(({ name, value, options }) =>
+                    cookiesToSet.forEach(({ name, value }) =>
                         request.cookies.set(name, value)
                     )
                     supabaseResponse = NextResponse.next({
@@ -33,53 +33,37 @@ export async function updateSession(request: NextRequest) {
         }
     )
 
-    // IMPORTANT: Avoid writing any logic between createServerClient and
-    // supabase.auth.getUser(). A simple mistake could make it very hard to debug
-    // issues with users being randomly logged out.
-
+    // Get user - this also refreshes the session
     const {
         data: { user },
     } = await supabase.auth.getUser()
 
-    // Protected routes check
-    if (
-        !user &&
-        (request.nextUrl.pathname.startsWith('/dashboard') ||
-            request.nextUrl.pathname.startsWith('/workouts') ||
-            request.nextUrl.pathname.startsWith('/progress') ||
-            request.nextUrl.pathname.startsWith('/nutrition') ||
-            request.nextUrl.pathname.startsWith('/settings'))
-    ) {
-        // Redirect to login if user is not authenticated
+    const pathname = request.nextUrl.pathname
+
+    // Skip middleware for auth callback route - let it handle the code exchange
+    if (pathname.startsWith('/auth/callback')) {
+        return supabaseResponse
+    }
+
+    // Protected routes - require authentication
+    const protectedRoutes = ['/dashboard', '/workouts', '/exercises', '/progress', '/nutrition', '/settings']
+    const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
+
+    if (!user && isProtectedRoute) {
         const url = request.nextUrl.clone()
         url.pathname = '/login'
-        url.searchParams.set('redirectTo', request.nextUrl.pathname)
         return NextResponse.redirect(url)
     }
 
-    // Redirect authenticated users away from auth pages
-    if (
-        user &&
-        (request.nextUrl.pathname.startsWith('/login') ||
-            request.nextUrl.pathname.startsWith('/signup'))
-    ) {
+    // Auth routes - redirect if already logged in
+    const authRoutes = ['/login', '/signup', '/forgot-password', '/reset-password']
+    const isAuthRoute = authRoutes.some(route => pathname.startsWith(route))
+
+    if (user && isAuthRoute) {
         const url = request.nextUrl.clone()
         url.pathname = '/dashboard'
         return NextResponse.redirect(url)
     }
-
-    // IMPORTANT: You *must* return the supabaseResponse object as it is. If you're
-    // creating a new response object with NextResponse.next() make sure to:
-    // 1. Pass the request in it, like so:
-    //    const myNewResponse = NextResponse.next({ request })
-    // 2. Copy over the cookies, like so:
-    //    myNewResponse.cookies.setAll(supabaseResponse.cookies.getAll())
-    // 3. Change the myNewResponse object to fit your needs, but avoid changing
-    //    the cookies!
-    // 4. Finally:
-    //    return myNewResponse
-    // If this is not done, you may be causing the browser and server to go out
-    // of sync and terminate the user's session prematurely!
 
     return supabaseResponse
 }

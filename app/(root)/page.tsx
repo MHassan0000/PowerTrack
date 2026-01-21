@@ -3,12 +3,12 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 
 export default async function Home() {
-  // Redirect logged-in users to dashboard
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // Redirect logged-in users to dashboard
   if (user) {
     redirect('/dashboard');
   }

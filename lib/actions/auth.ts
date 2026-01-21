@@ -162,19 +162,20 @@ export async function resendConfirmationAction(formData: FormData) {
  * Sign in with Google OAuth
  */
 export async function signInWithGoogle() {
-  const supabase = await createClient()
-  const origin = (await headers()).get('origin') || 'http://localhost:3000'
+    const supabase = await createClient()
+    const origin = (await headers()).get('origin') || 'http://localhost:3000'
 
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: {
-      redirectTo: `/auth/callback`,
-    },
-  })
+    const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+            redirectTo: `${origin}/auth/callback`,
+        },
+    })
 
-  if (error) {
-    return { error: error.message }
-  }
+    if (error) {
+        return { error: error.message }
+    }
 
-  return { data, error: null }
+    return { data, error: null }
 }
+
