@@ -173,7 +173,7 @@ export async function uploadAvatar(formData: FormData) {
 /**
  * Convert height based on preferred units
  */
-export function convertHeight(cm: number, toUnit: 'metric' | 'imperial'): { value: number; unit: string } {
+export async function convertHeight(cm: number, toUnit: 'metric' | 'imperial'): Promise<{ value: number; unit: string }> {
     if (toUnit === 'imperial') {
         const totalInches = cm / 2.54
         const feet = Math.floor(totalInches / 12)
@@ -186,7 +186,7 @@ export function convertHeight(cm: number, toUnit: 'metric' | 'imperial'): { valu
 /**
  * Convert weight based on preferred units
  */
-export function convertWeight(kg: number, toUnit: 'metric' | 'imperial'): { value: number; unit: string } {
+export async function convertWeight(kg: number, toUnit: 'metric' | 'imperial'): Promise<{ value: number; unit: string }> {
     if (toUnit === 'imperial') {
         return { value: Math.round(kg * 2.20462 * 10) / 10, unit: 'lbs' }
     }
