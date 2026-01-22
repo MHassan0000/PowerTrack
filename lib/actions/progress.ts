@@ -60,8 +60,7 @@ export async function addBodyStat(weight_kg: number, measured_at: string, notes?
         .single()
 
     if (error) {
-        console.error('Error adding body stat:', error)
-        return { error: error.message }
+        return { data: null, error: error.message }
     }
 
     revalidatePath('/progress')
@@ -90,7 +89,6 @@ export async function getBodyStats(days: number = 90) {
         .order('measured_at', { ascending: true })
 
     if (error) {
-        console.error('Error fetching body stats:', error)
         return { data: null, error: error.message }
     }
 
@@ -109,7 +107,6 @@ export async function updateBodyStat(id: string, updates: { weight_kg?: number; 
         .eq('id', id)
 
     if (error) {
-        console.error('Error updating body stat:', error)
         return { error: error.message }
     }
 
@@ -129,7 +126,6 @@ export async function deleteBodyStat(id: string) {
         .eq('id', id)
 
     if (error) {
-        console.error('Error deleting body stat:', error)
         return { error: error.message }
     }
 
@@ -152,7 +148,6 @@ export async function getPersonalRecords() {
         .rpc('get_user_personal_records', { p_user_id: user.id })
 
     if (error) {
-        console.error('Error fetching personal records:', error)
         return { data: null, error: error.message }
     }
 
@@ -177,7 +172,6 @@ export async function getVolumeChartData(days: number = 90) {
         })
 
     if (error) {
-        console.error('Error fetching volume chart data:', error)
         return { data: null, error: error.message }
     }
 
@@ -202,7 +196,6 @@ export async function getExerciseWeightProgress(exerciseId: string) {
         })
 
     if (error) {
-        console.error('Error fetching exercise weight progress:', error)
         return { data: null, error: error.message }
     }
 
@@ -231,7 +224,6 @@ export async function getWorkoutFrequency(days: number = 30) {
         .gte('completed_at', startDate.toISOString())
 
     if (error) {
-        console.error('Error fetching workout frequency:', error)
         return { data: null, error: error.message }
     }
 

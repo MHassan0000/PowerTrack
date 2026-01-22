@@ -1,4 +1,4 @@
-import { getExercises, getMuscleGroups, getEquipmentTypes } from '@/lib/actions/exercises'
+import { getExercises } from '@/lib/actions/exercises'
 import { ExerciseCard } from '@/components/shared/ExerciseCard'
 import { ExerciseFilters } from '@/components/shared/ExerciseFilters'
 
@@ -15,59 +15,56 @@ interface ExercisesPageProps {
 
 export default async function ExercisesPage({ searchParams }: ExercisesPageProps) {
     // Fetch exercises with filters
-    const { data: exercises, error } = await getExercises({
+    const exercisesResult = await getExercises({
         search: searchParams.search,
         muscle: searchParams.muscle,
         equipment: searchParams.equipment,
         difficulty: searchParams.difficulty,
     })
 
-    // Fetch filter options
-    const { data: muscles } = await getMuscleGroups()
-    const { data: equipmentTypes } = await getEquipmentTypes()
+    const exercises = exercisesResult?.data || []
 
-    if (error) {
-        return (
-            <div className="text-center py-20">
-                <p className="text-red-400">Error loading exercises: {error}</p>
-            </div>
-        )
-    }
+    // Get unique values for filters from all exercises
+    const allResult = await getExercises()
+    const allExercises = allResult?.data || []
+    
+    const muscles = [...new Set(allExercises.map((e: any) => e.primary_muscle).filter(Boolean))]
+    const equipment = [...new Set(allExercises.map((e: any) => e.equipment).filter(Boolean))]
 
     return (
         <div className="space-y-8">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-                <div>
-                    <h1 className="text-4xl font-bold tracking-tight text-white mb-2">
-                        Exercises
-                    </h1>
-                    <p className="text-zinc-400">
-                        {exercises?.length || 0} premium sessions available for your level
-                    </p>
-                </div>
-                
-                
+            <div>
+                <h1 className="text-3xl font-bold text-white mb-2">Exercise Library</h1>
+                <p className="text-zinc-400">
+                    Browse our extensive collection of exercises with detailed instructions
+                </p>
             </div>
 
             {/* Filters */}
-            <ExerciseFilters muscles={muscles || []} equipment={equipmentTypes || []} />
+            <ExerciseFilters
+                muscles={muscles as string[]}
+                equipment={equipment as string[]}
+            />
 
-            {/* Exercise Grid */}
-            {exercises && exercises.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {exercises.map((exercise, index) => (
-                        <ExerciseCard key={exercise.id} exercise={exercise} index={index} />
-                    ))}
-                </div>
-            ) : (
-                <div className="text-center py-24 bg-[#18181B] border border-white/5 rounded-3xl">
-                    <p className="text-4xl mb-4">🔍</p>
-                    <p className="text-zinc-400">
-                        No exercises found. Try adjusting your filters.
-                    </p>
-                </div>
-            )}
+            {/* Results */}
+            <div>
+                <p className="text-sm text-zinc-500 mb-4">
+                    {exercises.length} {exercises.length === 1 ? 'exercise' : 'exercises'} found
+                </p>
+
+                {exercises.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {exercises.map((exercise: any, index: number) => (
+                            <ExerciseCard key={exercise.id} exercise={exercise} index={index} />
+                        ))}
+                    </div>
+                ) : (
+                    <div className="text-center py-20 bg-[#18181B] rounded-2xl border border-white/5">
+                        <p className="text-zinc-400">No exercises found</p>
+                    </div>
+                )}
+            </div>
         </div>
     )
 }

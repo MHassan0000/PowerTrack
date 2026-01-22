@@ -59,7 +59,6 @@ export async function getExercises(filters?: ExerciseFilters) {
     const { data, error } = await query
 
     if (error) {
-        console.error('Error fetching exercises:', error)
         return { data: null, error: error.message }
     }
 
@@ -79,7 +78,6 @@ export async function getExerciseById(id: string) {
         .single()
 
     if (error) {
-        console.error('Error fetching exercise:', error)
         return { data: null, error: error.message }
     }
 

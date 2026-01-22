@@ -57,7 +57,6 @@ export async function createGoal(data: CreateGoalData) {
         .single()
 
     if (error) {
-        console.error('Error creating goal:', error)
         return { error: error.message }
     }
 
@@ -93,7 +92,6 @@ export async function getGoals(status?: GoalStatus) {
     const { data, error } = await query
 
     if (error) {
-        console.error('Error fetching goals:', error)
         return { data: null, error: error.message }
     }
 
@@ -115,7 +113,6 @@ export async function getDashboardGoals() {
         .rpc('get_active_goals', { p_user_id: user.id })
 
     if (error) {
-        console.error('Error fetching dashboard goals:', error)
         return { data: null, error: error.message }
     }
 
@@ -138,7 +135,6 @@ export async function getGoalById(id: string) {
         .single()
 
     if (error) {
-        console.error('Error fetching goal:', error)
         return { data: null, error: error.message }
     }
 
@@ -148,7 +144,7 @@ export async function getGoalById(id: string) {
 /**
  * Update goal
  */
-export async function updateGoal(id: string, updates: Partial<CreateGoalData>) {
+export async function updateGoal(id: string, updates: Partial<CreateGoalData> & { current_value?: number }) {
     const supabase = await createClient()
 
     const { error } = await supabase
@@ -157,7 +153,6 @@ export async function updateGoal(id: string, updates: Partial<CreateGoalData>) {
         .eq('id', id)
 
     if (error) {
-        console.error('Error updating goal:', error)
         return { error: error.message }
     }
 
@@ -178,7 +173,6 @@ export async function deleteGoal(id: string) {
         .eq('id', id)
 
     if (error) {
-        console.error('Error deleting goal:', error)
         return { error: error.message }
     }
 
@@ -202,7 +196,6 @@ export async function completeGoal(id: string) {
         .eq('id', id)
 
     if (error) {
-        console.error('Error completing goal:', error)
         return { error: error.message }
     }
 
@@ -223,7 +216,6 @@ export async function archiveGoal(id: string) {
         .eq('id', id)
 
     if (error) {
-        console.error('Error archiving goal:', error)
         return { error: error.message }
     }
 
@@ -303,7 +295,6 @@ export async function updateGoalProgress(goalId: string) {
     }
 
     if (error) {
-        console.error('Error updating goal progress:', error)
         return { error: error.message }
     }
 

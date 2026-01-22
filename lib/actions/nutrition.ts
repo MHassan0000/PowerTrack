@@ -74,7 +74,6 @@ export async function addNutritionLog(input: CreateNutritionLogInput): Promise<{
         .single()
 
     if (error) {
-        console.error('Error adding nutrition log:', error)
         return { data: null, error: error.message }
     }
 
@@ -108,7 +107,6 @@ export async function getNutritionLogs(date?: string): Promise<{ data: Nutrition
         .order('logged_at', { ascending: true })
 
     if (error) {
-        console.error('Error fetching nutrition logs:', error)
         return { data: [], error: error.message }
     }
 
@@ -159,7 +157,6 @@ export async function deleteNutritionLog(id: string): Promise<{ error: string | 
         .eq('user_id', user.id)
 
     if (error) {
-        console.error('Error deleting nutrition log:', error)
         return { error: error.message }
     }
 

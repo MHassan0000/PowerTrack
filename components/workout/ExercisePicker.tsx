@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Search, X } from 'lucide-react'
 import { getExercises, type Exercise } from '@/lib/actions/exercises'
 import Image from 'next/image'
@@ -28,9 +28,10 @@ export function ExercisePicker({ onSelect, onClose }: ExercisePickerProps) {
         setLoading(false)
     }
 
-    useState(() => {
+    // FIXED: Use useEffect instead of useState
+    useEffect(() => {
         fetchExercises()
-    })
+    }, [])
 
     const handleMuscleFilter = (muscle: string) => {
         const newMuscle = selectedMuscle === muscle ? '' : muscle

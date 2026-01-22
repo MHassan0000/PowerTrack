@@ -1,6 +1,6 @@
 'use client'
 
-import { use, useState } from 'react'
+import { use, useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, Plus, Trash2, GripVertical, Save, Loader2 } from 'lucide-react'
 import Link from 'next/link'
@@ -23,15 +23,15 @@ export default function WorkoutEditPage({ params }: WorkoutEditPageProps) {
     const [saving, setSaving] = useState(false)
     const [exerciseToRemove, setExerciseToRemove] = useState<{id: string, name: string} | null>(null)
 
-    // Load workout data
-    useState(() => {
+    // Load workout data - FIXED: Use useEffect instead of useState
+    useEffect(() => {
         const loadWorkout = async () => {
             const { data } = await getWorkoutById(id)
             setWorkout(data)
             setLoading(false)
         }
         loadWorkout()
-    })
+    }, [id])
 
     const handleAddExercise = async (exercise: Exercise) => {
         setShowExercisePicker(false)

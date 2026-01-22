@@ -39,7 +39,6 @@ export async function getDashboardStats(): Promise<{ data: DashboardStats | null
         .gte('completed_at', startOfWeek.toISOString())
 
     if (error) {
-        console.error('Error fetching dashboard stats:', error)
         return { data: null, error: error.message }
     }
 

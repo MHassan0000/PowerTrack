@@ -3,17 +3,18 @@ import { redirect } from 'next/navigation'
 import { ActiveWorkoutView } from '@/components/workout/ActiveWorkoutView'
 
 export default async function ActiveWorkoutPage() {
-    const { data: session, error } = await getActiveSession()
+    const sessionResult = await getActiveSession()
 
-    if (error || !session) {
+    if (!sessionResult || sessionResult.error || !sessionResult.data) {
         redirect('/workouts')
     }
 
-    const { data: sets } = await getSessionSets(session.id)
+    const session = sessionResult.data
+    const setsResult = await getSessionSets(session.id)
 
     return (
         <div className="min-h-screen pb-20">
-            <ActiveWorkoutView session={session} sets={sets || []} />
+            <ActiveWorkoutView session={session} sets={setsResult?.data || []} />
         </div>
     )
 }

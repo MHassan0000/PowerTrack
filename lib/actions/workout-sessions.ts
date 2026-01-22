@@ -72,7 +72,6 @@ export async function startWorkoutSession(workoutId: string | null, workoutName:
         .single()
 
     if (error) {
-        console.error('Error starting workout session:', error)
         return { error: error.message }
     }
 
@@ -96,7 +95,6 @@ export async function logSet(sessionId: string, setData: SetData) {
         .single()
 
     if (error) {
-        console.error('Error logging set:', error)
         return { error: error.message }
     }
 
@@ -114,7 +112,6 @@ export async function updateSessionStats(sessionId: string) {
         .rpc('calculate_session_stats', { p_session_id: sessionId })
 
     if (error) {
-        console.error('Error updating session stats:', error)
         return { error: error.message }
     }
 
@@ -186,8 +183,7 @@ export async function getActiveSession() {
         .maybeSingle()
 
     if (error) {
-        console.error('Error fetching active session:', error)
-        return { data: null, error: error.message }
+        return { error: error.message }
     }
 
     return { data, error: null }
@@ -213,8 +209,7 @@ export async function getWorkoutHistory(limit: number = 20) {
         .limit(limit)
 
     if (error) {
-        console.error('Error fetching workout history:', error)
-        return { data: null, error: error.message }
+        return { error: error.message }
     }
 
     return { data, error: null }
@@ -294,7 +289,6 @@ export async function deleteWorkoutSession(sessionId: string) {
         .eq('id', sessionId)
 
     if (error) {
-        console.error('Error deleting workout session:', error)
         return { error: error.message }
     }
 
@@ -314,11 +308,9 @@ export async function deleteSetLog(setId: string) {
         .eq('id', setId)
 
     if (error) {
-        console.error('Error deleting set:', error)
         return { error: error.message }
     }
 
     revalidatePath('/workouts/active')
     return { error: null }
 }
-
