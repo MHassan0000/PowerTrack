@@ -29,11 +29,8 @@ export default async function RootLayout({
 
   return (
     <html lang="en" className="dark">
-      <body className={`${inter.variable} antialiased matrix-lines`}>
-        <Navbar user={user} />
-        <main className="pt-16 min-h-screen">
-          <PageTransition>{children}</PageTransition>
-        </main>
+      <body className={`${inter.variable} antialiased matrix-lines bg-[rgb(var(--background))]`}>
+        {children}
         <Toaster
           theme="dark"
           position="top-center"

@@ -16,18 +16,18 @@ export default async function WorkoutsPage() {
     }
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-8">
             {/* Header */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-4xl font-bold glow-text mb-2">My Workouts</h1>
-                    <p className="text-[rgb(var(--foreground-muted))] text-lg">
+                    <h1 className="text-3xl font-bold text-white mb-2">My Workouts</h1>
+                    <p className="text-zinc-400">
                         Create and manage your workout templates
                     </p>
                 </div>
                 <Link
                     href="/workouts/new"
-                    className="px-6 py-3 bg-[rgb(var(--primary))] text-[rgb(var(--background))] font-medium rounded-lg hover:bg-[rgb(var(--primary-hover))] transition-all shadow-lg shadow-[rgb(var(--primary))]/20"
+                    className="inline-flex items-center justify-center px-6 py-3 bg-[#10B981] text-black font-bold rounded-xl hover:bg-[#059669] transition-all"
                 >
                     + New Workout
                 </Link>
@@ -41,15 +41,15 @@ export default async function WorkoutsPage() {
                     ))}
                 </div>
             ) : (
-                <div className="text-center py-20 glow-border bg-[rgb(var(--card))] backdrop-blur-xl rounded-xl">
-                    <p className="text-6xl mb-4">🏋️</p>
-                    <p className="text-xl font-bold mb-2">No Workouts Yet</p>
-                    <p className="text-[rgb(var(--foreground-muted))] mb-6">
-                        Create your first workout template to get started
+                <div className="text-center py-24 bg-[#18181B] border border-white/5 rounded-2xl">
+                    <p className="text-6xl mb-6 grayscale opacity-50">🏋️</p>
+                    <p className="text-xl font-bold text-white mb-2">No Workouts Yet</p>
+                    <p className="text-zinc-500 mb-8 max-w-md mx-auto">
+                        Create your first workout template to get started with your training journey.
                     </p>
                     <Link
                         href="/workouts/new"
-                        className="inline-block px-6 py-3 bg-[rgb(var(--primary))] text-[rgb(var(--background))] font-medium rounded-lg hover:bg-[rgb(var(--primary-hover))] transition-all shadow-lg shadow-[rgb(var(--primary))]/20"
+                        className="inline-flex items-center justify-center px-8 py-3 bg-[#10B981] text-black font-bold rounded-xl hover:bg-[#059669] transition-all"
                     >
                         Create Workout
                     </Link>

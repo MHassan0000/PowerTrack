@@ -16,32 +16,32 @@ export function GoalProgressBar({ current, target, unit }: GoalProgressBarProps)
     return (
         <div className="space-y-2">
             {/* Labels */}
-            <div className="flex items-center justify-between text-sm">
-                <span className="font-medium">
+            <div className="flex items-center justify-between text-xs">
+                <span className="font-bold text-white">
                     {current.toFixed(1)}{unit}
                 </span>
-                <span className="text-[rgb(var(--foreground-muted))]">
+                <span className="text-zinc-500 font-medium">
                     Target: {target}{unit}
                 </span>
             </div>
 
             {/* Progress Track */}
-            <div className="relative h-3 bg-[rgb(var(--background-secondary))] rounded-full overflow-hidden">
+            <div className="relative h-2 bg-[#27272A] rounded-full overflow-hidden">
                 <motion.div
                     className={`absolute inset-y-0 left-0 rounded-full ${isComplete
-                        ? 'bg-linear-to-r from-green-500 to-green-600'
+                        ? 'bg-[#10B981]'
                         : isNearComplete
-                            ? 'bg-linear-to-r from-yellow-500 to-yellow-600'
-                            : 'bg-linear-to-r from-[rgb(var(--primary))] to-[rgb(var(--primary-hover))]'
+                            ? 'bg-[#34D399]'
+                            : 'bg-[#10B981]'
                         }`}
                     initial={{ width: 0 }}
                     animate={{ width: `${progress}%` }}
                     transition={{ duration: 1, ease: 'easeOut' }}
                 />
 
-                {/* Shine effect */}
+                {/* Shine effect (Subtle) */}
                 <motion.div
-                    className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent"
+                    className="absolute inset-0 bg-linear-to-r from-transparent via-white/10 to-transparent"
                     initial={{ x: '-100%' }}
                     animate={{ x: '200%' }}
                     transition={{
@@ -55,7 +55,7 @@ export function GoalProgressBar({ current, target, unit }: GoalProgressBarProps)
 
             {/* Percentage */}
             <div className="text-right">
-                <span className={`text-sm font-bold ${isComplete ? 'text-green-500' : 'text-[rgb(var(--primary))]'
+                <span className={`text-xs font-bold ${isComplete ? 'text-[#10B981]' : 'text-zinc-400'
                     }`}>
                     {progress.toFixed(0)}%
                 </span>

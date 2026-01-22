@@ -35,11 +35,11 @@ export default async function ExercisesPage({ searchParams }: ExercisesPageProps
     }
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-8">
             {/* Header */}
             <div>
-                <h1 className="text-4xl font-bold glow-text mb-2">Exercise Library</h1>
-                <p className="text-[rgb(var(--foreground-muted))] text-lg">
+                <h1 className="text-3xl font-bold text-white mb-2">Exercise Library</h1>
+                <p className="text-zinc-400">
                     Browse our comprehensive collection of exercises
                 </p>
             </div>
@@ -48,9 +48,9 @@ export default async function ExercisesPage({ searchParams }: ExercisesPageProps
             <ExerciseFilters muscles={muscles || []} equipment={equipmentTypes || []} />
 
             {/* Results Count */}
-            <div className="flex items-center justify-between">
-                <p className="text-[rgb(var(--foreground-muted))]">
-                    {exercises?.length || 0} exercises found
+            <div className="flex items-center justify-between border-b border-white/5 pb-4">
+                <p className="text-zinc-500 font-medium">
+                    <span className="text-white font-bold">{exercises?.length || 0}</span> exercises found
                 </p>
             </div>
 
@@ -62,9 +62,9 @@ export default async function ExercisesPage({ searchParams }: ExercisesPageProps
                     ))}
                 </div>
             ) : (
-                <div className="text-center py-20 glow-border bg-[rgb(var(--card))] backdrop-blur-xl rounded-xl">
-                    <p className="text-2xl mb-2">🔍</p>
-                    <p className="text-[rgb(var(--foreground-muted))]">
+                <div className="text-center py-24 bg-[#18181B] border border-white/5 rounded-2xl">
+                    <p className="text-4xl mb-4">🔍</p>
+                    <p className="text-zinc-400">
                         No exercises found. Try adjusting your filters.
                     </p>
                 </div>

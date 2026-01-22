@@ -36,18 +36,18 @@ export function GoalsPageContent({ initialGoals, exercises }: GoalsPageContentPr
         : initialGoals.filter(g => g.status === filter)
 
     return (
-        <div className="container mx-auto px-4 py-6">
+        <div className="space-y-8">
             {/* Header */}
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold mb-2">Goals</h1>
-                    <p className="text-[rgb(var(--foreground-muted))]">
+                    <h1 className="text-3xl font-bold text-white mb-2">Goals</h1>
+                    <p className="text-zinc-400">
                         Set and track your fitness goals
                     </p>
                 </div>
                 <button
                     onClick={() => setShowForm(true)}
-                    className="flex items-center gap-2 px-4 py-3 bg-[rgb(var(--primary))] text-[rgb(var(--background))] rounded-lg hover:bg-[rgb(var(--primary-hover))] transition-colors font-medium shadow-lg shadow-[rgb(var(--primary))]/30"
+                    className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#10B981] text-black rounded-xl hover:bg-[#059669] transition-all font-bold"
                 >
                     <Plus className="w-5 h-5" />
                     Create Goal
@@ -55,17 +55,17 @@ export function GoalsPageContent({ initialGoals, exercises }: GoalsPageContentPr
             </div>
 
             {/* Filters */}
-            <div className="flex gap-2 mb-6">
+            <div className="flex gap-2">
                 {(['all', 'active', 'completed', 'archived'] as const).map((status) => (
                     <button
                         key={status}
                         onClick={() => setFilter(status)}
-                        className={`px-4 py-2 rounded-lg font-medium transition-colors ${filter === status
-                                ? 'bg-[rgb(var(--primary))] text-[rgb(var(--background))]'
-                                : 'bg-[rgb(var(--card))] hover:bg-[rgb(var(--card-hover))]'
+                        className={`px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-wider transition-all ${filter === status
+                                ? 'bg-[#10B981] text-black'
+                                : 'bg-[#18181B] text-zinc-400 hover:text-white hover:bg-white/5 border border-white/5'
                             }`}
                     >
-                        {status.charAt(0).toUpperCase() + status.slice(1)}
+                        {status}
                     </button>
                 ))}
             </div>
@@ -78,17 +78,17 @@ export function GoalsPageContent({ initialGoals, exercises }: GoalsPageContentPr
                     ))}
                 </div>
             ) : (
-                <div className="text-center py-20">
-                    <div className="w-20 h-20 rounded-full bg-[rgb(var(--primary))]/10 flex items-center justify-center mx-auto mb-4">
-                        <Target className="w-10 h-10 text-[rgb(var(--primary))]" />
+                <div className="text-center py-24 bg-[#18181B] border border-white/5 rounded-2xl">
+                    <div className="w-20 h-20 rounded-full bg-[#10B981]/10 flex items-center justify-center mx-auto mb-6">
+                        <Target className="w-10 h-10 text-[#10B981]" />
                     </div>
-                    <h2 className="text-2xl font-bold mb-2">No Goals Yet</h2>
-                    <p className="text-[rgb(var(--foreground-muted))] mb-6">
+                    <h2 className="text-2xl font-bold text-white mb-2">No Goals Yet</h2>
+                    <p className="text-zinc-500 mb-8 max-w-md mx-auto">
                         Create your first goal to start tracking your progress
                     </p>
                     <button
                         onClick={() => setShowForm(true)}
-                        className="inline-flex items-center gap-2 px-6 py-3 bg-[rgb(var(--primary))] text-[rgb(var(--background))] rounded-lg hover:bg-[rgb(var(--primary-hover))] transition-colors font-medium"
+                        className="inline-flex items-center gap-2 px-8 py-3 bg-[#10B981] text-black rounded-xl hover:bg-[#059669] transition-all font-bold"
                     >
                         <Plus className="w-5 h-5" />
                         Create Goal

@@ -69,8 +69,8 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
     return (
         <form action={handleSubmit} className="space-y-8">
             {/* Avatar Section */}
-            <div className="glow-border bg-[rgb(var(--card))] backdrop-blur-xl rounded-xl p-6">
-                <h3 className="text-xl font-bold mb-4">Profile Picture</h3>
+            <div className="bg-[#18181B] border border-white/5 rounded-2xl p-8">
+                <h3 className="text-xl font-bold text-white mb-6">Profile Picture</h3>
                 <div className="flex items-center gap-6">
                     <div className="relative">
                         {avatarUrl ? (
@@ -79,23 +79,23 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
                                 alt="Profile"
                                 width={96}
                                 height={96}
-                                className="rounded-full object-cover w-24 h-24"
+                                className="rounded-full object-cover w-24 h-24 border-4 border-[#10B981]/20"
                             />
                         ) : (
-                            <div className="w-24 h-24 rounded-full bg-linear-to-br from-[rgb(var(--primary))] to-[rgb(var(--primary-hover))] flex items-center justify-center text-3xl font-bold">
+                            <div className="w-24 h-24 rounded-full bg-[#10B981]/10 border-4 border-[#10B981]/20 flex items-center justify-center text-3xl font-bold text-[#10B981]">
                                 {initialData.full_name?.[0]?.toUpperCase() || initialData.email[0].toUpperCase()}
                             </div>
                         )}
                         {avatarUploading && (
                             <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
-                                <div className="animate-spin w-8 h-8 border-2 border-[rgb(var(--primary))] border-t-transparent rounded-full" />
+                                <div className="animate-spin w-8 h-8 border-2 border-[#10B981] border-t-transparent rounded-full" />
                             </div>
                         )}
                     </div>
                     <div>
                         <label
                             htmlFor="avatar"
-                            className="cursor-pointer px-4 py-2 bg-[rgb(var(--primary))]/20 text-[rgb(var(--primary))] border border-[rgb(var(--primary))] rounded-lg hover:bg-[rgb(var(--primary))]/30 transition-all inline-block"
+                            className="cursor-pointer px-6 py-2.5 bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20 rounded-xl hover:bg-[#10B981]/20 transition-all font-bold inline-block"
                         >
                             {avatarUploading ? 'Uploading...' : 'Change Avatar'}
                         </label>
@@ -107,7 +107,7 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
                             className="hidden"
                             disabled={avatarUploading}
                         />
-                        <p className="text-xs text-[rgb(var(--foreground-muted))] mt-2">
+                        <p className="text-xs text-zinc-500 mt-2">
                             JPG, PNG or GIF. Max 5MB.
                         </p>
                     </div>
@@ -115,11 +115,11 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
             </div>
 
             {/* Basic Info */}
-            <div className="glow-border bg-[rgb(var(--card))] backdrop-blur-xl rounded-xl p-6 space-y-4">
-                <h3 className="text-xl font-bold mb-4">Basic Information</h3>
+            <div className="bg-[#18181B] border border-white/5 rounded-2xl p-8 space-y-6">
+                <h3 className="text-xl font-bold text-white mb-6">Basic Information</h3>
 
                 <div>
-                    <label htmlFor="full_name" className="block text-sm font-medium mb-2">
+                    <label htmlFor="full_name" className="block text-sm font-bold text-zinc-400 mb-2">
                         Full Name *
                     </label>
                     <input
@@ -128,13 +128,13 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
                         type="text"
                         required
                         defaultValue={initialData.full_name || ''}
-                        className="w-full px-4 py-3 bg-[rgb(var(--background-secondary))] border border-[rgb(var(--border))] rounded-lg focus:outline-none focus:ring-2 focus:ring-[rgb(var(--primary))] transition-all"
+                        className="w-full px-4 py-3 bg-[#27272A] border border-white/5 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-[#10B981] transition-all placeholder:text-zinc-600"
                         placeholder="John Doe"
                     />
                 </div>
 
                 <div>
-                    <label htmlFor="age" className="block text-sm font-medium mb-2">
+                    <label htmlFor="age" className="block text-sm font-bold text-zinc-400 mb-2">
                         Age *
                     </label>
                     <input
@@ -145,13 +145,13 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
                         min="13"
                         max="120"
                         defaultValue={initialData.age || ''}
-                        className="w-full px-4 py-3 bg-[rgb(var(--background-secondary))] border border-[rgb(var(--border))] rounded-lg focus:outline-none focus:ring-2 focus:ring-[rgb(var(--primary))] transition-all"
+                        className="w-full px-4 py-3 bg-[#27272A] border border-white/5 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-[#10B981] transition-all placeholder:text-zinc-600"
                         placeholder="25"
                     />
                 </div>
 
                 <div>
-                    <label htmlFor="bio" className="block text-sm font-medium mb-2">
+                    <label htmlFor="bio" className="block text-sm font-bold text-zinc-400 mb-2">
                         Bio
                     </label>
                     <textarea
@@ -159,18 +159,18 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
                         name="bio"
                         rows={3}
                         defaultValue={initialData.bio || ''}
-                        className="w-full px-4 py-3 bg-[rgb(var(--background-secondary))] border border-[rgb(var(--border))] rounded-lg focus:outline-none focus:ring-2 focus:ring-[rgb(var(--primary))] transition-all resize-none"
+                        className="w-full px-4 py-3 bg-[#27272A] border border-white/5 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-[#10B981] transition-all resize-none placeholder:text-zinc-600"
                         placeholder="Tell us about yourself..."
                     />
                 </div>
             </div>
 
             {/* Physical Stats */}
-            <div className="glow-border bg-[rgb(var(--card))] backdrop-blur-xl rounded-xl p-6 space-y-4">
-                <h3 className="text-xl font-bold mb-4">Physical Stats</h3>
+            <div className="bg-[#18181B] border border-white/5 rounded-2xl p-8 space-y-6">
+                <h3 className="text-xl font-bold text-white mb-6">Physical Stats</h3>
 
                 <div>
-                    <label htmlFor="preferred_units" className="block text-sm font-medium mb-2">
+                    <label htmlFor="preferred_units" className="block text-sm font-bold text-zinc-400 mb-2">
                         Preferred Units *
                     </label>
                     <select
@@ -178,16 +178,16 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
                         name="preferred_units"
                         required
                         defaultValue={initialData.preferred_units || 'metric'}
-                        className="w-full px-4 py-3 bg-[rgb(var(--background-secondary))] border border-[rgb(var(--border))] rounded-lg focus:outline-none focus:ring-2 focus:ring-[rgb(var(--primary))] transition-all"
+                        className="w-full px-4 py-3 bg-[#27272A] border border-white/5 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-[#10B981] transition-all"
                     >
                         <option value="metric">Metric (kg, cm)</option>
                         <option value="imperial">Imperial (lbs, ft/in)</option>
                     </select>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label htmlFor="height_cm" className="block text-sm font-medium mb-2">
+                        <label htmlFor="height_cm" className="block text-sm font-bold text-zinc-400 mb-2">
                             Height (cm) *
                         </label>
                         <input
@@ -198,13 +198,13 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
                             required
                             min="0"
                             defaultValue={initialData.height_cm || ''}
-                            className="w-full px-4 py-3 bg-[rgb(var(--background-secondary))] border border-[rgb(var(--border))] rounded-lg focus:outline-none focus:ring-2 focus:ring-[rgb(var(--primary))] transition-all"
+                            className="w-full px-4 py-3 bg-[#27272A] border border-white/5 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-[#10B981] transition-all placeholder:text-zinc-600"
                             placeholder="175"
                         />
                     </div>
 
                     <div>
-                        <label htmlFor="weight_kg" className="block text-sm font-medium mb-2">
+                        <label htmlFor="weight_kg" className="block text-sm font-bold text-zinc-400 mb-2">
                             Weight (kg) *
                         </label>
                         <input
@@ -215,7 +215,7 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
                             required
                             min="0"
                             defaultValue={initialData.weight_kg || ''}
-                            className="w-full px-4 py-3 bg-[rgb(var(--background-secondary))] border border-[rgb(var(--border))] rounded-lg focus:outline-none focus:ring-2 focus:ring-[rgb(var(--primary))] transition-all"
+                            className="w-full px-4 py-3 bg-[#27272A] border border-white/5 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-[#10B981] transition-all placeholder:text-zinc-600"
                             placeholder="70"
                         />
                     </div>
@@ -223,11 +223,11 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
             </div>
 
             {/* Fitness Info */}
-            <div className="glow-border bg-[rgb(var(--card))] backdrop-blur-xl rounded-xl p-6 space-y-4">
-                <h3 className="text-xl font-bold mb-4">Fitness Information</h3>
+            <div className="bg-[#18181B] border border-white/5 rounded-2xl p-8 space-y-6">
+                <h3 className="text-xl font-bold text-white mb-6">Fitness Information</h3>
 
                 <div>
-                    <label htmlFor="fitness_goal" className="block text-sm font-medium mb-2">
+                    <label htmlFor="fitness_goal" className="block text-sm font-bold text-zinc-400 mb-2">
                         Primary Fitness Goal *
                     </label>
                     <select
@@ -235,7 +235,7 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
                         name="fitness_goal"
                         required
                         defaultValue={initialData.fitness_goal || ''}
-                        className="w-full px-4 py-3 bg-[rgb(var(--background-secondary))] border border-[rgb(var(--border))] rounded-lg focus:outline-none focus:ring-2 focus:ring-[rgb(var(--primary))] transition-all"
+                        className="w-full px-4 py-3 bg-[#27272A] border border-white/5 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-[#10B981] transition-all"
                     >
                         <option value="">Select a goal...</option>
                         <option value="lose_fat">Lose Fat</option>
@@ -247,7 +247,7 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
                 </div>
 
                 <div>
-                    <label htmlFor="experience_level" className="block text-sm font-medium mb-2">
+                    <label htmlFor="experience_level" className="block text-sm font-bold text-zinc-400 mb-2">
                         Experience Level *
                     </label>
                     <select
@@ -255,7 +255,7 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
                         name="experience_level"
                         required
                         defaultValue={initialData.experience_level || ''}
-                        className="w-full px-4 py-3 bg-[rgb(var(--background-secondary))] border border-[rgb(var(--border))] rounded-lg focus:outline-none focus:ring-2 focus:ring-[rgb(var(--primary))] transition-all"
+                        className="w-full px-4 py-3 bg-[#27272A] border border-white/5 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-[#10B981] transition-all"
                     >
                         <option value="">Select level...</option>
                         <option value="beginner">Beginner (0-1 years)</option>
@@ -290,7 +290,7 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
             <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 bg-[rgb(var(--primary))] text-[rgb(var(--background))] font-medium rounded-lg hover:bg-[rgb(var(--primary-hover))] transition-all shadow-lg shadow-[rgb(var(--primary))]/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-4 bg-[#10B981] text-black font-bold text-lg rounded-xl hover:bg-[#059669] transition-all disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-wide"
             >
                 {loading ? 'Saving...' : 'Save Profile'}
             </button>

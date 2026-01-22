@@ -56,16 +56,21 @@ export default function LoginPage() {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center p-4 bg-[rgb(var(--background))]">
+        <div className="min-h-screen flex items-center justify-center p-4">
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
-                className="w-full max-w-md glow-border bg-[rgb(var(--card))] backdrop-blur-xl rounded-2xl p-8 shadow-2xl"
+                className="w-full max-w-md bg-[#18181B] border border-white/5 rounded-2xl p-8 shadow-2xl"
             >
                 <div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold glow-text mb-2">Welcome Back</h1>
-                    <p className="text-[rgb(var(--foreground-muted))]">
+                    <Link href="/" className="inline-block mb-6">
+                        <span className="text-2xl font-black italic tracking-tighter text-white">
+                            POWER<span className="text-[#10B981]">TRACK</span>
+                        </span>
+                    </Link>
+                    <h1 className="text-2xl font-bold text-white mb-2">Welcome Back</h1>
+                    <p className="text-zinc-400">
                         Sign in to continue to PowerTrack
                     </p>
                 </div>
@@ -80,13 +85,13 @@ export default function LoginPage() {
                 <AuthDivider />
 
                 {/* Mode Switcher */}
-                <div className="flex gap-2 mb-6 p-1 bg-[rgb(var(--background-secondary))] rounded-lg">
+                <div className="flex gap-2 mb-6 p-1 bg-[#27272A] rounded-xl">
                     <button
                         type="button"
                         onClick={() => setMode('password')}
-                        className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${mode === 'password'
-                                ? 'bg-[rgb(var(--primary))] text-[rgb(var(--background))]'
-                                : 'text-[rgb(var(--foreground-muted))] hover:text-[rgb(var(--foreground))]'
+                        className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-bold transition-all ${mode === 'password'
+                                ? 'bg-[#10B981] text-black shadow-lg'
+                                : 'text-zinc-400 hover:text-white hover:bg-white/5'
                             }`}
                     >
                         Password
@@ -94,9 +99,9 @@ export default function LoginPage() {
                     <button
                         type="button"
                         onClick={() => setMode('magic')}
-                        className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${mode === 'magic'
-                                ? 'bg-[rgb(var(--primary))] text-[rgb(var(--background))]'
-                                : 'text-[rgb(var(--foreground-muted))] hover:text-[rgb(var(--foreground))]'
+                        className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-bold transition-all ${mode === 'magic'
+                                ? 'bg-[#10B981] text-black shadow-lg'
+                                : 'text-zinc-400 hover:text-white hover:bg-white/5'
                             }`}
                     >
                         Magic Link
@@ -107,7 +112,7 @@ export default function LoginPage() {
                 {mode === 'password' && (
                     <form action={handlePasswordLogin} className="space-y-6">
                         <div>
-                            <label htmlFor="email" className="block text-sm font-medium mb-2">
+                            <label htmlFor="email" className="block text-sm font-bold text-zinc-400 mb-2">
                                 Email
                             </label>
                             <input
@@ -115,13 +120,13 @@ export default function LoginPage() {
                                 name="email"
                                 type="email"
                                 required
-                                className="w-full px-4 py-3 bg-[rgb(var(--background-secondary))] border border-[rgb(var(--border))] rounded-lg focus:outline-none focus:ring-2 focus:ring-[rgb(var(--primary))] transition-all"
+                                className="w-full px-4 py-3 bg-[#27272A] border border-white/5 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-[#10B981] transition-all placeholder:text-zinc-600"
                                 placeholder="you@example.com"
                             />
                         </div>
 
                         <div>
-                            <label htmlFor="password" className="block text-sm font-medium mb-2">
+                            <label htmlFor="password" className="block text-sm font-bold text-zinc-400 mb-2">
                                 Password
                             </label>
                             <input
@@ -129,7 +134,7 @@ export default function LoginPage() {
                                 name="password"
                                 type="password"
                                 required
-                                className="w-full px-4 py-3 bg-[rgb(var(--background-secondary))] border border-[rgb(var(--border))] rounded-lg focus:outline-none focus:ring-2 focus:ring-[rgb(var(--primary))] transition-all"
+                                className="w-full px-4 py-3 bg-[#27272A] border border-white/5 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-[#10B981] transition-all placeholder:text-zinc-600"
                                 placeholder="••••••••"
                             />
                         </div>
@@ -137,7 +142,7 @@ export default function LoginPage() {
                         <div className="flex items-center justify-between">
                             <Link
                                 href="/forgot-password"
-                                className="text-sm text-[rgb(var(--primary))] hover:underline"
+                                className="text-sm text-[#10B981] hover:text-[#059669] font-medium transition-colors"
                             >
                                 Forgot password?
                             </Link>
@@ -147,7 +152,7 @@ export default function LoginPage() {
                             <motion.div
                                 initial={{ opacity: 0, y: -10 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="p-3 bg-red-500/10 border border-red-500/50 rounded-lg text-red-400 text-sm"
+                                className="p-4 bg-red-500/10 border border-red-500/50 rounded-xl text-red-400 text-sm font-medium"
                             >
                                 {error}
                             </motion.div>
@@ -157,7 +162,7 @@ export default function LoginPage() {
                             <motion.div
                                 initial={{ opacity: 0, y: -10 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="p-3 bg-green-500/10 border border-green-500/50 rounded-lg text-green-400 text-sm"
+                                className="p-4 bg-green-500/10 border border-green-500/50 rounded-xl text-green-400 text-sm font-medium"
                             >
                                 {success}
                             </motion.div>
@@ -166,7 +171,7 @@ export default function LoginPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full py-3 bg-[rgb(var(--primary))] text-[rgb(var(--background))] font-medium rounded-lg hover:bg-[rgb(var(--primary-hover))] transition-all shadow-lg shadow-[rgb(var(--primary))]/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full py-4 bg-[#10B981] text-black font-bold text-lg rounded-xl hover:bg-[#059669] transition-all disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-wide"
                         >
                             {loading ? 'Signing in...' : 'Sign in'}
                         </button>
@@ -177,7 +182,7 @@ export default function LoginPage() {
                 {mode === 'magic' && (
                     <form action={handleMagicLink} className="space-y-6">
                         <div>
-                            <label htmlFor="magic-email" className="block text-sm font-medium mb-2">
+                            <label htmlFor="magic-email" className="block text-sm font-bold text-zinc-400 mb-2">
                                 Email
                             </label>
                             <input
@@ -185,12 +190,12 @@ export default function LoginPage() {
                                 name="email"
                                 type="email"
                                 required
-                                className="w-full px-4 py-3 bg-[rgb(var(--background-secondary))] border border-[rgb(var(--border))] rounded-lg focus:outline-none focus:ring-2 focus:ring-[rgb(var(--primary))] transition-all"
+                                className="w-full px-4 py-3 bg-[#27272A] border border-white/5 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-[#10B981] transition-all placeholder:text-zinc-600"
                                 placeholder="you@example.com"
                             />
                         </div>
 
-                        <p className="text-sm text-[rgb(var(--foreground-muted))]">
+                        <p className="text-sm text-zinc-400">
                             We&apos;ll send you a magic link to sign in without a password.
                         </p>
 
@@ -198,7 +203,7 @@ export default function LoginPage() {
                             <motion.div
                                 initial={{ opacity: 0, y: -10 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="p-3 bg-red-500/10 border border-red-500/50 rounded-lg text-red-400 text-sm"
+                                className="p-4 bg-red-500/10 border border-red-500/50 rounded-xl text-red-400 text-sm font-medium"
                             >
                                 {error}
                             </motion.div>
@@ -208,7 +213,7 @@ export default function LoginPage() {
                             <motion.div
                                 initial={{ opacity: 0, y: -10 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="p-3 bg-green-500/10 border border-green-500/50 rounded-lg text-green-400 text-sm"
+                                className="p-4 bg-green-500/10 border border-green-500/50 rounded-xl text-green-400 text-sm font-medium"
                             >
                                 {success}
                             </motion.div>
@@ -217,7 +222,7 @@ export default function LoginPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full py-3 bg-[rgb(var(--primary))] text-[rgb(var(--background))] font-medium rounded-lg hover:bg-[rgb(var(--primary-hover))] transition-all shadow-lg shadow-[rgb(var(--primary))]/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full py-4 bg-[#10B981] text-black font-bold text-lg rounded-xl hover:bg-[#059669] transition-all disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-wide"
                         >
                             {loading ? 'Sending...' : 'Send Magic Link'}
                         </button>
@@ -225,11 +230,11 @@ export default function LoginPage() {
                 )}
 
                 {/* Sign Up Link */}
-                <p className="mt-6 text-center text-sm text-[rgb(var(--foreground-muted))]">
+                <p className="mt-8 text-center text-sm text-zinc-400">
                     Don&apos;t have an account?{' '}
                     <Link
                         href="/signup"
-                        className="text-[rgb(var(--primary))] hover:underline font-medium"
+                        className="text-[#10B981] hover:text-[#059669] font-bold transition-colors"
                     >
                         Sign up
                     </Link>

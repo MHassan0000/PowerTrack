@@ -54,7 +54,7 @@ export function CTA() {
                         <a href="#" className="hover:text-[rgb(var(--primary))] transition-colors">Support</a>
                         <a href="#" className="hover:text-[rgb(var(--primary))] transition-colors">Careers</a>
                     </div>
-                    <p>&copy; 2024 Apex Fitness Inc. All rights reserved.</p>
+                    <p>&copy; 2024 Power Track Inc. All rights reserved.</p>
                 </div>
             </div>
         </section>

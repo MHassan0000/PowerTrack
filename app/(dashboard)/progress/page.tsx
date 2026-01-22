@@ -23,21 +23,23 @@ export default async function ProgressPage() {
     const bodyStats = bodyStatsResult.data || []
 
     return (
-        <div className="container mx-auto px-4 py-6 space-y-8">
+        <div className="space-y-8">
             {/* Header */}
-            <div className="mb-6">
-                <h1 className="text-3xl font-bold mb-2">Progress Tracking</h1>
-                <p className="text-[rgb(var(--foreground-muted))]">
+            <div className="mb-8">
+                <h1 className="text-3xl font-bold text-white mb-2">Progress Tracking</h1>
+                <p className="text-zinc-400">
                     Monitor your fitness journey and celebrate your achievements
                 </p>
             </div>
 
             {/* Body Weight Section */}
             <section>
-                <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2">
-                        <TrendingUp className="w-6 h-6 text-[rgb(var(--primary))]" />
-                        <h2 className="text-2xl font-bold">Body Weight</h2>
+                <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-[#10B981]/10 rounded-lg">
+                            <TrendingUp className="w-5 h-5 text-[#10B981]" />
+                        </div>
+                        <h2 className="text-xl font-bold text-white">Body Weight</h2>
                     </div>
                     <BodyWeightInput />
                 </div>
@@ -46,18 +48,22 @@ export default async function ProgressPage() {
 
             {/* Personal Records Section */}
             <section>
-                <div className="flex items-center gap-2 mb-4">
-                    <Award className="w-6 h-6 text-[rgb(var(--primary))]" />
-                    <h2 className="text-2xl font-bold">Personal Records</h2>
+                <div className="flex items-center gap-3 mb-6">
+                    <div className="p-2 bg-yellow-500/10 rounded-lg">
+                        <Award className="w-5 h-5 text-yellow-500" />
+                    </div>
+                    <h2 className="text-xl font-bold text-white">Personal Records</h2>
                 </div>
                 <PRGrid prs={prs} />
             </section>
 
             {/* Volume Over Time Section */}
             <section>
-                <div className="flex items-center gap-2 mb-4">
-                    <BarChart3 className="w-6 h-6 text-[rgb(var(--primary))]" />
-                    <h2 className="text-2xl font-bold">Volume Over Time</h2>
+                <div className="flex items-center gap-3 mb-6">
+                     <div className="p-2 bg-blue-500/10 rounded-lg">
+                        <BarChart3 className="w-5 h-5 text-blue-500" />
+                    </div>
+                    <h2 className="text-xl font-bold text-white">Volume Over Time</h2>
                 </div>
                 <VolumeChart data={volumeData} />
             </section>

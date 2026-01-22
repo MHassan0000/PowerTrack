@@ -40,10 +40,10 @@ export default async function SettingsPage() {
         }
 
         return (
-            <div className="max-w-3xl mx-auto space-y-6">
+            <div className="max-w-3xl mx-auto space-y-8">
                 <div>
-                    <h1 className="text-4xl font-bold glow-text mb-2">Profile Settings</h1>
-                    <p className="text-[rgb(var(--foreground-muted))] text-lg">
+                    <h1 className="text-3xl font-bold text-white mb-2">Profile Settings</h1>
+                    <p className="text-zinc-400 text-lg">
                         Manage your account and fitness preferences
                     </p>
                 </div>
@@ -54,10 +54,10 @@ export default async function SettingsPage() {
     }
 
     return (
-        <div className="max-w-3xl mx-auto space-y-6">
+        <div className="max-w-3xl mx-auto space-y-8">
             <div>
-                <h1 className="text-4xl font-bold glow-text mb-2">Profile Settings</h1>
-                <p className="text-[rgb(var(--foreground-muted))] text-lg">
+                <h1 className="text-3xl font-bold text-white mb-2">Profile Settings</h1>
+                <p className="text-zinc-400 text-lg">
                     Manage your account and fitness preferences
                 </p>
             </div>

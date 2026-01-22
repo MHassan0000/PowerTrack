@@ -31,11 +31,16 @@ export default function ForgotPasswordPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="glow-border bg-[rgb(var(--card))] backdrop-blur-xl rounded-2xl p-8 shadow-2xl"
+            className="w-full max-w-md bg-[#18181B] border border-white/5 rounded-2xl p-8 shadow-2xl"
         >
             <div className="text-center mb-8">
-                <h1 className="text-3xl font-bold glow-text mb-2">Forgot Password?</h1>
-                <p className="text-[rgb(var(--foreground-muted))]">
+                <Link href="/" className="inline-block mb-6">
+                    <span className="text-2xl font-black italic tracking-tighter text-white">
+                        POWER<span className="text-[#10B981]">TRACK</span>
+                    </span>
+                </Link>
+                <h1 className="text-2xl font-bold text-white mb-2">Forgot Password?</h1>
+                <p className="text-zinc-400">
                     We&apos;ll send you a link to reset your password
                 </p>
             </div>
@@ -46,17 +51,17 @@ export default function ForgotPasswordPage() {
                     animate={{ opacity: 1, scale: 1 }}
                     className="space-y-4"
                 >
-                    <div className="p-4 bg-green-500/10 border border-green-500/50 rounded-lg text-center">
-                        <div className="text-4xl mb-2">📧</div>
-                        <p className="text-green-400 font-medium mb-2">{success}</p>
-                        <p className="text-sm text-[rgb(var(--foreground-muted))]">
+                    <div className="p-6 bg-[#10B981]/10 border border-[#10B981]/20 rounded-xl text-center">
+                        <div className="text-4xl mb-4">📧</div>
+                        <p className="text-[#10B981] font-bold text-lg mb-2">{success}</p>
+                        <p className="text-sm text-zinc-400 leading-relaxed">
                             Check your email and click the link to reset your password.
                         </p>
                     </div>
 
                     <Link
                         href="/login"
-                        className="block w-full py-3 text-center bg-[rgb(var(--primary))] text-[rgb(var(--background))] font-medium rounded-lg hover:bg-[rgb(var(--primary-hover))] transition-all shadow-lg shadow-[rgb(var(--primary))]/20"
+                        className="block w-full py-4 text-center bg-[#10B981] text-black font-bold text-lg rounded-xl hover:bg-[#059669] transition-all uppercase tracking-wide"
                     >
                         Back to Login
                     </Link>
@@ -64,7 +69,7 @@ export default function ForgotPasswordPage() {
             ) : (
                 <form action={handleSubmit} className="space-y-6">
                     <div>
-                        <label htmlFor="email" className="block text-sm font-medium mb-2">
+                        <label htmlFor="email" className="block text-sm font-bold text-zinc-400 mb-2">
                             Email
                         </label>
                         <input
@@ -72,7 +77,7 @@ export default function ForgotPasswordPage() {
                             name="email"
                             type="email"
                             required
-                            className="w-full px-4 py-3 bg-[rgb(var(--background-secondary))] border border-[rgb(var(--border))] rounded-lg focus:outline-none focus:ring-2 focus:ring-[rgb(var(--primary))] transition-all"
+                            className="w-full px-4 py-3 bg-[#27272A] border border-white/5 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-[#10B981] transition-all placeholder:text-zinc-600"
                             placeholder="you@example.com"
                         />
                     </div>
@@ -81,7 +86,7 @@ export default function ForgotPasswordPage() {
                         <motion.div
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="p-3 bg-red-500/10 border border-red-500/50 rounded-lg text-red-400 text-sm"
+                            className="p-4 bg-red-500/10 border border-red-500/50 rounded-xl text-red-400 text-sm font-medium"
                         >
                             {error}
                         </motion.div>
@@ -90,14 +95,14 @@ export default function ForgotPasswordPage() {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full py-3 bg-[rgb(var(--primary))] text-[rgb(var(--background))] font-medium rounded-lg hover:bg-[rgb(var(--primary-hover))] transition-all shadow-lg shadow-[rgb(var(--primary))]/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full py-4 bg-[#10B981] text-black font-bold text-lg rounded-xl hover:bg-[#059669] transition-all disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-wide"
                     >
                         {loading ? 'Sending...' : 'Send Reset Link'}
                     </button>
 
                     <Link
                         href="/login"
-                        className="block text-center text-sm text-[rgb(var(--primary))] hover:underline"
+                        className="block text-center text-sm text-[#10B981] hover:text-[#059669] font-bold transition-colors"
                     >
                         ← Back to Login
                     </Link>
