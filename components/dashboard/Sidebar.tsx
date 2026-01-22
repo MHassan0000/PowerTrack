@@ -122,7 +122,7 @@ export function Sidebar({ user }: { user: any }) {
             <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-[#18181B]/90 backdrop-blur-md border-b border-white/5 flex items-center justify-between px-4 z-40">
                 <Link href="/dashboard">
                      <span className="text-xl font-black italic tracking-tighter text-white">
-                        APEX<span className="text-[#10B981]">FITNESS</span>
+                        POWER<span className="text-[#10B981]">TRACK</span>
                     </span>
                 </Link>
                 <button 
