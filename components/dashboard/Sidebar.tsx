@@ -13,7 +13,8 @@ import {
     Menu, 
     X,
     LogOut,
-    User
+    User,
+    Target
 } from 'lucide-react'
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -25,6 +26,7 @@ const NAV_ITEMS = [
     { label: 'Exercises', href: '/exercises', icon: Zap },
     { label: 'Progress', href: '/progress', icon: TrendingUp },
     { label: 'Nutrition', href: '/nutrition', icon: Utensils },
+    { label: 'Goals', href: '/goals', icon: Target },
     { label: 'Settings', href: '/settings', icon: Settings },
 ]
 

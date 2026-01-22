@@ -1,36 +1,222 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PowerTrack - Fitness Tracking Platform
+
+A modern fitness tracking application built with Next.js, Supabase, and TypeScript. Track workouts, monitor progress, and achieve your fitness goals.
+
+## Features
+
+- 🏋️ **Workout Management** - Create custom workouts and templates
+- 💪 **Exercise Library** - 35+ exercises with detailed instructions and images
+- 📊 **Progress Tracking** - Monitor your fitness journey with charts and stats
+- 🎯 **Goal Setting** - Set and track fitness goals
+- 📱 **Mobile Responsive** - Works seamlessly on all devices
+- 🔐 **Secure Authentication** - Powered by Supabase Auth
+
+## Tech Stack
+
+- **Framework**: Next.js 16 (App Router)
+- **Database**: Supabase (PostgreSQL)
+- **Styling**: Tailwind CSS v4
+- **Animations**: Framer Motion
+- **Charts**: Recharts
+- **TypeScript**: Full type safety
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+ installed
+- Supabase account ([Sign up here](https://supabase.com))
+- npm or yarn
+
+### Installation
+
+1. **Clone the repository**
+
+   ```bash
+   git clone <your-repo-url>
+   cd power-track
+   ```
+
+2. **Install dependencies**
+
+   ```bash
+   npm install
+   ```
+
+3. **Set up environment variables**
+
+   Copy `.env.example` to `.env.local`:
+
+   ```bash
+   cp .env.example .env.local
+   ```
+
+   Fill in your Supabase credentials from [Supabase Dashboard](https://app.supabase.com/project/_/settings/api):
+
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+   NEXT_PUBLIC_APP_URL=http://localhost:3000
+   ```
+
+4. **Database Setup**
+
+   Run the migrations in your Supabase SQL Editor in this order:
+
+   ```bash
+   # 1. Initial schema (users, base tables)
+   supabase/migrations/001_initial_schema.sql
+
+   # 2. Profile fields
+   supabase/migrations/002_profile_fields.sql
+
+   # 3. Exercise library
+   supabase/migrations/003_exercise_library.sql
+
+   # 4. Workout management
+   supabase/migrations/004_workout_management.sql
+
+   # 5. Workout logging
+   supabase/migrations/005_workout_logging.sql
+
+   # 6. Progress tracking
+   supabase/migrations/006_progress_tracking.sql
+
+   # 7. Goals
+   supabase/migrations/007_goals.sql
+
+   # 8. Exercise images storage (NEW)
+   supabase/migrations/008_exercise_images_storage.sql
+
+   # 9. Comprehensive exercises (NEW)
+   supabase/migrations/009_comprehensive_exercises.sql
+   ```
+
+   **Important**: Run migrations 008 and 009 to populate the exercise library with 35+ exercises!
+
+5. **Storage Setup** (For exercise images)
+
+   In your Supabase Dashboard:
+   - Go to Storage → Create a new bucket called `exercise-images`
+   - Make it public
+   - Or just run migration `008_exercise_images_storage.sql` which creates it automatically
+
+6. **Run the development server**
+
+   ```bash
+   npm run dev
+   ```
+
+   Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## Database Schema
+
+The application uses the following main tables:
+
+- **users** - User profiles and settings
+- **exercise_library** - 35+ pre-loaded exercises
+- **workouts** - Workout templates and plans
+- **workout_exercises** - Exercise → Workout relationships
+- **workout_sessions** - Logged workout sessions
+- **set_logs** - Individual set tracking
+- **body_stats** - Body measurements over time
+- **fitness_goals** - User fitness goals
+
+## Exercise Library
+
+The app comes pre-loaded with 35+ exercises covering:
+
+- **Chest**: Bench Press, Incline Press, Dips, Cable Flyes, Push-ups
+- **Back**: Deadlift, Pull-ups, Rows, Lat Pulldowns, Face Pulls
+- **Shoulders**: Overhead Press, Lateral Raises, Arnold Press
+- **Arms**: Barbell Curls, Hammer Curls, Tricep Dips, Cable Pushdowns
+- **Legs**: Squats, Romanian Deadlifts, Lunges, Leg Press, Calf Raises
+- **Core**: Planks, Russian Twists, Leg Raises, Ab Wheel
+- **Full Body**: Burpees, Kettlebell Swings, Box Jumps
+
+All exercises include detailed instructions, form tips, and images.
+
+## Build & Deployment
+
+### Production Build
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Standard build
+npm run build
+
+# Build ignoring lint errors (if needed)
+npm run build -- --no-lint
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Deploy to Vercel
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Push your code to GitHub
+2. Import project in Vercel
+3. Add environment variables:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `NEXT_PUBLIC_APP_URL` (your production domain)
+4. Deploy!
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Project Structure
 
-## Learn More
+```
+power-track/
+├── app/                    # Next.js app router
+│   ├── (auth)/            # Auth pages (login, signup)
+│   ├── (dashboard)/       # Protected dashboard pages
+│   └── (root)/            # Public pages (homepage)
+├── components/             # React components
+│   ├── dashboard/         # Dashboard-specific components
+│   ├── shared/            # Reusable components
+│   ├── progress/          # Progress tracking components
+│   └── workout/           # Workout-related components
+├── lib/                   # Utilities and actions
+│   ├── actions/           # Server actions
+│   ├── constants/         # App constants
+│   └── supabase/          # Supabase client config
+├── supabase/              # Database migrations
+│   └── migrations/        # SQL migration files
+├── types/                 # TypeScript type definitions
+└── public/                # Static assets
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Key Features Explained
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Workout Management
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Create custom workout templates
+- Add exercises with sets, reps, and weights
+- Reorder exercises within workouts
+- Duplicate workouts
+- Schedule workouts
 
-## Deploy on Vercel
+### Progress Tracking
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Log completed workouts
+- Track body measurements
+- View progress charts
+- Monitor volume and frequency
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Exercise Library
+
+- Browse 35+ exercises
+- Filter by muscle group, equipment, difficulty
+- Search functionality
+- Detailed instructions and form tips
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+This project is licensed under the MIT License.
+
+## Support
+
+For issues or questions, please open an issue on GitHub.
+
+---
+
+Built with ❤️ using Next.js and Supabase

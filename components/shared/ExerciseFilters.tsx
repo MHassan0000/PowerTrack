@@ -10,13 +10,7 @@ interface ExerciseFiltersProps {
     equipment: string[]
 }
 
-const CATEGORIES = [
-    { label: 'All Workouts', value: '', icon: Filter },
-    { label: 'Strength', value: 'Strength', icon: Dumbbell },
-    { label: 'HIIT', value: 'HIIT', icon: Flame }, // Mapping to muscle/type logically or just UI placeholders for now, sticking to Provided Muscles
-    { label: 'Cardio', value: 'Cardio', icon: Heart },
-    { label: 'Yoga', value: 'Yoga', icon: Activity },
-]
+
 
 export function ExerciseFilters({ muscles, equipment }: ExerciseFiltersProps) {
     const router = useRouter()
@@ -76,7 +70,7 @@ export function ExerciseFilters({ muscles, equipment }: ExerciseFiltersProps) {
                     }`}
                 >
                     <Filter className="w-4 h-4" />
-                    All Workouts
+                    All
                 </button>
 
                 {muscles.map((muscle) => (
