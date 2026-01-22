@@ -19,7 +19,6 @@ const NAV_ITEMS = {
         { label: 'Contact', href: '#contact' },
     ],
     private: [
-        { label: 'Dashboard', href: '/dashboard' },
         { label: 'Workouts', href: '/workouts' },
         { label: 'Exercises', href: '/exercises' },
         { label: 'Progress', href: '/progress' },
