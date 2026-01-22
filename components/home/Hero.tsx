@@ -34,7 +34,7 @@ export function Hero() {
                             </span>
                         </div>
 
-                        <h1 className="text-6xl md:text-8xl font-black leading-[0.9] tracking-tight uppercase italic">
+                        <h1 className="text-6xl md:text-8xl font-black leading-none tracking-tight uppercase italic pb-2">
                             Forge Your <br />
                             <span className="text-transparent bg-clip-text bg-linear-to-r from-[rgb(var(--primary))] to-white">
                                 Ultimate Self
