@@ -39,18 +39,15 @@ export default async function ExercisesPage({ searchParams }: ExercisesPageProps
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
-                    <h1 className="text-4xl md:text-5xl font-black text-white mb-2 tracking-tight uppercase italic">
-                        WORKOUT <span className="text-[rgb(var(--primary))]">LIBRARY</span>
+                    <h1 className="text-4xl font-bold tracking-tight text-white mb-2">
+                        Exercises
                     </h1>
-                    <p className="text-[rgb(var(--primary))] font-medium">
+                    <p className="text-zinc-400">
                         {exercises?.length || 0} premium sessions available for your level
                     </p>
                 </div>
                 
-                {/* Secondary Action - Optional (Matches Ref Image 'Quick Session') */}
-                <button className="hidden md:flex items-center gap-2 px-6 py-3 bg-[#10B981]/10 text-[#10B981] rounded-full text-sm font-bold uppercase tracking-wide hover:bg-[#10B981]/20 transition-all">
-                    <span className="text-lg">⚡</span> Quick Session
-                </button>
+                
             </div>
 
             {/* Filters */}

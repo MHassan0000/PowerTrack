@@ -71,7 +71,7 @@ export function ExerciseFilters({ muscles, equipment }: ExerciseFiltersProps) {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => handleMuscleClick('')}
-                    className={`flex items-center gap-2 px-6 py-3 rounded-full text-sm font-bold uppercase tracking-wide whitespace-nowrap transition-all ${
+                    className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold  whitespace-nowrap transition-all ${
                         activeMuscle === ''
                             ? 'bg-[rgb(var(--primary))] text-black shadow-[0_0_20px_rgba(204,255,0,0.3)]'
                             : 'bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white'

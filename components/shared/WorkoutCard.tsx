@@ -52,7 +52,7 @@ export function WorkoutCard({ workout, index = 0 }: WorkoutCardProps) {
         >
             <Link
                 href={`/workouts/${workout.id}`}
-                className="block bg-[#18181B] border border-white/5 rounded-2xl p-6 hover:border-[#10B981]/50 transition-all group h-full flex flex-col justify-between"
+                className="bg-[#18181B] border border-white/5 rounded-2xl p-6 hover:border-[#10B981]/50 transition-all group h-full flex flex-col justify-between"
             >
                 <div>
                     <div className="flex items-start justify-between mb-4">
@@ -111,7 +111,7 @@ export function WorkoutCard({ workout, index = 0 }: WorkoutCardProps) {
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="absolute right-2 top-14 z-20 bg-[#27272A] border border-white/10 rounded-xl shadow-2xl overflow-hidden min-w-[160px]"
+                        className="absolute right-2 top-14 z-20 bg-[#27272A] border border-white/10 rounded-xl shadow-2xl overflow-hidden min-w-40"
                     >
                         <button
                             onClick={(e) => {

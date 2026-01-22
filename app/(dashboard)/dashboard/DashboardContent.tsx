@@ -148,7 +148,9 @@ export default async function DashboardContent() {
                         </div>
                     ) : (
                         <div className="text-center py-12">
-                            <p className="text-4xl mb-4">🏋️</p>
+                            <div className="w-16 h-16 rounded-full bg-[#10B981]/10 flex items-center justify-center mx-auto mb-4 text-[#10B981]">
+                                <Dumbbell className="w-8 h-8" />
+                            </div>
                             <p className="text-zinc-400">No workouts yet. Start your first session!</p>
                             <Link 
                                 href="/workouts" 
@@ -178,7 +180,9 @@ export default async function DashboardContent() {
                         </div>
                         <div className="flex items-center justify-between">
                             <span className="text-zinc-400">Streak</span>
-                            <span className="text-xl font-bold text-[#10B981]">{stats?.streakDays || 0} days 🔥</span>
+                            <span className="text-xl font-bold text-[#10B981] flex items-center gap-2">
+                                {stats?.streakDays || 0} days <Flame className="w-4 h-4 fill-current" />
+                            </span>
                         </div>
                     </div>
 
@@ -217,7 +221,9 @@ export default async function DashboardContent() {
                     </div>
                 ) : (
                     <div className="text-center py-12 bg-[#18181B] border border-white/5 rounded-2xl">
-                        <p className="text-4xl mb-4">🎯</p>
+                        <div className="w-16 h-16 rounded-full bg-[#10B981]/10 flex items-center justify-center mx-auto mb-4 text-[#10B981]">
+                            <Target className="w-8 h-8" />
+                        </div>
                         <p className="text-zinc-400 mb-4">No active goals yet. Set your first goal!</p>
                         <Link 
                             href="/goals" 
@@ -228,6 +234,7 @@ export default async function DashboardContent() {
                     </div>
                 )}
             </div>
+
         </div>
     )
 }

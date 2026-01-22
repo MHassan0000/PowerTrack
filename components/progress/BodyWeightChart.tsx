@@ -17,10 +17,9 @@ export function BodyWeightChart({ data }: BodyWeightChartProps) {
 
     if (chartData.length === 0) {
         return (
-            <div className="bg-[rgb(var(--card))] rounded-xl p-8 text-center glow-border">
-                <p className="text-[rgb(var(--foreground-muted))]">
-                    No body weight data yet. Add your first measurement to start tracking!
-                </p>
+            <div className="bg-[#18181B] rounded-2xl p-6 border border-white/5 flex flex-col items-center justify-center text-center h-75">
+                <p className="text-zinc-400 mb-4">No body weight data yet.</p>
+                <p className="text-sm text-zinc-500">Log your weight to see your progress!</p>
             </div>
         )
     }
@@ -36,27 +35,15 @@ export function BodyWeightChart({ data }: BodyWeightChartProps) {
 
     return (
         <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-[#18181B] rounded-2xl p-6 border border-white/5"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="w-full"
         >
-            <div className="mb-6">
-                <h3 className="text-xl font-bold text-white mb-1">Body Weight Trend</h3>
-                <p className="text-sm text-zinc-500">
-                    Your body weight over the last {data.length} days
-                </p>
-            </div>
-
             <ResponsiveContainer width="100%" height={300}>
                 <LineChart
                     data={trendData}
                     margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                    role="img"
-                    aria-label="Body weight over time"
                 >
-                    <title>Body Weight Chart</title>
-                    <desc>Line chart showing body weight measurements over time with trend line</desc>
-
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255, 0.05)" vertical={false} />
                     <XAxis
                         dataKey="date"
@@ -72,15 +59,14 @@ export function BodyWeightChart({ data }: BodyWeightChartProps) {
                         domain={['dataMin - 2', 'dataMax + 2']}
                         tickLine={false}
                         axisLine={false}
-                        label={{ value: 'WEIGHT (KG)', angle: -90, position: 'insideLeft', fill: '#52525B', fontSize: 10, fontWeight: 'bold' }}
                     />
                     <Tooltip
                         contentStyle={{
-                            backgroundColor: '#27272A',
+                            backgroundColor: '#18181B',
                             border: '1px solid rgba(255,255,255,0.1)',
                             borderRadius: '12px',
                             color: '#FFF',
-                            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.5)'
+                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.5)'
                         }}
                         itemStyle={{ color: '#10B981' }}
                         formatter={(value: number | undefined) => [`${value || 0}kg`, 'Weight']}
@@ -92,13 +78,13 @@ export function BodyWeightChart({ data }: BodyWeightChartProps) {
                         strokeWidth={3}
                         dot={{ fill: '#18181B', stroke: '#10B981', strokeWidth: 2, r: 4 }}
                         activeDot={{ r: 6, fill: '#10B981', stroke: '#FFF', strokeWidth: 2 }}
-                        name="Body Weight"
+                        name="Weight"
                     />
                     <Line
                         type="monotone"
                         dataKey="trend"
-                        stroke="#34D399"
-                        strokeOpacity={0.5}
+                        stroke="#10B981"
+                        strokeOpacity={0.3}
                         strokeWidth={2}
                         strokeDasharray="5 5"
                         dot={false}
@@ -108,7 +94,7 @@ export function BodyWeightChart({ data }: BodyWeightChartProps) {
             </ResponsiveContainer>
 
             {/* Stats Summary */}
-            <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-white/5">
+            <div className="grid grid-cols-3 gap-4 mt-6">
                 <div>
                     <div className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">Current</div>
                     <div className="text-xl font-bold text-white">{chartData[chartData.length - 1]?.weight} <span className="text-sm font-normal text-zinc-500">kg</span></div>

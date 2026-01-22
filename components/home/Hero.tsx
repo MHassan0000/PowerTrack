@@ -9,8 +9,8 @@ export function Hero() {
         <section className="relative min-h-[90vh] flex items-center overflow-hidden bg-[rgb(var(--background))]">
             {/* Background Elements */}
             <div className="absolute inset-0 z-0">
-                <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-[rgb(var(--primary))]/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2" />
-                <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-blue-500/5 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2" />
+                <div className="absolute top-0 right-0 w-200 h-200 bg-[rgb(var(--primary))]/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2" />
+                <div className="absolute bottom-0 left-0 w-150 h-150 bg-blue-500/5 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2" />
                 <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.03]" />
             </div>
 
@@ -60,7 +60,9 @@ export function Hero() {
                                 href="/login"
                                 className="w-full sm:w-auto px-8 py-4 border border-[rgb(var(--border))] text-[rgb(var(--foreground))] font-bold text-lg uppercase tracking-wide hover:bg-[rgb(var(--card))] transition-colors rounded-sm flex items-center justify-center"
                             >
-                                View Demo <Play className="inline-block ml-2 w-4 h-4 fill-current" />
+                                <span className="flex items-center gap-2">
+                                    View Demo <Play className="w-4 h-4 fill-current" />
+                                </span>
                             </Link>
                         </div>
 
@@ -103,8 +105,8 @@ export function Hero() {
                         transition={{ duration: 1, delay: 0.2 }}
                         className="relative hidden lg:block"
                     >
-                        <div className="relative w-full aspect-square max-w-[600px] mx-auto">
-                            <div className="absolute inset-0 bg-gradient-to-tr from-[rgb(var(--primary))] to-transparent opacity-20 blur-[100px] rounded-full" />
+                        <div className="relative w-full aspect-square max-w-150 mx-auto">
+                            <div className="absolute inset-0 bg-linear-to-tr from-[rgb(var(--primary))] to-transparent opacity-20 blur-[100px] rounded-full" />
 
                             {/* Main Card */}
                             <div className="relative z-10 w-full h-full bg-[rgb(var(--card))] border border-[rgb(var(--border))] rounded-2xl overflow-hidden shadow-2xl shadow-black/50 grayscale hover:grayscale-0 transition-all duration-700 group">
