@@ -6,6 +6,7 @@ import { ArrowLeft, Plus, Trash2, GripVertical, Save, Loader2 } from 'lucide-rea
 import Link from 'next/link'
 import { getWorkoutById, addExerciseToWorkout, removeExerciseFromWorkout, updateWorkout } from '@/lib/actions/workouts'
 import { ExercisePicker } from '@/components/workout/ExercisePicker'
+import { ExerciseConfigModal } from '@/components/workout/ExerciseConfigModal'
 import type { Exercise } from '@/lib/actions/exercises'
 import Image from 'next/image'
 import { toast } from 'sonner'
@@ -22,8 +23,9 @@ export default function WorkoutEditPage({ params }: WorkoutEditPageProps) {
     const [showExercisePicker, setShowExercisePicker] = useState(false)
     const [saving, setSaving] = useState(false)
     const [exerciseToRemove, setExerciseToRemove] = useState<{id: string, name: string} | null>(null)
+    const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null)
 
-    // Load workout data - FIXED: Use useEffect instead of useState
+    // Load workout data
     useEffect(() => {
         const loadWorkout = async () => {
             const { data } = await getWorkoutById(id)
@@ -33,21 +35,31 @@ export default function WorkoutEditPage({ params }: WorkoutEditPageProps) {
         loadWorkout()
     }, [id])
 
-    const handleAddExercise = async (exercise: Exercise) => {
+    const handleSelectExercise = (exercise: Exercise) => {
         setShowExercisePicker(false)
+        setSelectedExercise(exercise)
+    }
+
+    const handleAddExercise = async (config: {
+        sets: number
+        reps?: number
+        duration_seconds?: number
+        rest_seconds: number
+        weight_kg?: number
+        notes?: string
+    }) => {
+        if (!selectedExercise) return
+
+        setSelectedExercise(null)
         
         const toastId = toast.loading('Adding exercise...')
         
-        const result = await addExerciseToWorkout(id, exercise.id, {
-            sets: 3,
-            reps: 10,
-            rest_seconds: 60,
-        })
+        const result = await addExerciseToWorkout(id, selectedExercise.id, config)
 
         if (result.error) {
             toast.error(result.error, { id: toastId })
         } else {
-            toast.success(`Added ${exercise.name}`, { id: toastId })
+            toast.success(`Added ${selectedExercise.name}`, { id: toastId })
             // Reload workout
             const { data } = await getWorkoutById(id)
             setWorkout(data)
@@ -206,8 +218,15 @@ export default function WorkoutEditPage({ params }: WorkoutEditPageProps) {
 
             {/* Exercise Picker Modal */}
             {showExercisePicker && (
-                <ExercisePicker onSelect={handleAddExercise} onClose={() => setShowExercisePicker(false)} />
+                <ExercisePicker onSelect={handleSelectExercise} onClose={() => setShowExercisePicker(false)} />
             )}
+
+            {/* Exercise Config Modal */}
+            <ExerciseConfigModal
+                exercise={selectedExercise}
+                onClose={() => setSelectedExercise(null)}
+                onConfirm={handleAddExercise}
+            />
 
             {/* Confirm Remove Dialog */}
             <ConfirmDialog
