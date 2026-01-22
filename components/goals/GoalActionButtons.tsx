@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { CheckCircle2, Archive, Trash2, Loader2 } from 'lucide-react'
 import { completeGoal, archiveGoal, deleteGoal } from '@/lib/actions/goals'
 import { toast } from 'sonner'
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 
 interface GoalActionButtonsProps {
     goalId: string
@@ -14,6 +15,8 @@ interface GoalActionButtonsProps {
 export function GoalActionButtons({ goalId, status }: GoalActionButtonsProps) {
     const router = useRouter()
     const [loading, setLoading] = useState(false)
+    const [showArchiveDialog, setShowArchiveDialog] = useState(false)
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false)
 
     const handleComplete = async () => {
         setLoading(true)
@@ -32,8 +35,6 @@ export function GoalActionButtons({ goalId, status }: GoalActionButtonsProps) {
     }
 
     const handleArchive = async () => {
-        if (!confirm('Archive this goal? You can view it in archived goals.')) return
-        
         setLoading(true)
         const toastId = toast.loading('Archiving goal...')
         
@@ -50,8 +51,6 @@ export function GoalActionButtons({ goalId, status }: GoalActionButtonsProps) {
     }
 
     const handleDelete = async () => {
-        if (!confirm('Delete this goal permanently? This action cannot be undone.')) return
-        
         setLoading(true)
         const toastId = toast.loading('Deleting goal...')
         
@@ -68,43 +67,66 @@ export function GoalActionButtons({ goalId, status }: GoalActionButtonsProps) {
     }
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {status === 'active' && (
+        <>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {status === 'active' && (
+                    <button
+                        onClick={handleComplete}
+                        disabled={loading}
+                        className="py-3.5 bg-[#10B981] hover:bg-[#059669] text-black font-bold rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                    >
+                        {loading ? (
+                            <Loader2 className="w-5 h-5 animate-spin" />
+                        ) : (
+                            <>
+                                <CheckCircle2 className="w-5 h-5" />
+                                Mark Complete
+                            </>
+                        )}
+                    </button>
+                )}
+                
+                {status !== 'archived' && (
+                    <button
+                        onClick={() => setShowArchiveDialog(true)}
+                        disabled={loading}
+                        className="py-3.5 bg-[#27272A] hover:bg-[#3F3F46] text-white font-medium rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                    >
+                        <Archive className="w-5 h-5" />
+                        Archive
+                    </button>
+                )}
+                
                 <button
-                    onClick={handleComplete}
+                    onClick={() => setShowDeleteDialog(true)}
                     disabled={loading}
-                    className="py-3.5 bg-[#10B981] hover:bg-[#059669] text-black font-bold rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                    className="py-3.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 font-medium rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                 >
-                    {loading ? (
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                    ) : (
-                        <>
-                            <CheckCircle2 className="w-5 h-5" />
-                            Mark Complete
-                        </>
-                    )}
+                    <Trash2 className="w-5 h-5" />
+                    Delete
                 </button>
-            )}
-            
-            {status !== 'archived' && (
-                <button
-                    onClick={handleArchive}
-                    disabled={loading}
-                    className="py-3.5 bg-[#27272A] hover:bg-[#3F3F46] text-white font-medium rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
-                >
-                    <Archive className="w-5 h-5" />
-                    Archive
-                </button>
-            )}
-            
-            <button
-                onClick={handleDelete}
-                disabled={loading}
-                className="py-3.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 font-medium rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
-            >
-                <Trash2 className="w-5 h-5" />
-                Delete
-            </button>
-        </div>
+            </div>
+
+            {/* Confirm Dialogs */}
+            <ConfirmDialog
+                open={showArchiveDialog}
+                onClose={() => setShowArchiveDialog(false)}
+                onConfirm={handleArchive}
+                title="Archive Goal?"
+                message="This goal will be moved to your archived goals. You can view it later in the archived section."
+                confirmText="Archive"
+                variant="warning"
+            />
+
+            <ConfirmDialog
+                open={showDeleteDialog}
+                onClose={() => setShowDeleteDialog(false)}
+                onConfirm={handleDelete}
+                title="Delete Goal?"
+                message="Are you sure you want to delete this goal? This action cannot be undone and all progress will be lost."
+                confirmText="Delete"
+                variant="danger"
+            />
+        </>
     )
 }

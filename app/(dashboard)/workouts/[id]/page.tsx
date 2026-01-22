@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { StartWorkoutButton } from '@/components/workout/StartWorkoutButton'
-import { ArrowLeft, Clock, Dumbbell, Calendar, LayoutList, MoreHorizontal, Edit } from 'lucide-react'
+import { ArrowLeft, Clock, Dumbbell, Calendar, LayoutList, Edit } from 'lucide-react'
 
 interface WorkoutDetailPageProps {
     params: Promise<{
@@ -22,14 +22,14 @@ export default async function WorkoutDetailPage({ params }: WorkoutDetailPagePro
 
     const totalSets = workout.exercises.reduce((sum, ex) => sum + ex.sets, 0)
     const estimatedDuration = workout.exercises.reduce((sum, ex) => {
-        const setTime = ex.duration_seconds || (ex.reps ? ex.reps * 3 : 30) // Estimate 3 sec per rep
+        const setTime = ex.duration_seconds || (ex.reps ? ex.reps * 3 : 30)
         const totalSetTime = setTime * ex.sets
         const totalRest = ex.rest_seconds * (ex.sets - 1)
         return sum + totalSetTime + totalRest
     }, 0)
 
     return (
-        <div className="max-w-4xl mx-auto space-y-8 pb-20">
+        <div className="max-w-4xl mx-auto space-y-8 pb-32">
              {/* Header / Nav */}
              <div className="flex items-center gap-4">
                 <Link
@@ -190,15 +190,11 @@ export default async function WorkoutDetailPage({ params }: WorkoutDetailPagePro
                 )}
             </div>
 
-            {/* Sticky Action Footer */}
-            <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black via-black/90 to-transparent z-50 pointer-events-none">
-                <div className="max-w-4xl mx-auto pointer-events-auto">
-                    <StartWorkoutButton workoutId={workout.id} workoutName={workout.name} />
-                </div>
+            {/* Action Buttons */}
+            <div className="pb-8">
+                <StartWorkoutButton workoutId={workout.id} workoutName={workout.name} />
             </div>
-            
-            {/* Spacer for fixed footer */}
-            <div className="h-24" />
         </div>
     )
 }
+

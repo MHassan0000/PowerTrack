@@ -9,7 +9,7 @@ import { ExercisePicker } from '@/components/workout/ExercisePicker'
 import type { Exercise } from '@/lib/actions/exercises'
 import Image from 'next/image'
 import { toast } from 'sonner'
-
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 interface WorkoutEditPageProps {
     params: Promise<{ id: string }>
 }
@@ -21,6 +21,7 @@ export default function WorkoutEditPage({ params }: WorkoutEditPageProps) {
     const [loading, setLoading] = useState(true)
     const [showExercisePicker, setShowExercisePicker] = useState(false)
     const [saving, setSaving] = useState(false)
+    const [exerciseToRemove, setExerciseToRemove] = useState<{id: string, name: string} | null>(null)
 
     // Load workout data
     useState(() => {
@@ -53,12 +54,12 @@ export default function WorkoutEditPage({ params }: WorkoutEditPageProps) {
         }
     }
 
-    const handleRemoveExercise = async (exerciseId: string, name: string) => {
-        if (!confirm(`Remove ${name} from workout?`)) return
+    const handleRemoveExercise = async () => {
+        if (!exerciseToRemove) return
 
         const toastId = toast.loading('Removing exercise...')
         
-        const result = await removeExerciseFromWorkout(exerciseId)
+        const result = await removeExerciseFromWorkout(exerciseToRemove.id)
         
         if (result.error) {
             toast.error(result.error, { id: toastId })
@@ -68,6 +69,8 @@ export default function WorkoutEditPage({ params }: WorkoutEditPageProps) {
             const { data } = await getWorkoutById(id)
             setWorkout(data)
         }
+        
+        setExerciseToRemove(null)
     }
 
     const handleSave = async () => {
@@ -179,7 +182,7 @@ export default function WorkoutEditPage({ params }: WorkoutEditPageProps) {
 
                                 {/* Delete */}
                                 <button
-                                    onClick={() => handleRemoveExercise(ex.id, ex.exercise_library.name)}
+                                    onClick={() => setExerciseToRemove({ id: ex.id, name: ex.exercise_library.name })}
                                     className="w-10 h-10 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-500 flex items-center justify-center transition-colors opacity-0 group-hover:opacity-100"
                                 >
                                     <Trash2 className="w-4 h-4" />
@@ -205,6 +208,17 @@ export default function WorkoutEditPage({ params }: WorkoutEditPageProps) {
             {showExercisePicker && (
                 <ExercisePicker onSelect={handleAddExercise} onClose={() => setShowExercisePicker(false)} />
             )}
+
+            {/* Confirm Remove Dialog */}
+            <ConfirmDialog
+                open={!!exerciseToRemove}
+                onClose={() => setExerciseToRemove(null)}
+                onConfirm={handleRemoveExercise}
+                title="Remove Exercise?"
+                message={`Are you sure you want to remove ${exerciseToRemove?.name || 'this exercise'} from your workout?`}
+                confirmText="Remove"
+                variant="danger"
+            />
         </div>
     )
 }
