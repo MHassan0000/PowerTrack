@@ -97,7 +97,6 @@ export function Sidebar({ user }: { user: any }) {
                             <p className="text-sm font-bold text-white truncate max-w-30">
                                 {user?.user_metadata?.full_name || user?.email?.split('@')[0]}
                             </p>
-                        
                         </div>
                     </div>
                     <button 
