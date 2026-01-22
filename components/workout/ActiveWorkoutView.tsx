@@ -1,27 +1,46 @@
 'use client'
 
-import { useState } from 'react'
+import { use, useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CheckCircle2, Dumbbell, X } from 'lucide-react'
+import { CheckCircle2, Dumbbell, X, ArrowRight, Trophy } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { SetLogger } from './SetLogger'
 import { RestTimer } from './RestTimer'
 import { logSet, completeWorkoutSession, type SetLog, type WorkoutSession } from '@/lib/actions/workout-sessions'
+import { getWorkoutById } from '@/lib/actions/workouts'
+import { toast } from 'sonner'
 
 interface ActiveWorkoutViewProps {
     session: WorkoutSession
     sets: SetLog[]
 }
 
-// Note: In a real app, we'd fetch the workout exercises from the workout_id
-// For now, we'll show a simplified version
 export function ActiveWorkoutView({ session, sets: initialSets }: ActiveWorkoutViewProps) {
     const router = useRouter()
     const [sets, setSets] = useState(initialSets)
     const [showRestTimer, setShowRestTimer] = useState(false)
-    const [currentExerciseId, setCurrentExerciseId] = useState<string | null>(null)
+    const [workoutExercises, setWorkoutExercises] = useState<any[]>([])
+    const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0)
     const [currentSetNumber, setCurrentSetNumber] = useState(1)
     const [completing, setCompleting] = useState(false)
+    const [loading, setLoading] = useState(true)
+
+    // Load workout exercises
+    useEffect(() => {
+        const loadWorkout = async () => {
+            if (session.workout_id) {
+                const { data } = await getWorkoutById(session.workout_id)
+                if (data?.exercises) {
+                    setWorkoutExercises(data.exercises)
+                }
+            }
+            setLoading(false)
+        }
+        loadWorkout()
+    }, [session.workout_id])
+
+    const currentExercise = workoutExercises[currentExerciseIndex]
+    const progress = workoutExercises.length > 0 ? ((currentExerciseIndex + 1) / workoutExercises.length) * 100 : 0
 
     // Group sets by exercise
     const setsByExercise = sets.reduce((acc, set) => {
@@ -34,20 +53,34 @@ export function ActiveWorkoutView({ session, sets: initialSets }: ActiveWorkoutV
     }, {} as Record<string, SetLog[]>)
 
     const handleLogSet = async (data: { weight_kg: number; reps: number }) => {
-        if (!currentExerciseId) return
+        if (!currentExercise) return
 
         const result = await logSet(session.id, {
-            exercise_id: currentExerciseId,
+            exercise_id: currentExercise.exercise_id,
             set_number: currentSetNumber,
             weight_kg: data.weight_kg,
             reps: data.reps,
-            rest_seconds: 90, // Default rest time
+            rest_seconds: currentExercise.rest_seconds || 90,
         })
 
         if (result.data) {
             setSets([...sets, result.data as SetLog])
-            setCurrentSetNumber(currentSetNumber + 1)
-            setShowRestTimer(true)
+            
+            // Check if we completed all sets for this exercise
+            if (currentSetNumber >= currentExercise.sets) {
+                // Move to next exercise
+                if (currentExerciseIndex < workoutExercises.length - 1) {
+                    toast.success(`${currentExercise.exercise_library.name} complete! Moving to next exercise.`)
+                    setCurrentExerciseIndex(currentExerciseIndex + 1)
+                    setCurrentSetNumber(1)
+                } else {
+                    // Workout complete
+                    toast.success('All exercises complete! 🎉')
+                }
+            } else {
+                setCurrentSetNumber(currentSetNumber + 1)
+                setShowRestTimer(true)
+            }
         }
     }
 
@@ -59,13 +92,22 @@ export function ActiveWorkoutView({ session, sets: initialSets }: ActiveWorkoutV
         setShowRestTimer(false)
     }
 
+    const handleSkipExercise = () => {
+        if (currentExerciseIndex < workoutExercises.length - 1) {
+            setCurrentExerciseIndex(currentExerciseIndex + 1)
+            setCurrentSetNumber(1)
+        }
+    }
+
     const handleCompleteWorkout = async () => {
         setCompleting(true)
         const result = await completeWorkoutSession(session.id)
 
         if (!result.error) {
+            toast.success('Workout completed! Great job! 💪')
             router.push('/workouts/history')
         } else {
+            toast.error(result.error)
             setCompleting(false)
         }
     }
@@ -76,84 +118,119 @@ export function ActiveWorkoutView({ session, sets: initialSets }: ActiveWorkoutV
         }
     }
 
+    if (loading) {
+        return (
+            <div className="container mx-auto px-4 py-6 flex items-center justify-center min-h-[60vh]">
+                <div className="text-center">
+                    <Dumbbell className="w-12 h-12 text-[#10B981] animate-pulse mx-auto mb-4" />
+                    <p className="text-zinc-400">Loading workout...</p>
+                </div>
+            </div>
+        )
+    }
+
+    if (workoutExercises.length === 0) {
+        return (
+            <div className="container mx-auto px-4 py-6">
+                <div className="text-center py-20">
+                    <p className="text-zinc-400 mb-4">This workout has no exercises</p>
+                    <button
+                        onClick={() => router.push('/workouts')}
+                        className="px-6 py-3 bg-[#10B981] text-black font-bold rounded-xl hover:bg-[#059669] transition-colors"
+                    >
+                        Back to Workouts
+                    </button>
+                </div>
+            </div>
+        )
+    }
+
+    const allExercisesComplete = currentExerciseIndex >= workoutExercises.length - 1 && 
+                                 currentSetNumber > (currentExercise?.sets || 0)
+
     return (
         <>
-            <div className="container mx-auto px-4 py-6">
+            <div className="container mx-auto px-4 py-6 max-w-2xl">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-6">
                     <div>
-                        <h1 className="text-2xl font-bold mb-1">{session.workout_name}</h1>
-                        <p className="text-sm text-[rgb(var(--foreground-muted))]">
-                            {sets.length} sets logged
+                        <h1 className="text-xl font-bold text-white mb-1">{session.workout_name}</h1>
+                        <p className="text-sm text-zinc-500">
+                            Exercise {currentExerciseIndex + 1} of {workoutExercises.length}
                         </p>
                     </div>
                     <button
                         onClick={handleCancel}
-                        className="w-10 h-10 rounded-full bg-[rgb(var(--background-secondary))] hover:bg-[rgb(var(--card-hover))] transition-colors flex items-center justify-center"
+                        className="w-10 h-10 rounded-full bg-[#18181B] hover:bg-[#27272A] transition-colors flex items-center justify-center text-zinc-400 hover:text-white"
                     >
                         <X className="w-5 h-5" />
                     </button>
                 </div>
 
-                {/* Instruction */}
-                {!currentExerciseId && sets.length === 0 && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="mb-6 p-4 bg-[rgb(var(--primary))]/10 border border-[rgb(var(--primary))]/30 rounded-lg"
-                    >
-                        <p className="text-sm text-[rgb(var(--foreground-muted))]">
-                            💪 Select an exercise below to start logging sets
-                        </p>
-                    </motion.div>
-                )}
-
-                {/* Set Logger */}
-                {currentExerciseId && !showRestTimer && (
-                    <div className="mb-6">
-                        <SetLogger
-                            exerciseName="Exercise" // In real app, get from exercise_id
-                            setNumber={currentSetNumber}
-                            previousSet={
-                                setsByExercise[currentExerciseId]?.slice(-1)[0] || undefined
-                            }
-                            onLogSet={handleLogSet}
-                            onSkip={() => setCurrentSetNumber(currentSetNumber + 1)}
+                {/* Progress Bar */}
+                <div className="mb-8">
+                    <div className="h-2 bg-[#18181B] rounded-full overflow-hidden">
+                        <motion.div
+                            className="h-full bg-gradient-to-r from-[#10B981] to-[#059669]"
+                            initial={{ width: 0 }}
+                            animate={{ width: `${progress}%` }}
+                            transition={{ duration: 0.5 }}
                         />
+                    </div>
+                </div>
+
+                {/* Current Exercise */}
+                {currentExercise && !allExercisesComplete && (
+                    <div className="mb-8">
+                        <div className="bg-[#18181B] rounded-3xl p-8 border border-white/5">
+                            <div className="text-center mb-6">
+                                <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#10B981]/10 rounded-full text-[#10B981] text-sm font-bold mb-4">
+                                    <Dumbbell className="w-4 h-4" />
+                                    SET {currentSetNumber} OF {currentExercise.sets}
+                                </div>
+                                <h2 className="text-3xl font-bold text-white mb-2">
+                                    {currentExercise.exercise_library.name}
+                                </h2>
+                                <p className="text-zinc-400">
+                                    {currentExercise.exercise_library.primary_muscle} • {currentExercise.exercise_library.equipment}
+                                </p>
+                            </div>
+
+                            {!showRestTimer && (
+                                <SetLogger
+                                    exerciseName={currentExercise.exercise_library.name}
+                                    setNumber={currentSetNumber}
+                                    previousSet={setsByExercise[currentExercise.exercise_id]?.slice(-1)[0]}
+                                    onLogSet={handleLogSet}
+                                    onSkip={handleSkipExercise}
+                                />
+                            )}
+                        </div>
                     </div>
                 )}
 
-                {/* Logged Sets */}
+                {/* Logged Sets Summary */}
                 {sets.length > 0 && (
-                    <div className="mb-6">
-                        <h2 className="text-lg font-bold mb-3">Logged Sets</h2>
+                    <div className="mb-8">
+                        <h3 className="text-sm font-bold text-zinc-500 uppercase tracking-wider mb-4">Completed Sets</h3>
                         <div className="space-y-2">
-                            {sets.map((set, index) => (
+                            {sets.slice(-5).reverse().map((set) => (
                                 <motion.div
                                     key={set.id}
                                     initial={{ opacity: 0, x: -20 }}
                                     animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: index * 0.05 }}
-                                    className="flex items-center justify-between p-4 bg-[rgb(var(--card))] rounded-lg"
+                                    className="flex items-center justify-between p-4 bg-[#18181B] rounded-xl border border-white/5"
                                 >
                                     <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
-                                            <CheckCircle2 className="w-5 h-5 text-green-500" />
+                                        <div className="w-8 h-8 rounded-full bg-[#10B981]/20 flex items-center justify-center">
+                                            <CheckCircle2 className="w-5 h-5 text-[#10B981]" />
                                         </div>
-                                        <div>
-                                            <div className="font-medium">Set {set.set_number}</div>
-                                            <div className="text-sm text-[rgb(var(--foreground-muted))]">
-                                                Exercise {/* In real app, show exercise name */}
-                                            </div>
+                                        <div className="text-sm text-zinc-400">
+                                            Set {set.set_number}
                                         </div>
                                     </div>
-                                    <div className="text-right">
-                                        <div className="font-bold">
-                                            {set.weight_kg}kg × {set.reps}
-                                        </div>
-                                        <div className="text-xs text-[rgb(var(--foreground-muted))]">
-                                            {new Date(set.logged_at).toLocaleTimeString()}
-                                        </div>
+                                    <div className="text-sm font-bold text-white">
+                                        {set.weight_kg}kg × {set.reps}
                                     </div>
                                 </motion.div>
                             ))}
@@ -161,48 +238,32 @@ export function ActiveWorkoutView({ session, sets: initialSets }: ActiveWorkoutV
                     </div>
                 )}
 
-                {/* Quick Exercise Buttons (Temporary - In real app, load from workout) */}
-                {!currentExerciseId && (
-                    <div className="mb-6">
-                        <h2 className="text-lg font-bold mb-3">Select Exercise</h2>
-                        <div className="grid grid-cols-2 gap-3">
-                            <button
-                                onClick={() => setCurrentExerciseId('temp-1')}
-                                className="min-h-20 rounded-lg bg-[rgb(var(--card))] hover:bg-[rgb(var(--card-hover))] transition-colors p-4 text-left glow-border"
-                            >
-                                <Dumbbell className="w-6 h-6 mb-2 text-[rgb(var(--primary))]" />
-                                <div className="font-medium">Bench Press</div>
-                            </button>
-                            <button
-                                onClick={() => setCurrentExerciseId('temp-2')}
-                                className="min-h-20 rounded-lg bg-[rgb(var(--card))] hover:bg-[rgb(var(--card-hover))] transition-colors p-4 text-left glow-border"
-                            >
-                                <Dumbbell className="w-6 h-6 mb-2 text-[rgb(var(--primary))]" />
-                                <div className="font-medium">Squat</div>
-                            </button>
-                        </div>
-                    </div>
-                )}
-
                 {/* Complete Workout Button */}
-                {sets.length > 0 && (
+                {(allExercisesComplete || sets.length > 0) && (
                     <motion.button
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         onClick={handleCompleteWorkout}
                         disabled={completing}
-                        className="w-full min-h-14 rounded-lg bg-green-600 hover:bg-green-700 text-white font-bold shadow-lg transition-colors disabled:opacity-50"
+                        className="w-full py-4 rounded-2xl bg-[#10B981] hover:bg-[#059669] text-black font-bold shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                     >
-                        {completing ? 'Completing...' : 'Complete Workout'}
+                        {completing ? (
+                            'Completing...'
+                        ) : (
+                            <>
+                                <Trophy className="w-5 h-5" />
+                                Complete Workout
+                            </>
+                        )}
                     </motion.button>
                 )}
             </div>
 
             {/* Rest Timer Overlay */}
             <AnimatePresence>
-                {showRestTimer && (
+                {showRestTimer && currentExercise && (
                     <RestTimer
-                        duration={90}
+                        duration={currentExercise.rest_seconds || 90}
                         onComplete={handleRestComplete}
                         onSkip={handleSkipRest}
                     />

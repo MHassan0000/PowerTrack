@@ -26,7 +26,7 @@ export function StartWorkoutButton({ workoutId, workoutName }: StartWorkoutButto
                 toast.error(result.error, { id: toastId })
             } else if (result.data) {
                 toast.success(`Started ${workoutName}! Let's crush it! 💪`, { id: toastId })
-                router.push(`/workouts/sessions/${result.data.id}`)
+                router.push(`/workouts/active`)
             }
         } catch (error) {
             toast.error('Failed to start workout', { id: toastId })
