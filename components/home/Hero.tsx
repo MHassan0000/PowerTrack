@@ -22,7 +22,7 @@ export function Hero() {
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.8, ease: "easeOut" }}
-                        className="space-y-8"
+                        className="space-y-8 flex flex-col items-center lg:items-start text-center lg:text-left pt-20"
                     >
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[rgb(var(--border))] bg-[rgb(var(--card))]/50 backdrop-blur-sm">
                             <span className="relative flex h-2 w-2">
@@ -45,10 +45,10 @@ export function Hero() {
                             AI-driven coaching, elite community, and metrics that matter. Join the 1% of athletes reaching their peak today.
                         </p>
 
-                        <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                        <div className="flex flex-col sm:flex-row gap-4 pt-4 w-full sm:w-auto">
                             <Link
                                 href="/signup"
-                                className="group relative px-8 py-4 bg-[rgb(var(--primary))] text-black font-bold text-lg uppercase tracking-wide overflow-hidden rounded-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
+                                className="group relative w-full sm:w-auto px-8 py-4 bg-[rgb(var(--primary))] text-black font-bold text-lg uppercase tracking-wide overflow-hidden rounded-sm transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center"
                             >
                                 <span className="relative z-10 flex items-center gap-2">
                                     Start Free<ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -58,13 +58,13 @@ export function Hero() {
 
                             <Link
                                 href="/login"
-                                className="px-8 py-4 border border-[rgb(var(--border))] text-[rgb(var(--foreground))] font-bold text-lg uppercase tracking-wide hover:bg-[rgb(var(--card))] transition-colors rounded-sm"
+                                className="w-full sm:w-auto px-8 py-4 border border-[rgb(var(--border))] text-[rgb(var(--foreground))] font-bold text-lg uppercase tracking-wide hover:bg-[rgb(var(--card))] transition-colors rounded-sm flex items-center justify-center"
                             >
                                 View Demo <Play className="inline-block ml-2 w-4 h-4 fill-current" />
                             </Link>
                         </div>
 
-                        <div className="flex items-center gap-8 pt-8 border-t border-[rgb(var(--border))]/50">
+                        <div className="flex flex-col sm:flex-row items-center lg:items-start gap-8 pt-8 border-t border-[rgb(var(--border))]/50 w-full lg:w-auto">
                             <div className="flex -space-x-4">
                                 {[
                                     "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&h=100",
@@ -79,8 +79,8 @@ export function Hero() {
                                     +10k
                                 </div>
                             </div>
-                            <div className="space-y-1">
-                                <div className="flex items-center gap-2">
+                            <div className="space-y-1 text-center lg:text-left">
+                                <div className="flex items-center justify-center lg:justify-start gap-2">
                                     <div className="flex gap-0.5 text-[rgb(var(--primary))]">
                                         {Array(5).fill(0).map((_, i) => (
                                             <Star key={i} className="w-4 h-4 fill-current" />
@@ -88,7 +88,7 @@ export function Hero() {
                                     </div>
                                     <span className="text-sm font-bold text-[rgb(var(--foreground))]">5.0</span>
                                 </div>
-                                <div className="flex items-center gap-2 text-sm text-[rgb(var(--foreground-muted))]">
+                                <div className="flex items-center justify-center lg:justify-start gap-2 text-sm text-[rgb(var(--foreground-muted))]">
                                     <TrendingUp className="w-4 h-4 text-[rgb(var(--primary))]" />
                                     <span className="font-medium">Trusted by elite athletes</span>
                                 </div>

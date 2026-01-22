@@ -16,7 +16,7 @@ export function Philosophy() {
             {/* Background Texture/Gradient */}
             <div className="absolute inset-0 bg-radial-[at_center_top] from-zinc-900/30 via-[#050505]/80 to-[#050505] pointer-events-none" />
             
-            <div className="container mx-auto px-4 relative z-10">
+            <div className="container mx-auto px-4 relative z-10 block">
                 {/* Quote Section */}
                 <div className="max-w-4xl mx-auto text-center mb-24 md:mb-32">
                     <motion.div
@@ -25,16 +25,17 @@ export function Philosophy() {
                         transition={{ duration: 0.8 }}
                         viewport={{ once: true }}
                     >
-                        <h2 className="text-3xl md:text-5xl lg:text-6xl font-black uppercase italic tracking-tighter text-white leading-tight mb-8">
+                        {/* Added px-4 py-2 to prevent italic clipping */}
+                        <h2 className="text-3xl md:text-5xl lg:text-6xl font-black uppercase italic tracking-tighter text-white leading-tight mb-8 px-4 py-2">
                             &quot;The only bad workout is the<br className="hidden md:block" /> one that didn&apos;t happen.&quot;
                         </h2>
                         
                         <div className="flex items-center justify-center gap-4">
-                            <div className="h-px w-8 md:w-16 bg-[#10B981]/50" />
-                            <span className="text-[#10B981] text-xs md:text-sm font-bold tracking-[0.2em] uppercase">
+                            <div className="h-px w-8 md:w-16 bg-[rgb(var(--primary))]/50" />
+                            <span className="text-[rgb(var(--primary))] text-xs md:text-sm font-bold tracking-[0.2em] uppercase">
                                 Elite Performance Philosophy
                             </span>
-                            <div className="h-px w-8 md:w-16 bg-[#10B981]/50" />
+                            <div className="h-px w-8 md:w-16 bg-[rgb(var(--primary))]/50" />
                         </div>
                     </motion.div>
                 </div>
@@ -55,7 +56,7 @@ export function Philosophy() {
                                 viewport={{ once: true }}
                                 className="flex items-center gap-2 group cursor-default"
                             >
-                                <partner.icon className="w-5 h-5 md:w-6 md:h-6 text-white group-hover:text-[#10B981] transition-colors" />
+                                <partner.icon className="w-5 h-5 md:w-6 md:h-6 text-white group-hover:text-[rgb(var(--primary))] transition-colors" />
                                 <span className="text-sm md:text-base font-bold text-zinc-400 group-hover:text-white transition-colors tracking-wider">
                                     {partner.name}
                                 </span>

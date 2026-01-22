@@ -18,7 +18,7 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen bg-[rgb(var(--background))] text-[rgb(var(--foreground))] overflow-x-hidden selection:bg-[rgb(var(--primary))] selection:text-black">
-      <Hero />
+      <Hero/>
       <Features />
       <Philosophy />
       <CTA />

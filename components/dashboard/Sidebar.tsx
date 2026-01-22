@@ -36,7 +36,7 @@ export function Sidebar({ user }: { user: any }) {
 
     const handleSignOut = async () => {
         await supabase.auth.signOut()
-        router.push('/login')
+        router.push('/')
         router.refresh()
     }
 
@@ -48,7 +48,7 @@ export function Sidebar({ user }: { user: any }) {
             <div className="p-6 border-b border-white/5">
                 <Link href="/dashboard" onClick={() => setIsMobileOpen(false)} className="flex items-center gap-2">
                     <span className="text-2xl font-black italic tracking-tighter text-white">
-                        APEX<span className="text-[#10B981]">FITNESS</span>
+                        POWER<span className="text-[#10B981]">TRACK</span>
                     </span>
                 </Link>
             </div>

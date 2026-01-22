@@ -15,7 +15,9 @@ interface NavbarProps {
 const NAV_ITEMS = {
     public: [
         { label: 'Features', href: '#features' },
-        { label: 'How It Works', href: '#how-it-works' },
+        { label: 'About', href: '#about' },
+        { label: 'Philosophy', href: '#philosophy' },
+        { label: 'Contact', href: '#contact' },
     ],
     private: [
         { label: 'Dashboard', href: '/dashboard' },
@@ -64,11 +66,11 @@ export default function Navbar({ user }: NavbarProps) {
                         {/* Logo */}
                         <Link href={user ? '/dashboard' : '/'} className="flex items-center gap-2 relative z-50">
                             <motion.span
-                                className="text-2xl font-black italic tracking-tighter glow-text"
+                                className="text-2xl font-black italic tracking-tighter glow-text py-2 pr-2"
                                 whileHover={{ scale: 1.05 }}
                                 transition={{ type: 'spring', stiffness: 400 }}
                             >
-                                APEX<span className="text-[rgb(var(--primary))]">FITNESS</span>
+                                POWER<span className="text-[rgb(var(--primary))]">TRACK</span>
                             </motion.span>
                         </Link>
 
