@@ -4,9 +4,8 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
 import { useEffect, useState } from 'react'
-import { UserMenu } from './UserMenu'
 import type { User } from '@supabase/supabase-js'
-import { Menu, X } from 'lucide-react'
+import { Menu, X, LayoutDashboard } from 'lucide-react'
 
 interface NavbarProps {
     user: User | null
@@ -90,10 +89,15 @@ export default function Navbar({ user }: NavbarProps) {
                             ))}
                         </div>
 
-                        {/* Auth Buttons / User Menu (Desktop) */}
                         <div className="hidden md:flex items-center gap-4">
                             {user ? (
-                                <UserMenu user={user} />
+                                <Link
+                                    href="/dashboard"
+                                    className="px-6 py-2 text-sm font-bold uppercase tracking-wider bg-[rgb(var(--primary))] text-black rounded-sm hover:bg-[rgb(var(--primary-hover))] transition-all shadow-[0_0_20px_rgba(204,255,0,0.3)] hover:shadow-[0_0_30px_rgba(204,255,0,0.5)] flex items-center gap-2"
+                                >
+                                    <LayoutDashboard className="w-4 h-4" />
+                                    Dashboard
+                                </Link>
                             ) : (
                                 <div className="flex items-center gap-4">
                                     <Link
@@ -153,11 +157,18 @@ export default function Navbar({ user }: NavbarProps) {
                             ))}
                         </div>
 
-                        <div className="w-full h-[1px] bg-[rgb(var(--border))]" />
+                        <div className="w-full h-px bg-[rgb(var(--border))]" />
 
                         <div className="flex flex-col items-center gap-6 w-full">
                             {user ? (
-                                <UserMenu user={user} />
+                                <Link
+                                    href="/dashboard"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className="w-full max-w-xs py-4 text-center text-lg font-bold uppercase tracking-wider bg-[rgb(var(--primary))] text-black rounded-sm shadow-[0_0_20px_rgba(204,255,0,0.3)] flex items-center justify-center gap-2"
+                                >
+                                    <LayoutDashboard className="w-5 h-5" />
+                                    Dashboard
+                                </Link>
                             ) : (
                                 <>
                                     <Link

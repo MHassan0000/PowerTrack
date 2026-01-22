@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
+
 import { Hero } from "@/components/home/Hero";
 import { Features } from "@/components/home/Features";
 import { Philosophy } from "@/components/home/Philosophy";
@@ -11,10 +11,7 @@ export default async function Home() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Redirect logged-in users to dashboard
-  if (user) {
-    redirect('/dashboard');
-  }
+  // Redirect logic removed to allow authenticated users to visit home
 
   return (
     <main className="min-h-screen bg-[rgb(var(--background))] text-[rgb(var(--foreground))] overflow-x-hidden selection:bg-[rgb(var(--primary))] selection:text-black">

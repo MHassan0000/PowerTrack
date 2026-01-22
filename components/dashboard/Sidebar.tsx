@@ -46,7 +46,7 @@ export function Sidebar({ user }: { user: any }) {
         <div className="flex flex-col h-full bg-[#18181B] border-r border-white/5">
             {/* Logo */}
             <div className="p-6 border-b border-white/5">
-                <Link href="/dashboard" onClick={() => setIsMobileOpen(false)} className="flex items-center gap-2">
+                <Link href="/" onClick={() => setIsMobileOpen(false)} className="flex items-center gap-2">
                     <span className="text-2xl font-black italic tracking-tighter text-white">
                         POWER<span className="text-[#10B981]">TRACK</span>
                     </span>
@@ -97,7 +97,7 @@ export function Sidebar({ user }: { user: any }) {
                             <p className="text-sm font-bold text-white truncate max-w-30">
                                 {user?.user_metadata?.full_name || user?.email?.split('@')[0]}
                             </p>
-                            <p className="text-xs text-zinc-500 truncate">Pro Member</p>
+                        
                         </div>
                     </div>
                     <button 

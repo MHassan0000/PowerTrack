@@ -3,139 +3,102 @@
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
+import { Search, Filter, Dumbbell, Activity, Flame, Heart } from 'lucide-react'
 
 interface ExerciseFiltersProps {
     muscles: string[]
     equipment: string[]
 }
 
+const CATEGORIES = [
+    { label: 'All Workouts', value: '', icon: Filter },
+    { label: 'Strength', value: 'Strength', icon: Dumbbell },
+    { label: 'HIIT', value: 'HIIT', icon: Flame }, // Mapping to muscle/type logically or just UI placeholders for now, sticking to Provided Muscles
+    { label: 'Cardio', value: 'Cardio', icon: Heart },
+    { label: 'Yoga', value: 'Yoga', icon: Activity },
+]
+
 export function ExerciseFilters({ muscles, equipment }: ExerciseFiltersProps) {
     const router = useRouter()
     const searchParams = useSearchParams()
 
     const [search, setSearch] = useState(searchParams.get('search') || '')
-    const [muscle, setMuscle] = useState(searchParams.get('muscle') || '')
-    const [equipmentFilter, setEquipmentFilter] = useState(searchParams.get('equipment') || '')
-    const [difficulty, setDifficulty] = useState(searchParams.get('difficulty') || '')
+    const [activeMuscle, setActiveMuscle] = useState(searchParams.get('muscle') || '')
 
-    const applyFilters = () => {
-        const params = new URLSearchParams()
-
-        if (search) params.set('search', search)
-        if (muscle) params.set('muscle', muscle)
-        if (equipmentFilter) params.set('equipment', equipmentFilter)
-        if (difficulty) params.set('difficulty', difficulty)
-
+    const handleSearch = (term: string) => {
+        setSearch(term)
+        const params = new URLSearchParams(searchParams.toString())
+        if (term) {
+            params.set('search', term)
+        } else {
+            params.delete('search')
+        }
         router.push(`/exercises?${params.toString()}`)
     }
 
-    const clearFilters = () => {
-        setSearch('')
-        setMuscle('')
-        setEquipmentFilter('')
-        setDifficulty('')
-        router.push('/exercises')
+    const handleMuscleClick = (muscle: string) => {
+        const newValue = activeMuscle === muscle ? '' : muscle
+        setActiveMuscle(newValue)
+        
+        const params = new URLSearchParams(searchParams.toString())
+        if (newValue) {
+            params.set('muscle', newValue)
+        } else {
+            params.delete('muscle')
+        }
+        router.push(`/exercises?${params.toString()}`)
     }
 
     return (
-        <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="glow-border bg-[rgb(var(--card))] backdrop-blur-xl rounded-xl p-6 mb-6"
-        >
-            <h3 className="text-lg font-bold mb-4">Filters</h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                {/* Search */}
-                <div className="lg:col-span-2">
-                    <label htmlFor="search" className="block text-sm font-medium mb-2">
-                        Search
-                    </label>
-                    <input
-                        id="search"
-                        type="text"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && applyFilters()}
-                        placeholder="Search exercises..."
-                        className="w-full px-4 py-2 bg-[rgb(var(--background-secondary))] border border-[rgb(var(--border))] rounded-lg focus:outline-none focus:ring-2 focus:ring-[rgb(var(--primary))] transition-all"
-                    />
+        <div className="space-y-8">
+            {/* Main Search Bar */}
+            <div className="relative group">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <Search className="h-5 w-5 text-zinc-500 group-focus-within:text-[rgb(var(--primary))] transition-colors" />
                 </div>
-
-                {/* Muscle Group */}
-                <div>
-                    <label htmlFor="muscle" className="block text-sm font-medium mb-2">
-                        Muscle Group
-                    </label>
-                    <select
-                        id="muscle"
-                        value={muscle}
-                        onChange={(e) => setMuscle(e.target.value)}
-                        className="w-full px-4 py-2 bg-[rgb(var(--background-secondary))] border border-[rgb(var(--border))] rounded-lg focus:outline-none focus:ring-2 focus:ring-[rgb(var(--primary))] transition-all"
-                    >
-                        <option value="">All Muscles</option>
-                        {muscles.map((m) => (
-                            <option key={m} value={m}>
-                                {m}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-
-                {/* Equipment */}
-                <div>
-                    <label htmlFor="equipment" className="block text-sm font-medium mb-2">
-                        Equipment
-                    </label>
-                    <select
-                        id="equipment"
-                        value={equipmentFilter}
-                        onChange={(e) => setEquipmentFilter(e.target.value)}
-                        className="w-full px-4 py-2 bg-[rgb(var(--background-secondary))] border border-[rgb(var(--border))] rounded-lg focus:outline-none focus:ring-2 focus:ring-[rgb(var(--primary))] transition-all"
-                    >
-                        <option value="">All Equipment</option>
-                        {equipment.map((eq) => (
-                            <option key={eq} value={eq}>
-                                {eq}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-
-                {/* Difficulty */}
-                <div>
-                    <label htmlFor="difficulty" className="block text-sm font-medium mb-2">
-                        Difficulty
-                    </label>
-                    <select
-                        id="difficulty"
-                        value={difficulty}
-                        onChange={(e) => setDifficulty(e.target.value)}
-                        className="w-full px-4 py-2 bg-[rgb(var(--background-secondary))] border border-[rgb(var(--border))] rounded-lg focus:outline-none focus:ring-2 focus:ring-[rgb(var(--primary))] transition-all"
-                    >
-                        <option value="">All Levels</option>
-                        <option value="beginner">Beginner</option>
-                        <option value="intermediate">Intermediate</option>
-                        <option value="advanced">Advanced</option>
-                    </select>
-                </div>
+                <input
+                    type="text"
+                    value={search}
+                    onChange={(e) => handleSearch(e.target.value)}
+                    className="block w-full pl-12 pr-4 py-4 bg-[#18181B] border border-white/5 rounded-2xl text-white placeholder-zinc-500 focus:outline-none focus:border-[rgb(var(--primary))]/50 focus:ring-1 focus:ring-[rgb(var(--primary))]/50 transition-all text-lg"
+                    placeholder="Search exercises, trainers, or body parts..."
+                />
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex gap-3 mt-4">
-                <button
-                    onClick={applyFilters}
-                    className="px-6 py-2 bg-[rgb(var(--primary))] text-[rgb(var(--background))] font-medium rounded-lg hover:bg-[rgb(var(--primary-hover))] transition-all shadow-lg shadow-[rgb(var(--primary))]/20"
+            {/* Filter Pills */}
+            <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide">
+                <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handleMuscleClick('')}
+                    className={`flex items-center gap-2 px-6 py-3 rounded-full text-sm font-bold uppercase tracking-wide whitespace-nowrap transition-all ${
+                        activeMuscle === ''
+                            ? 'bg-[rgb(var(--primary))] text-black shadow-[0_0_20px_rgba(204,255,0,0.3)]'
+                            : 'bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white'
+                    }`}
                 >
-                    Apply Filters
-                </button>
-                <button
-                    onClick={clearFilters}
-                    className="px-6 py-2 bg-[rgb(var(--card-hover))] text-[rgb(var(--foreground-secondary))] font-medium rounded-lg hover:bg-[rgb(var(--border))] transition-all"
-                >
-                    Clear
-                </button>
+                    <Filter className="w-4 h-4" />
+                    All Workouts
+                </motion.button>
+
+                {muscles.map((muscle) => (
+                    <motion.button
+                        key={muscle}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => handleMuscleClick(muscle)}
+                        className={`flex items-center gap-2 px-6 py-3 rounded-full text-sm font-bold uppercase tracking-wide whitespace-nowrap transition-all ${
+                            activeMuscle === muscle
+                                ? 'bg-[rgb(var(--primary))] text-black shadow-[0_0_20px_rgba(204,255,0,0.3)]'
+                                : 'bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white'
+                        }`}
+                    >
+                        {/* Static icon for now, could act dynamically based on muscle */}
+                        <Dumbbell className="w-4 h-4" />
+                        {muscle}
+                    </motion.button>
+                ))}
             </div>
-        </motion.div>
+        </div>
     )
 }
