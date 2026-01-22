@@ -18,7 +18,7 @@ export function VolumeChart({ data }: VolumeChartProps) {
 
     if (chartData.length === 0) {
         return (
-            <div className="bg-[rgb(var(--card))] rounded-xl p-8 text-center glow-border">
+            <div className="bg-[rgb(var(--card))] rounded-xl p-8 text-center">
                 <p className="text-[rgb(var(--foreground-muted))]">
                     No workout data available. Complete some workouts to see your progress!
                 </p>

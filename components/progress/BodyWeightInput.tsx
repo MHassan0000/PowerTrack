@@ -36,9 +36,9 @@ export function BodyWeightInput() {
         return (
             <button
                 onClick={() => setShowForm(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-[rgb(var(--primary))] text-[rgb(var(--background))] rounded-lg hover:bg-[rgb(var(--primary-hover))] transition-colors font-medium"
+                className="flex items-center gap-2 px-4 py-2 bg-[#10B981] text-black rounded-lg hover:bg-[#059669] transition-colors font-bold text-sm"
             >
-                <Plus className="w-5 h-5" />
+                <Plus className="w-4 h-4" />
                 Add Weight
             </button>
         )
@@ -50,12 +50,12 @@ export function BodyWeightInput() {
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             onSubmit={handleSubmit}
-            className="bg-[rgb(var(--card))] rounded-xl p-5 glow-border space-y-4"
+            className="bg-[#27272A] rounded-xl p-5 border border-white/10 space-y-4"
         >
-            <h4 className="font-bold">Add Body Weight</h4>
+            <h4 className="font-bold text-white">Add Body Weight</h4>
 
             <div>
-                <label htmlFor="weight" className="block text-sm font-medium mb-2">
+                <label htmlFor="weight" className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">
                     Weight (kg)
                 </label>
                 <input
@@ -64,14 +64,14 @@ export function BodyWeightInput() {
                     step="0.1"
                     value={weight}
                     onChange={(e) => setWeight(e.target.value)}
-                    className="w-full px-4 py-2 bg-[rgb(var(--background-secondary))] border border-[rgb(var(--border))] rounded-lg focus:outline-none focus:border-[rgb(var(--primary))] transition-colors"
+                    className="w-full px-4 py-3 bg-[#18181B] border border-white/5 text-white rounded-xl focus:outline-none focus:ring-1 focus:ring-[#10B981] transition-all"
                     placeholder="75.5"
                     required
                 />
             </div>
 
             <div>
-                <label htmlFor="date" className="block text-sm font-medium mb-2">
+                <label htmlFor="date" className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">
                     Date
                 </label>
                 <input
@@ -79,20 +79,20 @@ export function BodyWeightInput() {
                     id="date"
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
-                    className="w-full px-4 py-2 bg-[rgb(var(--background-secondary))] border border-[rgb(var(--border))] rounded-lg focus:outline-none focus:border-[rgb(var(--primary))] transition-colors"
+                    className="w-full px-4 py-3 bg-[#18181B] border border-white/5 text-white rounded-xl focus:outline-none focus:ring-1 focus:ring-[#10B981] transition-all"
                     required
                 />
             </div>
 
             <div>
-                <label htmlFor="notes" className="block text-sm font-medium mb-2">
+                <label htmlFor="notes" className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">
                     Notes (optional)
                 </label>
                 <textarea
                     id="notes"
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    className="w-full px-4 py-2 bg-[rgb(var(--background-secondary))] border border-[rgb(var(--border))] rounded-lg focus:outline-none focus:border-[rgb(var(--primary))] transition-colors resize-none"
+                    className="w-full px-4 py-3 bg-[#18181B] border border-white/5 text-white rounded-xl focus:outline-none focus:ring-1 focus:ring-[#10B981] transition-all resize-none"
                     rows={2}
                     placeholder="Feeling good today..."
                 />
@@ -102,16 +102,16 @@ export function BodyWeightInput() {
                 <button
                     type="button"
                     onClick={() => setShowForm(false)}
-                    className="flex-1 px-4 py-2 border border-[rgb(var(--border))] rounded-lg hover:bg-[rgb(var(--card-hover))] transition-colors"
+                    className="flex-1 px-4 py-2.5 bg-[#18181B] text-zinc-400 font-bold text-sm rounded-lg hover:bg-[#3F3F46] hover:text-white transition-colors"
                 >
                     Cancel
                 </button>
                 <button
                     type="submit"
                     disabled={adding}
-                    className="flex-1 px-4 py-2 bg-[rgb(var(--primary))] text-[rgb(var(--background))] rounded-lg hover:bg-[rgb(var(--primary-hover))] transition-colors font-medium disabled:opacity-50"
+                    className="flex-1 px-4 py-2.5 bg-[#10B981] text-black font-bold text-sm rounded-lg hover:bg-[#059669] transition-colors disabled:opacity-50"
                 >
-                    {adding ? 'Adding...' : 'Add'}
+                    {adding ? 'Adding...' : 'Save Entry'}
                 </button>
             </div>
         </motion.form>

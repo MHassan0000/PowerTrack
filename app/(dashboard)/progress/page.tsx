@@ -52,7 +52,7 @@ export default async function ProgressPage() {
                     {/* Volume Chart Card */}
                     <div className="bg-[#18181B] rounded-2xl p-6 border border-white/5">
                         <div className="flex items-center gap-3 mb-6">
-                            <div className="w-2 h-2 rounded-full bg-blue-500" />
+                            <div className="w-2 h-2 rounded-full bg-[#10B981]" />
                             <h2 className="text-zinc-400 font-bold text-xs uppercase tracking-widest">Volume Consistency</h2>
                         </div>
                         <VolumeChart data={volumeData} />
@@ -64,7 +64,7 @@ export default async function ProgressPage() {
                     <div className="bg-[#18181B] rounded-2xl p-6 border border-white/5 h-full">
                         <div className="flex items-center justify-between mb-6">
                             <div className="flex items-center gap-3">
-                                <div className="w-2 h-2 rounded-full bg-yellow-500" />
+                                <div className="w-2 h-2 rounded-full bg-[#10B981]" />
                                 <h2 className="text-zinc-400 font-bold text-xs uppercase tracking-widest">Personal Records</h2>
                             </div>
                         </div>
