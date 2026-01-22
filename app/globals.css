@@ -3,26 +3,27 @@
 /* Dark Cyberpunk Theme - Matching Reference Image */
 @layer base {
   :root {
-    /* Background colors */
-    --background: 10 14 26; /* #0a0e1a - Deep dark navy */
-    --background-secondary: 5 8 16; /* #050810 - Darker background */
+    /* Apex Fitness Theme - Neon Lime & Deep Zinc */
+    --background: 5 5 5; /* #050505 - Deep Zinc */
+    --background-secondary: 24 24 27; /* #18181b - Zinc 900 */
 
     /* Foreground/Text colors */
-    --foreground: 255 255 255; /* White */
-    --foreground-secondary: 203 213 225; /* #cbd5e1 - Light gray */
-    --foreground-muted: 148 163 184; /* #94a3b8 - Muted gray */
+    --foreground: 255 255 255;
+    --foreground-secondary: 161 161 170; /* #a1a1aa - Zinc 400 */
+    --foreground-muted: 82 82 91; /* #52525b - Zinc 600 */
 
-    /* Accent colors - Bright Cyan */
-    --primary: 0 212 255; /* #00d4ff - Electric cyan */
-    --primary-hover: 0 229 255; /* #00e5ff - Lighter cyan */
+    /* Accent colors - Neon Lime */
+    --primary: 204 255 0; /* #ccff00 - Neon Lime */
+    --primary-foreground: 0 0 0; /* Black text on lime */
+    --primary-hover: 184 230 0; /* Slightly darker lime */
 
     /* Component backgrounds */
-    --card: 13 17 28; /* Slightly lighter than background */
-    --card-hover: 18 24 38;
+    --card: 13 13 13; /* #0d0d0d - Slightly lighter than bg */
+    --card-hover: 24 24 27;
 
     /* Borders */
-    --border: 30 41 59; /* Dark border */
-    --border-glow: 0 212 255; /* Cyan glow */
+    --border: 39 39 42; /* #27272a - Zinc 800 */
+    --border-glow: 204 255 0; /* Lime glow */
 
     /* Radius */
     --radius: 0.5rem;
@@ -67,12 +68,16 @@
   }
 
   .glow-text {
-    text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+    text-shadow: 0 0 20px rgb(var(--primary) / 0.5);
   }
 
   .glow-border {
-    border: 1px solid rgba(0, 212, 255, 0.3);
-    box-shadow: 0 0 10px rgba(0, 212, 255, 0.2);
+    border: 1px solid rgb(var(--primary) / 0.3);
+    box-shadow: 0 0 10px rgb(var(--primary) / 0.2);
+  }
+
+  .bg-noise {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
   }
 
   .matrix-lines {
@@ -80,8 +85,8 @@
       0deg,
       transparent,
       transparent 2px,
-      rgba(0, 212, 255, 0.03) 2px,
-      rgba(0, 212, 255, 0.03) 4px
+      rgb(var(--primary) / 0.03) 2px,
+      rgb(var(--primary) / 0.03) 4px
     );
   }
 }
