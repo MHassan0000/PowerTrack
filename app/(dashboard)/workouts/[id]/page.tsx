@@ -1,17 +1,20 @@
+
 import { getWorkoutById } from '@/lib/actions/workouts'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { StartWorkoutButton } from '@/components/workout/StartWorkoutButton'
+import { ArrowLeft, Clock, Dumbbell, Calendar, LayoutList, MoreHorizontal, Edit } from 'lucide-react'
 
 interface WorkoutDetailPageProps {
-    params: {
+    params: Promise<{
         id: string
-    }
+    }>
 }
 
 export default async function WorkoutDetailPage({ params }: WorkoutDetailPageProps) {
-    const { data: workout, error } = await getWorkoutById(params.id)
+    const { id } = await params
+    const { data: workout, error } = await getWorkoutById(id)
 
     if (error || !workout) {
         notFound()
@@ -26,132 +29,176 @@ export default async function WorkoutDetailPage({ params }: WorkoutDetailPagePro
     }, 0)
 
     return (
-        <div className="max-w-4xl mx-auto space-y-6">
-            {/* Back Button */}
-            <Link
-                href="/workouts"
-                className="inline-flex items-center gap-2 text-[rgb(var(--primary))] hover:underline"
-            >
-                ← Back to Workouts
-            </Link>
-
-            {/* Workout Header */}
-            <div className="glow-border bg-[rgb(var(--card))] backdrop-blur-xl rounded-2xl p-8">
-                <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                        <h1 className="text-4xl font-bold glow-text mb-2">{workout.name}</h1>
-                        {workout.description && (
-                            <p className="text-lg text-[rgb(var(--foreground-secondary))]">
-                                {workout.description}
-                            </p>
-                        )}
-                    </div>
-                    <Link
-                        href={`/workouts/${workout.id}/edit`}
-                        className="px-4 py-2 bg-[rgb(var(--primary))]/20 text-[rgb(var(--primary))] border border-[rgb(var(--primary))] rounded-lg hover:bg-[rgb(var(--primary))]/30 transition-all"
-                    >
-                        Edit Workout
-                    </Link>
+        <div className="max-w-4xl mx-auto space-y-8 pb-20">
+             {/* Header / Nav */}
+             <div className="flex items-center gap-4">
+                <Link
+                    href="/workouts"
+                    className="w-10 h-10 rounded-xl bg-[#18181B] hover:bg-[#27272A] border border-white/5 flex items-center justify-center text-zinc-400 hover:text-white transition-colors"
+                >
+                    <ArrowLeft className="w-5 h-5" />
+                </Link>
+                <div className="flex-1">
+                    <h1 className="text-xl font-bold text-zinc-400 uppercase tracking-wider text-xs">Workout Details</h1>
                 </div>
+                <Link
+                    href={`/workouts/${workout.id}/edit`}
+                     className="w-10 h-10 rounded-xl bg-[#18181B] hover:bg-[#27272A] border border-white/5 flex items-center justify-center text-zinc-400 hover:text-[#10B981] transition-colors"
+                >
+                    <Edit className="w-4 h-4" />
+                </Link>
+            </div>
 
-                {/* Stats */}
-                <div className="grid grid-cols-3 gap-4">
-                    <div className="bg-[rgb(var(--background-secondary))] rounded-lg p-4">
-                        <div className="text-[rgb(var(--foreground-muted))] text-sm mb-1">Exercises</div>
-                        <div className="text-2xl font-bold text-[rgb(var(--primary))]">
-                            {workout.exercises.length}
+            {/* Main Header Card */}
+            <div className="bg-[#18181B] rounded-3xl p-8 border border-white/5 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-[#10B981]/10 blur-[100px] rounded-full -translate-y-1/2 translate-x-1/2" />
+                
+                <div className="relative z-10">
+                    <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-8">
+                        <div>
+                            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">{workout.name}</h1>
+                            {workout.description && (
+                                <p className="text-zinc-400 text-lg max-w-2xl leading-relaxed">
+                                    {workout.description}
+                                </p>
+                            )}
                         </div>
                     </div>
-                    <div className="bg-[rgb(var(--background-secondary))] rounded-lg p-4">
-                        <div className="text-[rgb(var(--foreground-muted))] text-sm mb-1">Total Sets</div>
-                        <div className="text-2xl font-bold text-[rgb(var(--primary))]">{totalSets}</div>
-                    </div>
-                    <div className="bg-[rgb(var(--background-secondary))] rounded-lg p-4">
-                        <div className="text-[rgb(var(--foreground-muted))] text-sm mb-1">Est. Duration</div>
-                        <div className="text-2xl font-bold text-[rgb(var(--primary))]">
-                            {Math.round(estimatedDuration / 60)} min
+
+                    {/* Quick Stats Row */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                         <div className="bg-[#27272A]/50 p-4 rounded-2xl border border-white/5">
+                            <div className="flex items-center gap-2 text-zinc-400 mb-1">
+                                <LayoutList className="w-4 h-4" />
+                                <span className="text-xs font-bold uppercase tracking-wider">Exercises</span>
+                            </div>
+                            <span className="text-2xl font-bold text-white">{workout.exercises.length}</span>
+                        </div>
+                        <div className="bg-[#27272A]/50 p-4 rounded-2xl border border-white/5">
+                            <div className="flex items-center gap-2 text-zinc-400 mb-1">
+                                <Dumbbell className="w-4 h-4" />
+                                <span className="text-xs font-bold uppercase tracking-wider">Sets</span>
+                            </div>
+                            <span className="text-2xl font-bold text-white">{totalSets}</span>
+                        </div>
+                        <div className="bg-[#27272A]/50 p-4 rounded-2xl border border-white/5">
+                            <div className="flex items-center gap-2 text-zinc-400 mb-1">
+                                <Clock className="w-4 h-4" />
+                                <span className="text-xs font-bold uppercase tracking-wider">Duration</span>
+                            </div>
+                            <span className="text-2xl font-bold text-white">{Math.round(estimatedDuration / 60)}m</span>
+                        </div>
+                        <div className="bg-[#27272A]/50 p-4 rounded-2xl border border-white/5">
+                            <div className="flex items-center gap-2 text-zinc-400 mb-1">
+                                <Calendar className="w-4 h-4" />
+                                <span className="text-xs font-bold uppercase tracking-wider">Last Run</span>
+                            </div>
+                            <span className="text-lg font-bold text-zinc-500">Never</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* Exercise List */}
-            <div className="glow-border bg-[rgb(var(--card))] backdrop-blur-xl rounded-xl p-6">
-                <h2 className="text-2xl font-bold mb-6">Exercises</h2>
+            {/* Exercises List */}
+            <div className="space-y-6">
+                <div className="flex items-center justify-between px-2">
+                    <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                        <Dumbbell className="w-5 h-5 text-[#10B981]" />
+                        Workout Plan
+                    </h2>
+                    <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider">{workout.exercises.length} MOVEMENTS</span>
+                </div>
 
                 {workout.exercises.length > 0 ? (
                     <div className="space-y-4">
                         {workout.exercises.map((ex, index) => (
                             <div
                                 key={ex.id}
-                                className="flex gap-4 p-4 bg-[rgb(var(--background-secondary))] rounded-lg hover:bg-[rgb(var(--card-hover))] transition-colors"
+                                className="group bg-[#18181B] hover:bg-[#27272A] border border-white/5 hover:border-[#10B981]/30 rounded-2xl p-4 transition-all duration-300 flex flex-col md:flex-row gap-6"
                             >
-                                {/* Order Number */}
-                                <div className="shrink-0 w-8 h-8 rounded-full bg-[rgb(var(--primary))]/20 border border-[rgb(var(--primary))]/50 flex items-center justify-center font-bold text-[rgb(var(--primary))]">
-                                    {index + 1}
-                                </div>
-
-                                {/* Exercise Image */}
-                                <div className="shrink-0 w-16 h-16 rounded-lg bg-[rgb(var(--background))] overflow-hidden">
-                                    {ex.exercise_library.media_url ? (
-                                        <Image
-                                            src={ex.exercise_library.media_url}
-                                            alt={ex.exercise_library.name}
-                                            width={64}
-                                            height={64}
-                                            className="object-cover w-full h-full"
-                                        />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-2xl">
-                                            💪
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Exercise Details */}
-                                <div className="flex-1">
-                                    <h3 className="font-bold mb-1">{ex.exercise_library.name}</h3>
-                                    <div className="flex flex-wrap gap-3 text-sm text-[rgb(var(--foreground-muted))]">
-                                        <span>
-                                            {ex.sets} sets × {ex.reps ? `${ex.reps} reps` : `${ex.duration_seconds}s`}
-                                        </span>
-                                        {ex.weight_kg && <span>@ {ex.weight_kg} kg</span>}
-                                        <span>Rest: {ex.rest_seconds}s</span>
+                                {/* Left: Index & Image */}
+                                <div className="flex items-center gap-4">
+                                    <div className="flex flex-col items-center gap-1 min-w-[32px]">
+                                        <span className="text-xs font-bold text-zinc-600 uppercase">Ex</span>
+                                        <span className="text-xl font-bold text-[#10B981]">{String(index + 1).padStart(2, '0')}</span>
                                     </div>
-                                    {ex.notes && (
-                                        <p className="text-sm text-[rgb(var(--foreground-secondary))] mt-2">
-                                            💡 {ex.notes}
-                                        </p>
-                                    )}
+                                    
+                                    <div className="relative w-24 h-24 rounded-xl overflow-hidden bg-black/20 shrink-0 border border-white/5">
+                                        {ex.exercise_library.media_url ? (
+                                            <Image
+                                                src={ex.exercise_library.media_url}
+                                                alt={ex.exercise_library.name}
+                                                fill
+                                                className="object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center">
+                                                <Dumbbell className="w-8 h-8 text-zinc-700" />
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
 
-                                {/* Muscle & Equipment Tags */}
-                                <div className="flex flex-col gap-2 text-xs">
-                                    <span className="px-2 py-1 bg-[rgb(var(--primary))]/10 border border-[rgb(var(--primary))]/30 rounded text-center">
-                                        {ex.exercise_library.primary_muscle}
-                                    </span>
-                                    <span className="px-2 py-1 bg-[rgb(var(--primary))]/10 border border-[rgb(var(--primary))]/30 rounded text-center">
-                                        {ex.exercise_library.equipment}
-                                    </span>
+                                {/* Center: Info */}
+                                <div className="flex-1 py-1">
+                                    <div className="flex items-start justify-between mb-2">
+                                        <div>
+                                            <h3 className="text-xl font-bold text-white mb-1 group-hover:text-[#10B981] transition-colors">{ex.exercise_library.name}</h3>
+                                            <p className="text-sm text-zinc-400 line-clamp-1">{ex.exercise_library.primary_muscle} • {ex.exercise_library.equipment}</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Set Details */}
+                                    <div className="flex flex-wrap gap-3 mt-3">
+                                        <div className="px-3 py-1.5 rounded-lg bg-[#10B981]/10 border border-[#10B981]/20">
+                                            <span className="text-xs font-bold text-[#10B981] uppercase tracking-wider mr-2">Sets</span>
+                                            <span className="text-sm font-bold text-white">{ex.sets}</span>
+                                        </div>
+                                        <div className="px-3 py-1.5 rounded-lg bg-zinc-800/50 border border-white/5">
+                                            <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider mr-2">Reps</span>
+                                            <span className="text-sm font-bold text-zinc-300">{ex.reps || 'Failure'}</span>
+                                        </div>
+                                        {ex.weight_kg && (
+                                            <div className="px-3 py-1.5 rounded-lg bg-zinc-800/50 border border-white/5">
+                                                <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider mr-2">Weight</span>
+                                                <span className="text-sm font-bold text-zinc-300">{ex.weight_kg}kg</span>
+                                            </div>
+                                        )}
+                                        <div className="px-3 py-1.5 rounded-lg bg-zinc-800/50 border border-white/5">
+                                            <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider mr-2">Rest</span>
+                                            <span className="text-sm font-bold text-zinc-300">{ex.rest_seconds}s</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         ))}
                     </div>
                 ) : (
-                    <div className="text-center py-12 text-[rgb(var(--foreground-muted))]">
-                        <p>No exercises added yet</p>
+                     <div className="text-center py-20 bg-[#18181B] rounded-3xl border border-white/5 border-dashed">
+                        <div className="w-16 h-16 rounded-full bg-zinc-800/50 flex items-center justify-center mx-auto mb-4">
+                            <Dumbbell className="w-8 h-8 text-zinc-600" />
+                        </div>
+                        <h3 className="text-lg font-bold text-white mb-2">No exercises yet</h3>
+                        <p className="text-zinc-500 max-w-sm mx-auto mb-6">This workout is empty. Add some exercises to get started.</p>
                         <Link
                             href={`/workouts/${workout.id}/edit`}
-                            className="inline-block mt-4 text-[rgb(var(--primary))] hover:underline"
+                            className="inline-flex items-center gap-2 px-6 py-3 bg-[#27272A] hover:bg-[#3F3F46] text-white font-bold rounded-xl transition-colors"
                         >
-                            Add exercises →
+                            Add Exercises
                         </Link>
                     </div>
                 )}
             </div>
 
-            {/* Action Buttons */}
-            <StartWorkoutButton workoutId={workout.id} workoutName={workout.name} />
+            {/* Sticky Action Footer */}
+            <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black via-black/90 to-transparent z-50 pointer-events-none">
+                <div className="max-w-4xl mx-auto pointer-events-auto">
+                    <StartWorkoutButton workoutId={workout.id} workoutName={workout.name} />
+                </div>
+            </div>
+            
+            {/* Spacer for fixed footer */}
+            <div className="h-24" />
         </div>
     )
 }

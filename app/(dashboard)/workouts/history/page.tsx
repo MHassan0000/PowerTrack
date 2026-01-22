@@ -1,7 +1,8 @@
+
 import { getWorkoutHistory, type WorkoutSession } from '@/lib/actions/workout-sessions'
 import { WorkoutHistoryCard } from '@/components/workout/WorkoutHistoryCard'
 import Link from 'next/link'
-import { Activity, Calendar } from 'lucide-react'
+import { Activity, Calendar, Award, TrendingUp, Filter } from 'lucide-react'
 
 export const metadata = {
     title: 'Workout History | PowerTrack',
@@ -15,7 +16,7 @@ export default async function WorkoutHistoryPage() {
         return (
             <div className="container mx-auto px-4 py-6">
                 <div className="text-center py-12">
-                    <p className="text-[rgb(var(--foreground-muted))]">
+                    <p className="text-zinc-500">
                         Failed to load workout history
                     </p>
                 </div>
@@ -26,59 +27,73 @@ export default async function WorkoutHistoryPage() {
     const isEmpty = !sessions || sessions.length === 0
 
     return (
-        <div className="container mx-auto px-4 py-6">
+        <div className="container mx-auto px-4 py-8 space-y-8 pb-20">
             {/* Header */}
-            <div className="mb-6">
-                <h1 className="text-3xl font-bold mb-2">Workout History</h1>
-                <p className="text-[rgb(var(--foreground-muted))]">
-                    Track your progress over time
-                </p>
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                    <h1 className="text-3xl font-bold text-white tracking-tight mb-2">Workout History</h1>
+                    <p className="text-zinc-400">
+                        Track your progress and consistency over time
+                    </p>
+                </div>
+                
+                 {!isEmpty && (
+                     <div className="flex gap-2">
+                        <button className="px-4 py-2 bg-[#18181B] hover:bg-[#27272A] border border-white/5 text-zinc-400 hover:text-white rounded-xl transition-colors text-sm font-medium flex items-center gap-2">
+                             <Filter className="w-4 h-4" />
+                             Filter
+                        </button>
+                     </div>
+                 )}
             </div>
 
             {/* Stats Summary */}
             {!isEmpty && (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                    <div className="bg-[rgb(var(--card))] rounded-xl p-4 glow-border">
-                        <div className="flex items-center gap-2 mb-2">
-                            <Calendar className="w-4 h-4 text-[rgb(var(--primary))]" />
-                            <span className="text-sm text-[rgb(var(--foreground-muted))]">
-                                Total Workouts
-                            </span>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="bg-[#18181B] rounded-2xl p-5 border border-white/5 hover:border-[#10B981]/30 transition-colors group">
+                        <div className="flex items-center gap-3 mb-3">
+                            <div className="w-8 h-8 rounded-lg bg-[#10B981]/10 flex items-center justify-center text-[#10B981] group-hover:scale-110 transition-transform">
+                                <Calendar className="w-4 h-4" />
+                            </div>
+                            <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Total Sessions</span>
                         </div>
-                        <div className="text-2xl font-bold glow-text">{sessions.length}</div>
+                        <div className="text-3xl font-bold text-white">{sessions.length}</div>
                     </div>
-                    <div className="bg-[rgb(var(--card))] rounded-xl p-4 glow-border">
-                        <div className="flex items-center gap-2 mb-2">
-                            <Activity className="w-4 h-4 text-[rgb(var(--primary))]" />
-                            <span className="text-sm text-[rgb(var(--foreground-muted))]">
-                                Total Sets
-                            </span>
+                    
+                    <div className="bg-[#18181B] rounded-2xl p-5 border border-white/5 hover:border-[#10B981]/30 transition-colors group">
+                        <div className="flex items-center gap-3 mb-3">
+                            <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform">
+                                <Activity className="w-4 h-4" />
+                            </div>
+                            <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Total Sets</span>
                         </div>
-                        <div className="text-2xl font-bold glow-text">
-                            {sessions.reduce((acc: number, s: WorkoutSession) => acc + s.total_sets, 0)}
+                        <div className="text-3xl font-bold text-white">
+                             {sessions.reduce((acc: number, s: WorkoutSession) => acc + s.total_sets, 0)}
                         </div>
                     </div>
-                    <div className="bg-[rgb(var(--card))] rounded-xl p-4 glow-border">
-                        <div className="flex items-center gap-2 mb-2">
-                            <Activity className="w-4 h-4 text-[rgb(var(--primary))]" />
-                            <span className="text-sm text-[rgb(var(--foreground-muted))]">
-                                Total Reps
-                            </span>
+
+                    <div className="bg-[#18181B] rounded-2xl p-5 border border-white/5 hover:border-[#10B981]/30 transition-colors group">
+                        <div className="flex items-center gap-3 mb-3">
+                            <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center text-orange-500 group-hover:scale-110 transition-transform">
+                                <TrendingUp className="w-4 h-4" />
+                            </div>
+                            <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Total Reps</span>
                         </div>
-                        <div className="text-2xl font-bold glow-text">
+                        <div className="text-3xl font-bold text-white">
                             {sessions.reduce((acc: number, s: WorkoutSession) => acc + s.total_reps, 0).toLocaleString()}
                         </div>
                     </div>
-                    <div className="bg-[rgb(var(--card))] rounded-xl p-4 glow-border">
-                        <div className="flex items-center gap-2 mb-2">
-                            <Activity className="w-4 h-4 text-[rgb(var(--primary))]" />
-                            <span className="text-sm text-[rgb(var(--foreground-muted))]">
-                                Total Volume
-                            </span>
+
+                    <div className="bg-[#18181B] rounded-2xl p-5 border border-white/5 hover:border-[#10B981]/30 transition-colors group">
+                        <div className="flex items-center gap-3 mb-3">
+                            <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-500 group-hover:scale-110 transition-transform">
+                                <Award className="w-4 h-4" />
+                            </div>
+                            <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Total Volume</span>
                         </div>
-                        <div className="text-2xl font-bold glow-text">
-                            {Math.round(sessions.reduce((acc: number, s: WorkoutSession) => acc + s.total_volume_kg, 0)).toLocaleString()}
-                            <span className="text-sm font-normal">kg</span>
+                        <div className="text-3xl font-bold text-white">
+                             {Math.round(sessions.reduce((acc: number, s: WorkoutSession) => acc + s.total_volume_kg, 0) / 1000)}k
+                             <span className="text-sm text-zinc-500 font-medium ml-1">kg</span>
                         </div>
                     </div>
                 </div>
@@ -86,26 +101,31 @@ export default async function WorkoutHistoryPage() {
 
             {/* Workout List */}
             {isEmpty ? (
-                <div className="text-center py-20">
-                    <div className="w-20 h-20 rounded-full bg-[rgb(var(--primary))]/10 flex items-center justify-center mx-auto mb-4">
-                        <Activity className="w-10 h-10 text-[rgb(var(--primary))]" />
+                <div className="text-center py-20 bg-[#18181B] rounded-3xl border border-white/5 border-dashed">
+                    <div className="w-16 h-16 rounded-full bg-zinc-800/50 flex items-center justify-center mx-auto mb-4">
+                        <Activity className="w-8 h-8 text-zinc-600" />
                     </div>
-                    <h2 className="text-2xl font-bold mb-2">No Workouts Yet</h2>
-                    <p className="text-[rgb(var(--foreground-muted))] mb-6">
-                        Start your first workout to see it here
+                    <h2 className="text-xl font-bold text-white mb-2">No Workouts Yet</h2>
+                    <p className="text-zinc-500 mb-6 max-w-sm mx-auto">
+                        Your history is empty. Start your first workout to see your progress here.
                     </p>
                     <Link
                         href="/workouts"
-                        className="inline-block px-6 py-3 bg-[rgb(var(--primary))] text-[rgb(var(--background))] rounded-lg hover:bg-[rgb(var(--primary-hover))] transition-colors font-medium"
+                        className="inline-flex items-center gap-2 px-6 py-3 bg-[#10B981] text-black font-bold rounded-xl hover:bg-[#059669] transition-colors"
                     >
                         Browse Workouts
                     </Link>
                 </div>
             ) : (
-                <div className="space-y-4">
-                    {sessions.map((session: WorkoutSession) => (
-                        <WorkoutHistoryCard key={session.id} session={session} />
-                    ))}
+                <div className="space-y-6">
+                    <div className="flex items-center justify-between">
+                         <h2 className="text-lg font-bold text-white">Recent Sessions</h2>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {sessions.map((session: WorkoutSession) => (
+                            <WorkoutHistoryCard key={session.id} session={session} />
+                        ))}
+                    </div>
                 </div>
             )}
         </div>
