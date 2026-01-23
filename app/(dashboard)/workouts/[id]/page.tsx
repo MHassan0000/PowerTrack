@@ -22,7 +22,12 @@ export default async function WorkoutDetailPage({ params }: WorkoutDetailPagePro
 
     const totalSets = workout.exercises.reduce((sum, ex) => sum + ex.sets, 0)
     const estimatedDuration = workout.exercises.reduce((sum, ex) => {
-        const setTime = ex.duration_seconds || (ex.reps ? ex.reps * 3 : 30)
+        // For timed exercises (like planks), use duration_seconds directly
+        // For rep-based exercises, estimate ~3 seconds per rep
+        const setTime = ex.duration_seconds 
+            ? ex.duration_seconds 
+            : (ex.reps ? ex.reps * 3 : 30)
+        
         const totalSetTime = setTime * ex.sets
         const totalRest = ex.rest_seconds * (ex.sets - 1)
         return sum + totalSetTime + totalRest
@@ -84,7 +89,7 @@ export default async function WorkoutDetailPage({ params }: WorkoutDetailPagePro
                         <div className="bg-[#27272A]/50 p-4 rounded-2xl border border-white/5">
                             <div className="flex items-center gap-2 text-zinc-400 mb-1">
                                 <Clock className="w-4 h-4" />
-                                <span className="text-xs font-bold uppercase tracking-wider">Duration</span>
+                                <span className="text-xs font-bold uppercase tracking-wider">Est. Duration</span>
                             </div>
                             <span className="text-2xl font-bold text-white">{Math.round(estimatedDuration / 60)}m</span>
                         </div>
@@ -154,20 +159,30 @@ export default async function WorkoutDetailPage({ params }: WorkoutDetailPagePro
                                             <span className="text-xs font-bold text-[#10B981] uppercase tracking-wider mr-2">Sets</span>
                                             <span className="text-sm font-bold text-white">{ex.sets}</span>
                                         </div>
-                                        <div className="px-3 py-1.5 rounded-lg bg-zinc-800/50 border border-white/5">
-                                            <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider mr-2">Reps</span>
-                                            <span className="text-sm font-bold text-zinc-300">{ex.reps || 'Failure'}</span>
-                                        </div>
+                                        {ex.reps && (
+                                            <div className="px-3 py-1.5 rounded-lg bg-zinc-800/50 border border-white/5">
+                                                <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider mr-2">Reps</span>
+                                                <span className="text-sm font-bold text-zinc-300">{ex.reps}</span>
+                                            </div>
+                                        )}
                                         {ex.weight_kg && (
                                             <div className="px-3 py-1.5 rounded-lg bg-zinc-800/50 border border-white/5">
                                                 <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider mr-2">Weight</span>
                                                 <span className="text-sm font-bold text-zinc-300">{ex.weight_kg}kg</span>
                                             </div>
                                         )}
-                                        <div className="px-3 py-1.5 rounded-lg bg-zinc-800/50 border border-white/5">
-                                            <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider mr-2">Rest</span>
-                                            <span className="text-sm font-bold text-zinc-300">{ex.rest_seconds}s</span>
-                                        </div>
+                                        {ex.duration_seconds && (
+                                            <div className="px-3 py-1.5 rounded-lg bg-zinc-800/50 border border-white/5">
+                                                <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider mr-2">Duration</span>
+                                                <span className="text-sm font-bold text-zinc-300">{ex.duration_seconds}s</span>
+                                            </div>
+                                        )}
+                                        {ex.rest_seconds !== undefined && (
+                                            <div className="px-3 py-1.5 rounded-lg bg-zinc-800/50 border border-white/5">
+                                                <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider mr-2">Rest</span>
+                                                <span className="text-sm font-bold text-zinc-300">{ex.rest_seconds}s</span>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>

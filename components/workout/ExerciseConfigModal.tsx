@@ -56,7 +56,7 @@ export function ExerciseConfigModal({ exercise, onClose, onConfirm }: ExerciseCo
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.95 }}
                     onClick={(e) => e.stopPropagation()}
-                    className="relative w-full max-w-2xl bg-[#18181B] rounded-3xl border border-white/10 overflow-hidden"
+                    className="relative w-full max-w-2xl max-h-[90vh] bg-[#18181B] rounded-3xl border border-white/10 overflow-hidden flex flex-col"
                 >
                     {/* Close Button */}
                     <button
@@ -101,8 +101,9 @@ export function ExerciseConfigModal({ exercise, onClose, onConfirm }: ExerciseCo
                     </div>
 
                     {/* Form */}
-                    <form onSubmit={handleSubmit} className="p-8">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+                        <div className="flex-1 overflow-y-auto p-8">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Sets */}
                             <div>
                                 <label htmlFor="sets" className="block text-sm font-bold text-zinc-300 uppercase tracking-wider mb-2 flex items-center gap-2">
@@ -179,17 +180,18 @@ export function ExerciseConfigModal({ exercise, onClose, onConfirm }: ExerciseCo
                             <div>
                                 <label htmlFor="duration" className="block text-sm font-bold text-zinc-300 uppercase tracking-wider mb-2 flex items-center gap-2">
                                     <Clock className="w-4 h-4 text-[#10B981]" />
-                                    Duration (seconds)
+                                    Duration Per Set (seconds)
                                 </label>
                                 <input
                                     type="number"
                                     id="duration"
                                     min="0"
-                                    placeholder="For timed exercises"
+                                    placeholder="For timed exercises (e.g., planks)"
                                     value={duration}
                                     onChange={(e) => setDuration(e.target.value ? Number(e.target.value) : '')}
                                     className="w-full px-4 py-3 bg-[#27272A] border border-white/5 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-[#10B981] transition-all"
                                 />
+                                <p className="text-xs text-zinc-500 mt-1">Leave empty for rep-based exercises</p>
                             </div>
 
                             {/* Notes */}
@@ -207,9 +209,11 @@ export function ExerciseConfigModal({ exercise, onClose, onConfirm }: ExerciseCo
                                 />
                             </div>
                         </div>
+                        </div>
 
-                        {/* Actions */}
-                        <div className="flex gap-3 mt-8">
+                        {/* Actions - Fixed at bottom */}
+                        <div className="border-t border-white/5 p-6 bg-[#18181B]">
+                            <div className="flex gap-3">
                             <button
                                 type="button"
                                 onClick={onClose}
@@ -223,6 +227,7 @@ export function ExerciseConfigModal({ exercise, onClose, onConfirm }: ExerciseCo
                             >
                                 Add to Workout
                             </button>
+                        </div>
                         </div>
                     </form>
                 </motion.div>

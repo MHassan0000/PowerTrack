@@ -181,15 +181,35 @@ export default function WorkoutEditPage({ params }: WorkoutEditPageProps) {
                                 </div>
 
                                 {/* Config */}
-                                <div className="flex gap-3">
+                                <div className="flex flex-wrap gap-2">
                                     <div className="px-3 py-1.5 bg-[#27272A] rounded-lg border border-white/5">
                                         <span className="text-xs text-zinc-500">Sets:</span>{' '}
                                         <span className="text-sm font-bold text-white">{ex.sets}</span>
                                     </div>
-                                    <div className="px-3 py-1.5 bg-[#27272A] rounded-lg border border-white/5">
-                                        <span className="text-xs text-zinc-500">Reps:</span>{' '}
-                                        <span className="text-sm font-bold text-white">{ex.reps || '-'}</span>
-                                    </div>
+                                    {ex.reps && (
+                                        <div className="px-3 py-1.5 bg-[#27272A] rounded-lg border border-white/5">
+                                            <span className="text-xs text-zinc-500">Reps:</span>{' '}
+                                            <span className="text-sm font-bold text-white">{ex.reps}</span>
+                                        </div>
+                                    )}
+                                    {ex.weight_kg && (
+                                        <div className="px-3 py-1.5 bg-[#27272A] rounded-lg border border-white/5">
+                                            <span className="text-xs text-zinc-500">Weight:</span>{' '}
+                                            <span className="text-sm font-bold text-white">{ex.weight_kg}kg</span>
+                                        </div>
+                                    )}
+                                    {ex.rest_seconds !== undefined && (
+                                        <div className="px-3 py-1.5 bg-[#27272A] rounded-lg border border-white/5">
+                                            <span className="text-xs text-zinc-500">Rest:</span>{' '}
+                                            <span className="text-sm font-bold text-white">{ex.rest_seconds}s</span>
+                                        </div>
+                                    )}
+                                    {ex.duration_seconds && (
+                                        <div className="px-3 py-1.5 bg-[#27272A] rounded-lg border border-white/5">
+                                            <span className="text-xs text-zinc-500">Duration:</span>{' '}
+                                            <span className="text-sm font-bold text-white">{ex.duration_seconds}s</span>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Delete */}
