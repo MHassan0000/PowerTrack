@@ -48,12 +48,10 @@ export async function getExercises(filters?: ExerciseFilters) {
         query = query.eq('difficulty', filters.difficulty)
     }
 
-    // Full-text search
+    // Search in name and description using ILIKE for partial matching
     if (filters?.search && filters.search.trim().length > 0) {
-        query = query.textSearch('name', filters.search, {
-            type: 'websearch',
-            config: 'english',
-        })
+        const searchTerm = filters.search.trim()
+        query = query.or(`name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,primary_muscle.ilike.%${searchTerm}%`)
     }
 
     const { data, error } = await query

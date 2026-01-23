@@ -5,21 +5,24 @@ import { ExerciseFilters } from '@/components/shared/ExerciseFilters'
 export const dynamic = 'force-dynamic'
 
 interface ExercisesPageProps {
-    searchParams: {
+    searchParams: Promise<{
         search?: string
         muscle?: string
         equipment?: string
         difficulty?: string
-    }
+    }>
 }
 
 export default async function ExercisesPage({ searchParams }: ExercisesPageProps) {
+    // Await the searchParams Promise (Server Component can use await)
+    const params = await searchParams
+    
     // Fetch exercises with filters
     const exercisesResult = await getExercises({
-        search: searchParams.search,
-        muscle: searchParams.muscle,
-        equipment: searchParams.equipment,
-        difficulty: searchParams.difficulty,
+        search: params.search,
+        muscle: params.muscle,
+        equipment: params.equipment,
+        difficulty: params.difficulty,
     })
 
     const exercises = exercisesResult?.data || []
@@ -61,7 +64,10 @@ export default async function ExercisesPage({ searchParams }: ExercisesPageProps
                     </div>
                 ) : (
                     <div className="text-center py-20 bg-[#18181B] rounded-2xl border border-white/5">
-                        <p className="text-zinc-400">No exercises found</p>
+                        <p className="text-zinc-400 text-lg mb-2">No exercises found</p>
+                        <p className="text-zinc-600 text-sm">
+                            Try adjusting your filters or search terms
+                        </p>
                     </div>
                 )}
             </div>
