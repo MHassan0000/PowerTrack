@@ -26,12 +26,7 @@ export function CTA() {
                         </p>
 
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                            <Link
-                                href="/signup"
-                                className="w-full sm:w-auto px-8 py-4 bg-[rgb(var(--primary))] text-black font-bold text-base rounded-md hover:bg-[rgb(var(--primary-hover))] transition-all transform hover:-translate-y-1 shadow-lg shadow-[rgb(var(--primary))]/20"
-                            >
-                                Get started today
-                            </Link>
+                            
                             <Link
                                 href="/about"
                                 className="w-full sm:w-auto px-8 py-4 text-white font-medium hover:text-[rgb(var(--primary))] transition-colors flex items-center justify-center gap-2 group"
