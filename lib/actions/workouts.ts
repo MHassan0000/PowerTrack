@@ -373,22 +373,47 @@ export async function reorderWorkoutExercises(
 ) {
     const supabase = await createClient()
 
-    // Update order_index for each exercise
-    const updates = exerciseIds.map((id, index) => ({
-        id,
-        order_index: index,
-    }))
+    const {
+        data: { user },
+    } = await supabase.auth.getUser()
 
-    for (const update of updates) {
-        await supabase
-            .from('workout_exercises')
-            .update({ order_index: update.order_index })
-            .eq('id', update.id)
+    if (!user) {
+        return { success: false, error: 'Not authenticated' }
     }
 
-    revalidatePath(`/workouts/${workoutId}`)
+    try {
+        // Two-pass update to avoid unique constraint violation
+        // Pass 1: Set all to temporary negative values
+        for (let i = 0; i < exerciseIds.length; i++) {
+            const { error } = await supabase
+                .from('workout_exercises')
+                .update({ order_index: -(i + 1) })
+                .eq('id', exerciseIds[i])
 
-    return { success: true, error: null }
+            if (error) {
+                return { success: false, error: error.message }
+            }
+        }
+
+        // Pass 2: Set to final positive values
+        for (let i = 0; i < exerciseIds.length; i++) {
+            const { error } = await supabase
+                .from('workout_exercises')
+                .update({ order_index: i })
+                .eq('id', exerciseIds[i])
+
+            if (error) {
+                return { success: false, error: error.message }
+            }
+        }
+
+        revalidatePath(`/workouts/${workoutId}`)
+        revalidatePath(`/workouts/${workoutId}/edit`)
+
+        return { success: true, error: null }
+    } catch (error: any) {
+        return { success: false, error: error.message }
+    }
 }
 
 /**

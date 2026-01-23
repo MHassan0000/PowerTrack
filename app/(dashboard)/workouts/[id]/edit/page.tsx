@@ -242,6 +242,8 @@ export default function WorkoutEditPage({ params }: WorkoutEditPageProps) {
             setWorkout(data)
         } else {
             toast.success('Exercise order updated')
+            // Force Next.js to refresh cache
+            router.refresh()
         }
     }
 

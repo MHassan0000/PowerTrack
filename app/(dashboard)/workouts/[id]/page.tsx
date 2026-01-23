@@ -1,10 +1,11 @@
-
 import { getWorkoutById } from '@/lib/actions/workouts'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { StartWorkoutButton } from '@/components/workout/StartWorkoutButton'
 import { ArrowLeft, Clock, Dumbbell, Calendar, LayoutList, Edit } from 'lucide-react'
+
+export const dynamic = 'force-dynamic'
 
 interface WorkoutDetailPageProps {
     params: Promise<{
