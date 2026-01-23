@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { Play, Calendar, Loader2 } from 'lucide-react'
+import { Play, Loader2 } from 'lucide-react'
 import { startWorkoutSession } from '@/lib/actions/workout-sessions'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -36,23 +36,17 @@ export function StartWorkoutButton({ workoutId, workoutName }: StartWorkoutButto
     }
 
     return (
-        <div className="flex gap-4">
-            <button
-                onClick={handleStartWorkout}
-                disabled={loading}
-                className="flex-1 py-3 bg-[rgb(var(--primary))] text-[rgb(var(--background))] font-medium rounded-lg hover:bg-[rgb(var(--primary-hover))] transition-all shadow-lg shadow-[rgb(var(--primary))]/20 disabled:opacity-50 flex items-center justify-center gap-2"
-            >
-                {loading ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                ) : (
-                    <Play className="w-5 h-5 fill-current" />
-                )}
-                {loading ? 'Starting...' : 'Start Workout'}
-            </button>
-            <button className="px-6 py-3 bg-[rgb(var(--card-hover))] text-[rgb(var(--foreground-secondary))] font-medium rounded-lg hover:bg-[rgb(var(--border))] transition-all flex items-center gap-2">
-                <Calendar className="w-5 h-5" />
-                Schedule
-            </button>
-        </div>
+        <button
+            onClick={handleStartWorkout}
+            disabled={loading}
+            className="w-full py-4 bg-[#10B981] hover:bg-[#059669] text-black font-bold rounded-xl transition-all shadow-lg disabled:opacity-50 flex items-center justify-center gap-2"
+        >
+            {loading ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+                <Play className="w-5 h-5 fill-current" />
+            )}
+            {loading ? 'Starting...' : 'Start Workout'}
+        </button>
     )
 }

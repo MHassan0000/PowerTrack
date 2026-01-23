@@ -2,7 +2,7 @@
 import { getWorkoutHistory, type WorkoutSession } from '@/lib/actions/workout-sessions'
 import { WorkoutHistoryCard } from '@/components/workout/WorkoutHistoryCard'
 import Link from 'next/link'
-import { Activity, Calendar, Award, TrendingUp, Filter } from 'lucide-react'
+import { Activity, Calendar, Award, TrendingUp } from 'lucide-react'
 
 export const metadata = {
     title: 'Workout History | PowerTrack',
@@ -36,15 +36,6 @@ export default async function WorkoutHistoryPage() {
                         Track your progress and consistency over time
                     </p>
                 </div>
-                
-                 {!isEmpty && (
-                     <div className="flex gap-2">
-                        <button className="px-4 py-2 bg-[#18181B] hover:bg-[#27272A] border border-white/5 text-zinc-400 hover:text-white rounded-xl transition-colors text-sm font-medium flex items-center gap-2">
-                             <Filter className="w-4 h-4" />
-                             Filter
-                        </button>
-                     </div>
-                 )}
             </div>
 
             {/* Stats Summary */}

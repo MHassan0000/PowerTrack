@@ -2,13 +2,14 @@
 
 import { use, useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CheckCircle2, Dumbbell, X, ArrowRight, Trophy } from 'lucide-react'
+import { CheckCircle2, Dumbbell, X ,Clock, Trophy } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { SetLogger } from './SetLogger'
 import { RestTimer } from './RestTimer'
 import { logSet, completeWorkoutSession, type SetLog, type WorkoutSession } from '@/lib/actions/workout-sessions'
 import { getWorkoutById } from '@/lib/actions/workouts'
 import { toast } from 'sonner'
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 
 interface ActiveWorkoutViewProps {
     session: WorkoutSession
@@ -24,6 +25,7 @@ export function ActiveWorkoutView({ session, sets: initialSets }: ActiveWorkoutV
     const [currentSetNumber, setCurrentSetNumber] = useState(1)
     const [completing, setCompleting] = useState(false)
     const [loading, setLoading] = useState(true)
+    const [showCancelDialog, setShowCancelDialog] = useState(false)
 
     // Load workout exercises
     useEffect(() => {
@@ -118,6 +120,10 @@ export function ActiveWorkoutView({ session, sets: initialSets }: ActiveWorkoutV
         }
     }
 
+    const handleCancelConfirm = () => {
+        router.push('/workouts')
+    }
+
     if (loading) {
         return (
             <div className="container mx-auto px-4 py-6 flex items-center justify-center min-h-[60vh]">
@@ -151,22 +157,28 @@ export function ActiveWorkoutView({ session, sets: initialSets }: ActiveWorkoutV
     return (
         <>
             <div className="container mx-auto px-4 py-6 max-w-2xl">
-                {/* Header */}
-                <div className="flex items-center justify-between mb-6">
-                    <div>
-                        <h1 className="text-xl font-bold text-white mb-1">{session.workout_name}</h1>
-                        <p className="text-sm text-zinc-500">
-                            Exercise {currentExerciseIndex + 1} of {workoutExercises.length}
-                        </p>
+                <div className="bg-[#18181B] border border-white/5 rounded-2xl p-6 mb-6">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-xl bg-[#10B981]/10 flex items-center justify-center">
+                                <Dumbbell className="w-6 h-6 text-[#10B981]" />
+                            </div>
+                            <div>
+                                <h1 className="text-2xl font-bold text-white">{session.workout_name}</h1>
+                                <div className="flex items-center gap-2 text-sm text-zinc-400 mt-1">
+                                    <Clock className="w-4 h-4" />
+                                    <span>Started {new Date(session.started_at).toLocaleTimeString()}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => setShowCancelDialog(true)}
+                            className="w-10 h-10 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-500 flex items-center justify-center transition-colors"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
                     </div>
-                    <button
-                        onClick={handleCancel}
-                        className="w-10 h-10 rounded-full bg-[#18181B] hover:bg-[#27272A] transition-colors flex items-center justify-center text-zinc-400 hover:text-white"
-                    >
-                        <X className="w-5 h-5" />
-                    </button>
                 </div>
-
                 {/* Progress Bar */}
                 <div className="mb-8">
                     <div className="h-2 bg-[#18181B] rounded-full overflow-hidden">
@@ -269,6 +281,18 @@ export function ActiveWorkoutView({ session, sets: initialSets }: ActiveWorkoutV
                     />
                 )}
             </AnimatePresence>
+
+            {/* Cancel Workout Confirmation */}
+            <ConfirmDialog
+                open={showCancelDialog}
+                onClose={() => setShowCancelDialog(false)}
+                onConfirm={handleCancelConfirm}
+                title="Cancel Workout?"
+                message="Are you sure you want to cancel this workout? All progress will be lost and cannot be recovered."
+                confirmText="Yes, Cancel Workout"
+                cancelText="Keep Working Out"
+                variant="danger"
+            />
         </>
     )
 }

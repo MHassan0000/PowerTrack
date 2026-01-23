@@ -1,6 +1,7 @@
 import { getWorkouts } from '@/lib/actions/workouts'
 import { WorkoutCard } from '@/components/shared/WorkoutCard'
 import Link from 'next/link'
+import { History } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
@@ -25,12 +26,21 @@ export default async function WorkoutsPage() {
                         Create and manage your workout templates
                     </p>
                 </div>
-                <Link
-                    href="/workouts/new"
-                    className="inline-flex items-center justify-center px-6 py-3 bg-[#10B981] text-black font-bold rounded-xl hover:bg-[#059669] transition-all"
-                >
-                    + New Workout
-                </Link>
+                <div className="flex gap-3">
+                    <Link
+                        href="/workouts/history"
+                        className="inline-flex items-center justify-center px-6 py-3 bg-[#18181B] hover:bg-[#27272A] border border-white/5 text-white font-medium rounded-xl transition-all gap-2"
+                    >
+                        <History className="w-5 h-5" />
+                        History
+                    </Link>
+                    <Link
+                        href="/workouts/new"
+                        className="inline-flex items-center justify-center px-6 py-3 bg-[#10B981] text-black font-bold rounded-xl hover:bg-[#059669] transition-all"
+                    >
+                        + New Workout
+                    </Link>
+                </div>
             </div>
 
             {/* Workouts Grid */}
