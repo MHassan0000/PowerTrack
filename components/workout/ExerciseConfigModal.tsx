@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { X, Dumbbell, Hash, Clock, Weight } from 'lucide-react'
 import type { Exercise } from '@/lib/actions/exercises'
 import Image from 'next/image'
+import { toast } from 'sonner'
+import { exerciseConfigSchema } from '@/lib/validations/workout'
 
 interface ExerciseConfigModalProps {
     exercise: Exercise | null
