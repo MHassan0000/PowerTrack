@@ -207,7 +207,18 @@ export default async function WorkoutDetailPage({ params }: WorkoutDetailPagePro
 
             {/* Action Buttons */}
             <div className="pb-8">
-                <StartWorkoutButton workoutId={workout.id} workoutName={workout.name} />
+                {workout.is_template ? (
+                    <StartWorkoutButton workoutId={workout.id} workoutName={workout.name} />
+                ) : (
+                    <div className="bg-[#18181B] border border-white/5 rounded-xl p-6 text-center">
+                        <p className="text-zinc-400 mb-2">
+                            This is a workout plan. To start tracking workouts, create it as a template.
+                        </p>
+                        <p className="text-sm text-zinc-500">
+                            Templates can be used multiple times to track your progress.
+                        </p>
+                    </div>
+                )}
             </div>
         </div>
     )

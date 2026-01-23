@@ -4,15 +4,140 @@ import { use, useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, Plus, Trash2, GripVertical, Save, Loader2 } from 'lucide-react'
 import Link from 'next/link'
-import { getWorkoutById, addExerciseToWorkout, removeExerciseFromWorkout, updateWorkout } from '@/lib/actions/workouts'
+import { getWorkoutById, addExerciseToWorkout, removeExerciseFromWorkout, updateWorkout, reorderWorkoutExercises } from '@/lib/actions/workouts'
 import { ExercisePicker } from '@/components/workout/ExercisePicker'
 import { ExerciseConfigModal } from '@/components/workout/ExerciseConfigModal'
 import type { Exercise } from '@/lib/actions/exercises'
 import Image from 'next/image'
 import { toast } from 'sonner'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
+import {
+    DndContext,
+    closestCenter,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+    type DragEndEvent,
+} from '@dnd-kit/core'
+import {
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    verticalListSortingStrategy,
+    useSortable,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 interface WorkoutEditPageProps {
     params: Promise<{ id: string }>
+}
+
+// Sortable Exercise Item Component
+interface SortableExerciseItemProps {
+    exercise: any
+    index: number
+    onRemove: () => void
+}
+
+function SortableExerciseItem({ exercise, index, onRemove }: SortableExerciseItemProps) {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging,
+    } = useSortable({ id: exercise.id })
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.5 : 1,
+    }
+
+    return (
+        <div
+            ref={setNodeRef}
+            style={style}
+            className="group bg-[#18181B] hover:bg-[#27272A] border border-white/5 rounded-2xl p-4 transition-all"
+        >
+            <div className="flex items-center gap-4">
+                {/* Drag Handle */}
+                <div
+                    {...listeners}
+                    {...attributes}
+                    className="cursor-grab active:cursor-grabbing text-zinc-600 hover:text-zinc-400 transition-colors"
+                >
+                    <GripVertical className="w-5 h-5" />
+                </div>
+
+                {/* Order */}
+                <div className="w-8 h-8 rounded-lg bg-[#10B981]/10 flex items-center justify-center text-[#10B981] font-bold text-sm">
+                    {index + 1}
+                </div>
+
+                {/* Image */}
+                <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-black/20 shrink-0">
+                    {exercise.exercise_library.media_url ? (
+                        <Image
+                            src={exercise.exercise_library.media_url}
+                            alt={exercise.exercise_library.name}
+                            fill
+                            className="object-cover"
+                        />
+                    ) : (
+                        <div className="w-full h-full flex items-center justify-center text-2xl">💪</div>
+                    )}
+                </div>
+
+                {/* Exercise Info */}
+                <div className="flex-1">
+                    <h3 className="font-bold text-white">{exercise.exercise_library.name}</h3>
+                    <p className="text-sm text-zinc-500">{exercise.exercise_library.primary_muscle}</p>
+                </div>
+
+                {/* Config */}
+                <div className="flex flex-wrap gap-2">
+                    <div className="px-3 py-1.5 bg-[#27272A] rounded-lg border border-white/5">
+                        <span className="text-xs text-zinc-500">Sets:</span>{' '}
+                        <span className="text-sm font-bold text-white">{exercise.sets}</span>
+                    </div>
+                    {exercise.reps && (
+                        <div className="px-3 py-1.5 bg-[#27272A] rounded-lg border border-white/5">
+                            <span className="text-xs text-zinc-500">Reps:</span>{' '}
+                            <span className="text-sm font-bold text-white">{exercise.reps}</span>
+                        </div>
+                    )}
+                    {exercise.weight_kg && (
+                        <div className="px-3 py-1.5 bg-[#27272A] rounded-lg border border-white/5">
+                            <span className="text-xs text-zinc-500">Weight:</span>{' '}
+                            <span className="text-sm font-bold text-white">{exercise.weight_kg}kg</span>
+                        </div>
+                    )}
+                    {exercise.rest_seconds !== undefined && (
+                        <div className="px-3 py-1.5 bg-[#27272A] rounded-lg border border-white/5">
+                            <span className="text-xs text-zinc-500">Rest:</span>{' '}
+                            <span className="text-sm font-bold text-white">{exercise.rest_seconds}s</span>
+                        </div>
+                    )}
+                    {exercise.duration_seconds && (
+                        <div className="px-3 py-1.5 bg-[#27272A] rounded-lg border border-white/5">
+                            <span className="text-xs text-zinc-500">Duration:</span>{' '}
+                            <span className="text-sm font-bold text-white">{exercise.duration_seconds}s</span>
+                        </div>
+                    )}
+                </div>
+
+                {/* Delete */}
+                <button
+                    onClick={onRemove}
+                    className="w-10 h-10 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-500 flex items-center justify-center transition-colors opacity-0 group-hover:opacity-100"
+                >
+                    <Trash2 className="w-4 h-4" />
+                </button>
+            </div>
+        </div>
+    )
 }
 
 export default function WorkoutEditPage({ params }: WorkoutEditPageProps) {
@@ -24,6 +149,14 @@ export default function WorkoutEditPage({ params }: WorkoutEditPageProps) {
     const [saving, setSaving] = useState(false)
     const [exerciseToRemove, setExerciseToRemove] = useState<{id: string, name: string} | null>(null)
     const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null)
+
+    // Drag and drop sensors
+    const sensors = useSensors(
+        useSensor(PointerSensor),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    )
 
     // Load workout data
     useEffect(() => {
@@ -85,6 +218,33 @@ export default function WorkoutEditPage({ params }: WorkoutEditPageProps) {
         setExerciseToRemove(null)
     }
 
+    const handleDragEnd = async (event: DragEndEvent) => {
+        const { active, over } = event
+
+        if (!over || active.id === over.id) return
+
+        const oldIndex = workout.exercises.findIndex((ex: any) => ex.id === active.id)
+        const newIndex = workout.exercises.findIndex((ex: any) => ex.id === over.id)
+
+        const newExercises = arrayMove(workout.exercises, oldIndex, newIndex)
+        
+        // Optimistically update UI
+        setWorkout({ ...workout, exercises: newExercises })
+
+        // Update backend
+        const exerciseIds = newExercises.map((ex: any) => ex.id)
+        const result = await reorderWorkoutExercises(id, exerciseIds)
+
+        if (result.error) {
+            toast.error('Failed to reorder exercises')
+            // Reload to get correct order
+            const { data } = await getWorkoutById(id)
+            setWorkout(data)
+        } else {
+            toast.success('Exercise order updated')
+        }
+    }
+
     const handleSave = async () => {
         setSaving(true)
         toast.success('Workout saved!')
@@ -144,84 +304,27 @@ export default function WorkoutEditPage({ params }: WorkoutEditPageProps) {
             {/* Exercise List */}
             <div className="space-y-4">
                 {workout.exercises && workout.exercises.length > 0 ? (
-                    workout.exercises.map((ex: any, index: number) => (
-                        <div
-                            key={ex.id}
-                            className="group bg-[#18181B] hover:bg-[#27272A] border border-white/5 rounded-2xl p-4 transition-all"
+                    <DndContext
+                        sensors={sensors}
+                        collisionDetection={closestCenter}
+                        onDragEnd={handleDragEnd}
+                    >
+                        <SortableContext
+                            items={workout.exercises.map((ex: any) => ex.id)}
+                            strategy={verticalListSortingStrategy}
                         >
-                            <div className="flex items-center gap-4">
-                                {/* Drag Handle */}
-                                <div className="cursor-grab text-zinc-600 hover:text-zinc-400">
-                                    <GripVertical className="w-5 h-5" />
-                                </div>
-
-                                {/* Order */}
-                                <div className="w-8 h-8 rounded-lg bg-[#10B981]/10 flex items-center justify-center text-[#10B981] font-bold text-sm">
-                                    {index + 1}
-                                </div>
-
-                                {/* Image */}
-                                <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-black/20 shrink-0">
-                                    {ex.exercise_library.media_url ? (
-                                        <Image
-                                            src={ex.exercise_library.media_url}
-                                            alt={ex.exercise_library.name}
-                                            fill
-                                            className="object-cover"
-                                        />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-2xl">💪</div>
-                                    )}
-                                </div>
-
-                                {/* Exercise Info */}
-                                <div className="flex-1">
-                                    <h3 className="font-bold text-white">{ex.exercise_library.name}</h3>
-                                    <p className="text-sm text-zinc-500">{ex.exercise_library.primary_muscle}</p>
-                                </div>
-
-                                {/* Config */}
-                                <div className="flex flex-wrap gap-2">
-                                    <div className="px-3 py-1.5 bg-[#27272A] rounded-lg border border-white/5">
-                                        <span className="text-xs text-zinc-500">Sets:</span>{' '}
-                                        <span className="text-sm font-bold text-white">{ex.sets}</span>
-                                    </div>
-                                    {ex.reps && (
-                                        <div className="px-3 py-1.5 bg-[#27272A] rounded-lg border border-white/5">
-                                            <span className="text-xs text-zinc-500">Reps:</span>{' '}
-                                            <span className="text-sm font-bold text-white">{ex.reps}</span>
-                                        </div>
-                                    )}
-                                    {ex.weight_kg && (
-                                        <div className="px-3 py-1.5 bg-[#27272A] rounded-lg border border-white/5">
-                                            <span className="text-xs text-zinc-500">Weight:</span>{' '}
-                                            <span className="text-sm font-bold text-white">{ex.weight_kg}kg</span>
-                                        </div>
-                                    )}
-                                    {ex.rest_seconds !== undefined && (
-                                        <div className="px-3 py-1.5 bg-[#27272A] rounded-lg border border-white/5">
-                                            <span className="text-xs text-zinc-500">Rest:</span>{' '}
-                                            <span className="text-sm font-bold text-white">{ex.rest_seconds}s</span>
-                                        </div>
-                                    )}
-                                    {ex.duration_seconds && (
-                                        <div className="px-3 py-1.5 bg-[#27272A] rounded-lg border border-white/5">
-                                            <span className="text-xs text-zinc-500">Duration:</span>{' '}
-                                            <span className="text-sm font-bold text-white">{ex.duration_seconds}s</span>
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Delete */}
-                                <button
-                                    onClick={() => setExerciseToRemove({ id: ex.id, name: ex.exercise_library.name })}
-                                    className="w-10 h-10 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-500 flex items-center justify-center transition-colors opacity-0 group-hover:opacity-100"
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                </button>
+                            <div className="space-y-4">
+                                {workout.exercises.map((ex: any, index: number) => (
+                                    <SortableExerciseItem
+                                        key={ex.id}
+                                        exercise={ex}
+                                        index={index}
+                                        onRemove={() => setExerciseToRemove({ id: ex.id, name: ex.exercise_library.name })}
+                                    />
+                                ))}
                             </div>
-                        </div>
-                    ))
+                        </SortableContext>
+                    </DndContext>
                 ) : (
                     <div className="text-center py-16 bg-[#18181B] rounded-2xl border border-white/5 border-dashed">
                         <p className="text-zinc-500 mb-4">No exercises added yet</p>
