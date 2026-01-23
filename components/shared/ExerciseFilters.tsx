@@ -146,9 +146,17 @@ export function ExerciseFilters({ muscles, equipment }: ExerciseFiltersProps) {
                         type="text"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="block w-full pl-12 pr-4 py-3.5 bg-[#18181B] border border-white/5 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-[rgb(var(--primary))]/50 focus:ring-1 focus:ring-[rgb(var(--primary))]/50 transition-all"
+                        className="block w-full pl-12 pr-12 py-3.5 bg-[#18181B] border border-white/5 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-[rgb(var(--primary))]/50 focus:ring-1 focus:ring-[rgb(var(--primary))]/50 transition-all"
                         placeholder="Search exercises..."
                     />
+                    {search && (
+                        <button
+                            onClick={() => setSearch('')}
+                            className="absolute inset-y-0 right-0 pr-4 flex items-center text-zinc-500 hover:text-white transition-colors"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+                    )}
                 </div>
 
                 <button
