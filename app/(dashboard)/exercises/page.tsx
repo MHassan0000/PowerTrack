@@ -1,36 +1,14 @@
 import { getExercises } from '@/lib/actions/exercises'
-import { ExerciseCard } from '@/components/shared/ExerciseCard'
-import { ExerciseFilters } from '@/components/shared/ExerciseFilters'
+import{ ExerciseLibraryClient} from '@/components/shared/ExerciseLibraryClient'
 
 export const dynamic = 'force-dynamic'
 
-interface ExercisesPageProps {
-    searchParams: Promise<{
-        search?: string
-        muscle?: string
-        equipment?: string
-        difficulty?: string
-    }>
-}
-
-export default async function ExercisesPage({ searchParams }: ExercisesPageProps) {
-    // Await the searchParams Promise (Server Component can use await)
-    const params = await searchParams
+export default async function ExercisesPage() {
+    // Fetch ALL exercises once on server
+    const exercisesResult = await getExercises()
+    const allExercises = exercisesResult?.data || []
     
-    // Fetch exercises with filters
-    const exercisesResult = await getExercises({
-        search: params.search,
-        muscle: params.muscle,
-        equipment: params.equipment,
-        difficulty: params.difficulty,
-    })
-
-    const exercises = exercisesResult?.data || []
-
-    // Get unique values for filters from all exercises
-    const allResult = await getExercises()
-    const allExercises = allResult?.data || []
-    
+    // Get unique values for filters
     const muscles = [...new Set(allExercises.map((e: any) => e.primary_muscle).filter(Boolean))]
     const equipment = [...new Set(allExercises.map((e: any) => e.equipment).filter(Boolean))]
 
@@ -44,33 +22,12 @@ export default async function ExercisesPage({ searchParams }: ExercisesPageProps
                 </p>
             </div>
 
-            {/* Filters */}
-            <ExerciseFilters
+            {/* Client Component handles filtering */}
+            <ExerciseLibraryClient 
+                exercises={allExercises}
                 muscles={muscles as string[]}
                 equipment={equipment as string[]}
             />
-
-            {/* Results */}
-            <div>
-                <p className="text-sm text-zinc-500 mb-4">
-                    {exercises.length} {exercises.length === 1 ? 'exercise' : 'exercises'} found
-                </p>
-
-                {exercises.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {exercises.map((exercise: any, index: number) => (
-                            <ExerciseCard key={exercise.id} exercise={exercise} index={index} />
-                        ))}
-                    </div>
-                ) : (
-                    <div className="text-center py-20 bg-[#18181B] rounded-2xl border border-white/5">
-                        <p className="text-zinc-400 text-lg mb-2">No exercises found</p>
-                        <p className="text-zinc-600 text-sm">
-                            Try adjusting your filters or search terms
-                        </p>
-                    </div>
-                )}
-            </div>
         </div>
     )
 }

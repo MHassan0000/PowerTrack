@@ -1,14 +1,20 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Search, SlidersHorizontal, X, Check } from 'lucide-react'
-import { useDebounce } from '@/hooks/useDebounce'
 
 interface ExerciseFiltersProps {
     muscles: string[]
     equipment: string[]
+    search: string
+    setSearch: (value: string) => void
+    activeMuscle: string
+    setActiveMuscle: (value: string) => void
+    activeEquipment: string
+    setActiveEquipment: (value: string) => void
+    activeDifficulty: string
+    setActiveDifficulty: (value: string) => void
 }
 
 const DIFFICULTY_LEVELS = [
@@ -17,43 +23,31 @@ const DIFFICULTY_LEVELS = [
     { value: 'advanced', label: 'Advanced', color: 'text-red-500' },
 ]
 
-export function ExerciseFilters({ muscles, equipment }: ExerciseFiltersProps) {
-    const router = useRouter()
-    const searchParams = useSearchParams()
-
-    // Initialize from URL params
-    const [search, setSearch] = useState(searchParams.get('search') || '')
+export function ExerciseFilters({ 
+    muscles, 
+    equipment,
+    search,
+    setSearch,
+    activeMuscle,
+    setActiveMuscle,
+    activeEquipment,
+    setActiveEquipment,
+    activeDifficulty,
+    setActiveDifficulty
+}: ExerciseFiltersProps) {
     const [isFilterOpen, setIsFilterOpen] = useState(false)
     
     // Local filter state (not applied until user clicks "Apply Filters")
-    const [localMuscle, setLocalMuscle] = useState(searchParams.get('muscle') || '')
-    const [localEquipment, setLocalEquipment] = useState(searchParams.get('equipment') || '')
-    const [localDifficulty, setLocalDifficulty] = useState(searchParams.get('difficulty') || '')
-    
-    // Applied filters (what's actually in the URL)
-    const [activeMuscle, setActiveMuscle] = useState(searchParams.get('muscle') || '')
-    const [activeEquipment, setActiveEquipment] = useState(searchParams.get('equipment') || '')
-    const [activeDifficulty, setActiveDifficulty] = useState(searchParams.get('difficulty') || '')
+    const [localMuscle, setLocalMuscle] = useState(activeMuscle)
+    const [localEquipment, setLocalEquipment] = useState(activeEquipment)
+    const [localDifficulty, setLocalDifficulty] = useState(activeDifficulty)
 
-    // Debounce search to prevent excessive server requests
-    const debouncedSearch = useDebounce(search, 300)
-
-    // Update URL when debounced search value changes
-    useEffect(() => {
-        const params = new URLSearchParams(searchParams.toString())
-        if (debouncedSearch) {
-            params.set('search', debouncedSearch)
-        } else {
-            params.delete('search')
-        }
-        
-        // Only push if the search param actually changed
-        const newUrl = `/exercises?${params.toString()}`
-        const currentUrl = `/exercises?${searchParams.toString()}`
-        if (newUrl !== currentUrl) {
-            router.push(newUrl)
-        }
-    }, [debouncedSearch])
+    // Sync local state when active filters change (from clearing individual badges)
+    useState(() => {
+        setLocalMuscle(activeMuscle)
+        setLocalEquipment(activeEquipment)
+        setLocalDifficulty(activeDifficulty)
+    })
 
     const handleMuscleClick = (muscle: string) => {
         const newValue = localMuscle === muscle ? '' : muscle
@@ -71,33 +65,10 @@ export function ExerciseFilters({ muscles, equipment }: ExerciseFiltersProps) {
     }
 
     const applyFilters = () => {
-        // Update active filters
+        // Apply filters instantly - no server call!
         setActiveMuscle(localMuscle)
         setActiveEquipment(localEquipment)
         setActiveDifficulty(localDifficulty)
-        
-        // Build URL params
-        const params = new URLSearchParams(searchParams.toString())
-        
-        if (localMuscle) {
-            params.set('muscle', localMuscle)
-        } else {
-            params.delete('muscle')
-        }
-        
-        if (localEquipment) {
-            params.set('equipment', localEquipment)
-        } else {
-            params.delete('equipment')
-        }
-        
-        if (localDifficulty) {
-            params.set('difficulty', localDifficulty)
-        } else {
-            params.delete('difficulty')
-        }
-        
-        router.push(`/exercises?${params.toString()}`)
         setIsFilterOpen(false)
     }
 
@@ -109,14 +80,10 @@ export function ExerciseFilters({ muscles, equipment }: ExerciseFiltersProps) {
         setActiveMuscle('')
         setActiveEquipment('')
         setActiveDifficulty('')
-        router.push('/exercises')
         setIsFilterOpen(false)
     }
 
     const removeFilter = (type: 'muscle' | 'equipment' | 'difficulty') => {
-        const params = new URLSearchParams(searchParams.toString())
-        params.delete(type)
-        
         if (type === 'muscle') {
             setActiveMuscle('')
             setLocalMuscle('')
@@ -127,8 +94,6 @@ export function ExerciseFilters({ muscles, equipment }: ExerciseFiltersProps) {
             setActiveDifficulty('')
             setLocalDifficulty('')
         }
-        
-        router.push(`/exercises?${params.toString()}`)
     }
 
     const hasActiveFilters = activeMuscle || activeEquipment || activeDifficulty
