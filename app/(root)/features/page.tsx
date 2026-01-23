@@ -15,49 +15,49 @@ const ALL_FEATURES = [
         title: "Analytics Dashboard",
         description: "Professional-grade data visualization. Track volume, intensity, relative exertion, and projected 1RMs.",
         icon: BarChart3,
-        delay: 0.1
+        delay: 0.05
     },
     {
         title: "Community Leaderboards",
         description: "Compete with friends and athletes worldwide. Push your limits by chasing the top spot.",
         icon: Users,
-        delay: 0.2
+        delay: 0.1
     },
     {
         title: "Cross-Platform Sync",
         description: "Seamless synchronization across web and mobile. Your data moves with you, everywhere.",
         icon: Smartphone,
-        delay: 0.3
+        delay: 0.15
     },
     {
         title: "Gamification System",
         description: "Earn XP, unlock achievements, and level up as you crush your workouts. Stay motivated.",
         icon: Trophy,
-        delay: 0.4
+        delay: 0.2
     },
     {
         title: "Workout Builder",
         description: "Intuitive drag-and-drop workout creator. Build complex routines in seconds.",
         icon: Database,
-        delay: 0.5
+        delay: 0.25
     },
     {
         title: "Rest Timer & Pacing",
         description: "Built-in smart timers ensure you're resting exactly as much as you need for your goals.",
         icon: Clock,
-        delay: 0.6
+        delay: 0.3
     },
     {
         title: "Secure Data Vault",
         description: "Enterprise-grade encryption keeps your health data private and secure at all times.",
         icon: Shield,
-        delay: 0.7
+        delay: 0.35
     },
     {
         title: "Live Session Tracking",
         description: "Real-time active workout mode with big, bold metrics perfect for busy gym environments.",
         icon: Zap,
-        delay: 0.8
+        delay: 0.4
     }
 ];
 
