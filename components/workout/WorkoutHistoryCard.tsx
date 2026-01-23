@@ -43,7 +43,7 @@ export function WorkoutHistoryCard({ session }: WorkoutHistoryCardProps) {
                 className="group bg-[#18181B] hover:bg-[#27272A] rounded-2xl p-5 border border-white/5 hover:border-[#10B981]/30 transition-all duration-300 relative overflow-hidden"
             >
                 {/* Hover Glow Effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.02] to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/2 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
 
                 <div className="relative z-10">
                     {/* Header */}

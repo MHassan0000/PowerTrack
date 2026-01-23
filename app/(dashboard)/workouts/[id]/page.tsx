@@ -44,7 +44,7 @@ export default async function WorkoutDetailPage({ params }: WorkoutDetailPagePro
                     <ArrowLeft className="w-5 h-5" />
                 </Link>
                 <div className="flex-1">
-                    <h1 className="text-xl font-bold text-zinc-400 uppercase tracking-wider text-xs">Workout Details</h1>
+                    <h1 className="font-bold text-zinc-400 uppercase tracking-wider text-xs">Workout Details</h1>
                 </div>
                 <Link
                     href={`/workouts/${workout.id}/edit`}
@@ -123,7 +123,7 @@ export default async function WorkoutDetailPage({ params }: WorkoutDetailPagePro
                             >
                                 {/* Left: Index & Image */}
                                 <div className="flex items-center gap-4">
-                                    <div className="flex flex-col items-center gap-1 min-w-[32px]">
+                                    <div className="flex flex-col items-center gap-1 min-w-8">
                                         <span className="text-xs font-bold text-zinc-600 uppercase">Ex</span>
                                         <span className="text-xl font-bold text-[#10B981]">{String(index + 1).padStart(2, '0')}</span>
                                     </div>

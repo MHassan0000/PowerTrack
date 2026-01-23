@@ -106,7 +106,7 @@ export function ExerciseConfigModal({ exercise, onClose, onConfirm }: ExerciseCo
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Sets */}
                             <div>
-                                <label htmlFor="sets" className="block text-sm font-bold text-zinc-300 uppercase tracking-wider mb-2 flex items-center gap-2">
+                                <label htmlFor="sets" className="text-sm font-bold text-zinc-300 uppercase tracking-wider mb-2 flex items-center gap-2">
                                     <Hash className="w-4 h-4 text-[#10B981]" />
                                     Sets
                                 </label>
@@ -124,7 +124,7 @@ export function ExerciseConfigModal({ exercise, onClose, onConfirm }: ExerciseCo
 
                             {/* Reps */}
                             <div>
-                                <label htmlFor="reps" className="block text-sm font-bold text-zinc-300 uppercase tracking-wider mb-2 flex items-center gap-2">
+                                <label htmlFor="reps" className="text-sm font-bold text-zinc-300 uppercase tracking-wider mb-2 flex items-center gap-2">
                                     <Hash className="w-4 h-4 text-[#10B981]" />
                                     Reps
                                 </label>
@@ -142,7 +142,7 @@ export function ExerciseConfigModal({ exercise, onClose, onConfirm }: ExerciseCo
 
                             {/* Weight */}
                             <div>
-                                <label htmlFor="weight" className="block text-sm font-bold text-zinc-300 uppercase tracking-wider mb-2 flex items-center gap-2">
+                                <label htmlFor="weight" className="text-sm font-bold text-zinc-300 uppercase tracking-wider mb-2 flex items-center gap-2">
                                     <Weight className="w-4 h-4 text-[#10B981]" />
                                     Weight (kg)
                                 </label>
@@ -160,7 +160,7 @@ export function ExerciseConfigModal({ exercise, onClose, onConfirm }: ExerciseCo
 
                             {/* Rest Time */}
                             <div>
-                                <label htmlFor="rest" className="block text-sm font-bold text-zinc-300 uppercase tracking-wider mb-2 flex items-center gap-2">
+                                <label htmlFor="rest" className="text-sm font-bold text-zinc-300 uppercase tracking-wider mb-2 flex items-center gap-2">
                                     <Clock className="w-4 h-4 text-[#10B981]" />
                                     Rest (seconds)
                                 </label>
@@ -178,8 +178,9 @@ export function ExerciseConfigModal({ exercise, onClose, onConfirm }: ExerciseCo
 
                             {/* Duration (for timed exercises) */}
                             <div>
-                                <label htmlFor="duration" className="block text-sm font-bold text-zinc-300 uppercase tracking-wider mb-2 flex items-center gap-2">
+                                <label htmlFor="duration" className="text-sm font-bold text-zinc-300 uppercase tracking-wider mb-2 flex items-center gap-2">
                                     <Clock className="w-4 h-4 text-[#10B981]" />
+
                                     Duration Per Set (seconds)
                                 </label>
                                 <input

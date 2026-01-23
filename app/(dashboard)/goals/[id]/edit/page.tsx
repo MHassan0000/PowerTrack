@@ -159,7 +159,7 @@ export default function GoalEditPage({ params }: GoalEditPageProps) {
                     </div>
                     <div className="h-3 bg-[#27272A] rounded-full overflow-hidden">
                         <div
-                            className="h-full bg-gradient-to-r from-[#10B981] to-[#059669] transition-all duration-500"
+                            className="h-full bg-linear-to-r from-[#10B981] to-[#059669] transition-all duration-500"
                             style={{ width: `${Math.min(progress, 100)}%` }}
                         ></div>
                     </div>

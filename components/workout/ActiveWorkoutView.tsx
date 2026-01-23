@@ -183,7 +183,7 @@ export function ActiveWorkoutView({ session, sets: initialSets }: ActiveWorkoutV
                 <div className="mb-8">
                     <div className="h-2 bg-[#18181B] rounded-full overflow-hidden">
                         <motion.div
-                            className="h-full bg-gradient-to-r from-[#10B981] to-[#059669]"
+                            className="h-full bg-linear-to-r from-[#10B981] to-[#059669]"
                             initial={{ width: 0 }}
                             animate={{ width: `${progress}%` }}
                             transition={{ duration: 0.5 }}
