@@ -16,9 +16,10 @@ import {
     User,
     Target
 } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 
 const NAV_ITEMS = [
     { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -34,9 +35,29 @@ export function Sidebar({ user }: { user: any }) {
     const pathname = usePathname()
     const router = useRouter()
     const [isMobileOpen, setIsMobileOpen] = useState(false)
+    const [showSignOutConfirm, setShowSignOutConfirm] = useState(false)
+    const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
     const supabase = createClient()
 
+    // Fetch user profile with avatar
+    useEffect(() => {
+        async function fetchProfile() {
+            if (!user) return
+            const { data } = await supabase
+                .from('users')
+                .select('avatar_url')
+                .eq('id', user.id)
+                .single()
+            
+            if (data?.avatar_url) {
+                setAvatarUrl(data.avatar_url)
+            }
+        }
+        fetchProfile()
+    }, [user, supabase])
+
     const handleSignOut = async () => {
+        setShowSignOutConfirm(false)
         await supabase.auth.signOut()
         router.push('/')
         router.refresh()
@@ -92,9 +113,19 @@ export function Sidebar({ user }: { user: any }) {
             <div className="p-4 border-t border-white/5">
                 <div className="bg-[#27272A] rounded-xl p-4 flex items-center justify-between group">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-[#10B981]/20 flex items-center justify-center text-[#10B981] font-bold border border-[#10B981]/30">
-                            {initials}
-                        </div>
+                        {avatarUrl ? (
+                            <Image
+                                src={avatarUrl}
+                                alt="Profile"
+                                width={40}
+                                height={40}
+                                className="w-10 h-10 rounded-full object-cover border border-[#10B981]/30"
+                            />
+                        ) : (
+                            <div className="w-10 h-10 rounded-full bg-[#10B981]/20 flex items-center justify-center text-[#10B981] font-bold border border-[#10B981]/30">
+                                {initials}
+                            </div>
+                        )}
                         <div className="overflow-hidden">
                             <p className="text-sm font-bold text-white truncate max-w-30">
                                 {user?.user_metadata?.full_name || user?.email?.split('@')[0]}
@@ -102,7 +133,7 @@ export function Sidebar({ user }: { user: any }) {
                         </div>
                     </div>
                     <button 
-                        onClick={handleSignOut}
+                        onClick={() => setShowSignOutConfirm(true)}
                         className="p-2 text-zinc-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
                         title="Sign Out"
                     >
@@ -161,6 +192,50 @@ export function Sidebar({ user }: { user: any }) {
                                 <X className="w-6 h-6" />
                             </button>
                         </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
+
+            {/* Sign Out Confirmation Modal */}
+            <AnimatePresence>
+                {showSignOutConfirm && (
+                    <>
+                        {/* Backdrop */}
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setShowSignOutConfirm(false)}
+                            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-100"
+                        />
+                        
+                        {/* Modal */}
+                        <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.95 }}
+                                className="bg-[#18181B] border border-white/10 rounded-2xl p-6 max-w-sm w-full shadow-2xl"
+                            >
+                                <h3 className="text-xl font-bold text-white mb-2">Sign Out?</h3>
+                                <p className="text-zinc-400 mb-6">Are you sure you want to sign out? You'll need to log back in to access your workouts.</p>
+                                
+                                <div className="flex gap-3">
+                                    <button
+                                        onClick={() => setShowSignOutConfirm(false)}
+                                        className="flex-1 px-4 py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-xl font-medium transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={handleSignOut}
+                                        className="flex-1 px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold transition-colors"
+                                    >
+                                        Sign Out
+                                    </button>
+                                </div>
+                            </motion.div>
+                        </div>
                     </>
                 )}
             </AnimatePresence>

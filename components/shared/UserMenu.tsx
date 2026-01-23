@@ -12,6 +12,7 @@ interface UserMenuProps {
 
 export function UserMenu({ user }: UserMenuProps) {
     const [isOpen, setIsOpen] = useState(false)
+    const [showSignOutConfirm, setShowSignOutConfirm] = useState(false)
     const menuRef = useRef<HTMLDivElement>(null)
 
     // If no user, show auth buttons
@@ -64,6 +65,8 @@ export function UserMenu({ user }: UserMenuProps) {
     }, [isOpen])
 
     async function handleSignOut() {
+        setShowSignOutConfirm(false)
+        setIsOpen(false)
         await signOutAction()
     }
 
@@ -145,13 +148,60 @@ export function UserMenu({ user }: UserMenuProps) {
 
                         <div className="p-2 border-t border-[rgb(var(--border))]">
                             <button
-                                onClick={handleSignOut}
+                                onClick={() => {
+                                    setShowSignOutConfirm(true)
+                                    setIsOpen(false)
+                                }}
                                 className="w-full px-3 py-2 text-sm text-left text-red-400 rounded-md hover:bg-red-500/10 transition-colors"
                             >
                                 🚪 Sign Out
                             </button>
                         </div>
                     </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Sign Out Confirmation Modal */}
+            <AnimatePresence>
+                {showSignOutConfirm && (
+                    <>
+                        {/* Backdrop */}
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setShowSignOutConfirm(false)}
+                            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+                        />
+                        
+                        {/* Modal */}
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.95 }}
+                                className="bg-[#18181B] border border-white/10 rounded-2xl p-6 max-w-sm w-full shadow-2xl"
+                            >
+                                <h3 className="text-xl font-bold text-white mb-2">Sign Out?</h3>
+                                <p className="text-zinc-400 mb-6">Are you sure you want to sign out? You'll need to log back in to access your workouts.</p>
+                                
+                                <div className="flex gap-3">
+                                    <button
+                                        onClick={() => setShowSignOutConfirm(false)}
+                                        className="flex-1 px-4 py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-xl font-medium transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={handleSignOut}
+                                        className="flex-1 px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold transition-colors"
+                                    >
+                                        Sign Out
+                                    </button>
+                                </div>
+                            </motion.div>
+                        </div>
+                    </>
                 )}
             </AnimatePresence>
         </div>
