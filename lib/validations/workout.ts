@@ -29,11 +29,6 @@ export const exerciseConfigSchema = z.object({
         .max(100, 'Maximum 100 reps allowed')
         .optional()
         .nullable(),
-    weight_kg: z.number()
-        .min(0, 'Weight cannot be negative')
-        .max(500, 'Maximum 500kg allowed')
-        .optional()
-        .nullable(),
     rest_seconds: z.number()
         .int('Rest time must be in whole seconds')
         .min(0, 'Rest time cannot be negative')

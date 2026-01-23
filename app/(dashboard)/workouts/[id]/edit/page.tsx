@@ -50,7 +50,7 @@ function SortableExerciseItem({ exercise, index, onRemove }: SortableExerciseIte
     } = useSortable({ id: exercise.id })
 
     const style = {
-        transform: CSS.Transform.toString(transform),
+        transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
         transition,
         opacity: isDragging ? 0.5 : 1,
     }

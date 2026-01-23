@@ -16,7 +16,6 @@ interface ExerciseConfigModalProps {
         reps?: number
         duration_seconds?: number
         rest_seconds: number
-        weight_kg?: number
         notes?: string
     }) => void
 }
@@ -24,7 +23,6 @@ interface ExerciseConfigModalProps {
 export function ExerciseConfigModal({ exercise, onClose, onConfirm }: ExerciseConfigModalProps) {
     const [sets, setSets] = useState(3)
     const [reps, setReps] = useState(10)
-    const [weight, setWeight] = useState<number | ''>('')
     const [restSeconds, setRestSeconds] = useState(60)
     const [duration, setDuration] = useState<number | ''>('')
     const [notes, setNotes] = useState('')
@@ -34,13 +32,30 @@ export function ExerciseConfigModal({ exercise, onClose, onConfirm }: ExerciseCo
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
         
-        onConfirm({
+        const config = {
             sets,
             reps: reps || undefined,
-            duration_seconds: duration || undefined,
             rest_seconds: restSeconds,
-            weight_kg: weight || undefined,
-            notes: notes || undefined,
+            duration_seconds: duration || undefined,
+            notes: notes || undefined
+        }
+
+        // Validate with Zod
+        const validation = exerciseConfigSchema.safeParse(config)
+        if (!validation.success) {
+            const errors = validation.error.flatten().fieldErrors
+            const firstError = Object.values(errors).flat()[0]
+            toast.error(firstError || 'Invalid input')
+            return
+        }
+
+        // Convert null to undefined for TypeScript compatibility
+        onConfirm({
+            sets: validation.data.sets,
+            reps: validation.data.reps ?? undefined,
+            rest_seconds: validation.data.rest_seconds,
+            duration_seconds: validation.data.duration_seconds ?? undefined,
+            notes: validation.data.notes ?? undefined
         })
     }
 
@@ -142,23 +157,7 @@ export function ExerciseConfigModal({ exercise, onClose, onConfirm }: ExerciseCo
                                 />
                             </div>
 
-                            {/* Weight */}
-                            <div>
-                                <label htmlFor="weight" className="text-sm font-bold text-zinc-300 uppercase tracking-wider mb-2 flex items-center gap-2">
-                                    <Weight className="w-4 h-4 text-[#10B981]" />
-                                    Weight (kg)
-                                </label>
-                                <input
-                                    type="number"
-                                    id="weight"
-                                    min="0"
-                                    step="0.5"
-                                    placeholder="Optional"
-                                    value={weight}
-                                    onChange={(e) => setWeight(e.target.value ? Number(e.target.value) : '')}
-                                    className="w-full px-4 py-3 bg-[#27272A] border border-white/5 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-[#10B981] transition-all"
-                                />
-                            </div>
+
 
                             {/* Rest Time */}
                             <div>
