@@ -48,9 +48,9 @@ export function CTA() {
                     </div>
 
                     <div className="flex flex-wrap justify-center gap-8 text-zinc-500">
-                        <a href="#" className="hover:text-white transition-colors">Privacy</a>
-                        <a href="#" className="hover:text-white transition-colors">Terms</a>
-                        <a href="#" className="hover:text-white transition-colors">Support</a>
+                        <a href="/privacy" className="hover:text-white transition-colors">Privacy</a>
+                        <a href="/about" className="hover:text-white transition-colors">About</a>
+                        <a href="/support" className="hover:text-white transition-colors">Support</a>
                     </div>
 
                     <p className="text-zinc-600">
