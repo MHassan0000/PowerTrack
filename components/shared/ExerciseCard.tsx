@@ -49,6 +49,7 @@ export function ExerciseCard({ exercise, index = 0 }: ExerciseCardProps) {
                     src={bgImage}
                     alt={exercise.name}
                     fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     className="object-cover transition-transform duration-700 group-hover:scale-105 opacity-60 group-hover:opacity-40"
                 />
 
