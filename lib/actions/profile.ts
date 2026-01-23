@@ -145,8 +145,6 @@ export async function uploadAvatar(formData: FormData) {
         const base64 = Buffer.from(arrayBuffer).toString('base64')
         const dataUrl = `data:${file.type};base64,${base64}`
 
-        console.log('📝 Storing avatar as base64 data URL')
-
         // Update user profile with base64 data URL
         const { error: updateError } = await supabase
             .from('users')
@@ -154,18 +152,14 @@ export async function uploadAvatar(formData: FormData) {
             .eq('id', user.id)
 
         if (updateError) {
-            console.error('❌ Database update error:', updateError)
             return { error: `Database error: ${updateError.message}` }
         }
-
-        console.log('✅ Avatar stored successfully!')
 
         revalidatePath('/settings')
         revalidatePath('/dashboard')
 
         return { success: true, avatarUrl: dataUrl }
     } catch (error: any) {
-        console.error('❌ Avatar upload error:', error)
         return { error: error.message || 'Failed to process image' }
     }
 }
