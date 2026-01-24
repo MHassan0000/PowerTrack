@@ -127,7 +127,7 @@ export async function completeWorkoutSession(sessionId: string, notes?: string) 
     // Get session start time to calculate duration
     const { data: session } = await supabase
         .from('workout_sessions')
-        .select('started_at')
+        .select('started_at, workout_id')
         .eq('id', sessionId)
         .single()
 
@@ -140,7 +140,7 @@ export async function completeWorkoutSession(sessionId: string, notes?: string) 
     const durationSeconds = Math.floor((completedAt.getTime() - startedAt.getTime()) / 1000)
 
     // Update session
-    const { error: updateError } = await supabase
+    const { data: updatedSession, error: updateError } = await supabase
         .from('workout_sessions')
         .update({
             completed_at: completedAt.toISOString(),
@@ -148,6 +148,8 @@ export async function completeWorkoutSession(sessionId: string, notes?: string) 
             notes: notes || null,
         })
         .eq('id', sessionId)
+        .select()
+        .single()
 
     if (updateError) {
         console.error('Error completing workout session:', updateError)
@@ -157,9 +159,24 @@ export async function completeWorkoutSession(sessionId: string, notes?: string) 
     // Calculate stats
     await updateSessionStats(sessionId)
 
+    // Get updated session with stats
+    const { data: finalSession } = await supabase
+        .from('workout_sessions')
+        .select('*')
+        .eq('id', sessionId)
+        .single()
+
     revalidatePath('/workouts')
     revalidatePath('/workouts/history')
-    return { error: null }
+    
+    return { 
+        data: {
+            session: finalSession,
+            durationSeconds,
+            workoutId: session.workout_id
+        },
+        error: null 
+    }
 }
 
 /**

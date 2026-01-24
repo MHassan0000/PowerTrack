@@ -2,12 +2,14 @@
 
 import { use, useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CheckCircle2, Dumbbell, X ,Clock, Trophy } from 'lucide-react'
+import { CheckCircle2, Dumbbell, X, Trophy } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { SetLogger } from './SetLogger'
 import { RestTimer } from './RestTimer'
+import { DurationCounter } from './DurationCounter'
+import { WorkoutCompletionSummary } from './WorkoutCompletionSummary'
 import { logSet, completeWorkoutSession, type SetLog, type WorkoutSession } from '@/lib/actions/workout-sessions'
-import { getWorkoutById } from '@/lib/actions/workouts'
+import { getWorkoutById, type WorkoutWithExercises } from '@/lib/actions/workouts'
 import { toast } from 'sonner'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 
@@ -26,6 +28,12 @@ export function ActiveWorkoutView({ session, sets: initialSets }: ActiveWorkoutV
     const [completing, setCompleting] = useState(false)
     const [loading, setLoading] = useState(true)
     const [showCancelDialog, setShowCancelDialog] = useState(false)
+    const [isPaused, setIsPaused] = useState(false)
+    const [setStartTime, setSetStartTime] = useState<number | null>(null)
+    const [pausedTime, setPausedTime] = useState(0)
+    const [showCompletionSummary, setShowCompletionSummary] = useState(false)
+    const [completionStats, setCompletionStats] = useState<any>(null)
+    const [workoutData, setWorkoutData] = useState<WorkoutWithExercises | null>(null)
 
     // Load workout exercises
     useEffect(() => {
@@ -34,12 +42,31 @@ export function ActiveWorkoutView({ session, sets: initialSets }: ActiveWorkoutV
                 const { data } = await getWorkoutById(session.workout_id)
                 if (data?.exercises) {
                     setWorkoutExercises(data.exercises)
+                    setWorkoutData(data)
                 }
             }
             setLoading(false)
         }
         loadWorkout()
     }, [session.workout_id])
+
+    // Track paused time
+    useEffect(() => {
+        if (isPaused && setStartTime) {
+            const pauseStart = Date.now()
+            return () => {
+                setPausedTime(prev => prev + (Date.now() - pauseStart))
+            }
+        }
+    }, [isPaused, setStartTime])
+
+    const handlePauseToggle = () => {
+        setIsPaused(!isPaused)
+        // Start tracking set duration when unpausing
+        if (isPaused && !setStartTime) {
+            setSetStartTime(Date.now())
+        }
+    }
 
     const currentExercise = workoutExercises[currentExerciseIndex]
     const progress = workoutExercises.length > 0 ? ((currentExerciseIndex + 1) / workoutExercises.length) * 100 : 0
@@ -57,16 +84,27 @@ export function ActiveWorkoutView({ session, sets: initialSets }: ActiveWorkoutV
     const handleLogSet = async (data: { weight_kg: number; reps: number }) => {
         if (!currentExercise) return
 
+        // Calculate set duration
+        let setDuration = 0
+        if (setStartTime) {
+            setDuration = Math.floor((Date.now() - setStartTime - pausedTime) / 1000)
+        }
+
         const result = await logSet(session.id, {
             exercise_id: currentExercise.exercise_id,
             set_number: currentSetNumber,
             weight_kg: data.weight_kg,
             reps: data.reps,
+            duration_seconds: setDuration > 0 ? setDuration : undefined,
             rest_seconds: currentExercise.rest_seconds || 90,
         })
 
         if (result.data) {
             setSets([...sets, result.data as SetLog])
+            
+            // Reset set tracking
+            setSetStartTime(null)
+            setPausedTime(0)
             
             // Check if we completed all sets for this exercise
             if (currentSetNumber >= currentExercise.sets) {
@@ -82,16 +120,24 @@ export function ActiveWorkoutView({ session, sets: initialSets }: ActiveWorkoutV
             } else {
                 setCurrentSetNumber(currentSetNumber + 1)
                 setShowRestTimer(true)
+                // Auto-pause during rest
+                setIsPaused(true)
             }
         }
     }
 
     const handleRestComplete = () => {
         setShowRestTimer(false)
+        // Auto-resume after rest
+        setIsPaused(false)
+        setSetStartTime(Date.now())
     }
 
     const handleSkipRest = () => {
         setShowRestTimer(false)
+        // Auto-resume after skipping rest
+        setIsPaused(false)
+        setSetStartTime(Date.now())
     }
 
     const handleSkipExercise = () => {
@@ -105,13 +151,27 @@ export function ActiveWorkoutView({ session, sets: initialSets }: ActiveWorkoutV
         setCompleting(true)
         const result = await completeWorkoutSession(session.id)
 
-        if (!result.error) {
+        if (!result.error && result.data) {
+            // Show completion summary
+            setCompletionStats({
+                workoutName: session.workout_name,
+                totalSets: result.data.session?.total_sets || sets.length,
+                totalReps: result.data.session?.total_reps || 0,
+                totalVolume: result.data.session?.total_volume_kg || 0,
+                actualDurationSeconds: result.data.durationSeconds,
+                estimatedDurationMinutes: workoutData?.duration_minutes
+            })
+            setShowCompletionSummary(true)
             toast.success('Workout completed! Great job! 💪')
-            router.push('/workouts/history')
         } else {
-            toast.error(result.error)
+            toast.error(result.error || 'Failed to complete workout')
             setCompleting(false)
         }
+    }
+
+    const handleCloseSummary = () => {
+        setShowCompletionSummary(false)
+        router.push('/workouts/history')
     }
 
     const handleCancel = () => {
@@ -165,10 +225,11 @@ export function ActiveWorkoutView({ session, sets: initialSets }: ActiveWorkoutV
                             </div>
                             <div>
                                 <h1 className="text-2xl font-bold text-white">{session.workout_name}</h1>
-                                <div className="flex items-center gap-2 text-sm text-zinc-400 mt-1">
-                                    <Clock className="w-4 h-4" />
-                                    <span>Started {new Date(session.started_at).toLocaleTimeString()}</span>
-                                </div>
+                                <DurationCounter 
+                                    startedAt={session.started_at} 
+                                    isPaused={isPaused}
+                                    onPauseToggle={handlePauseToggle}
+                                />
                             </div>
                         </div>
                         <button
@@ -293,6 +354,15 @@ export function ActiveWorkoutView({ session, sets: initialSets }: ActiveWorkoutV
                 cancelText="Keep Working Out"
                 variant="danger"
             />
+
+            {/* Workout Completion Summary */}
+            {completionStats && (
+                <WorkoutCompletionSummary
+                    isOpen={showCompletionSummary}
+                    onClose={handleCloseSummary}
+                    stats={completionStats}
+                />
+            )}
         </>
     )
 }
