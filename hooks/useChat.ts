@@ -24,7 +24,10 @@ export function useChat() {
     const [isLoading, setIsLoading] = useState(false)
     const [isLoadingHistory, setIsLoadingHistory] = useState(true)
     const [error, setError] = useState<string | null>(null)
+    const [uploadProgress, setUploadProgress] = useState(0)
     const abortControllerRef = useRef<AbortController | null>(null)
+    const streamingContentRef = useRef<string>('')
+    const animationFrameRef = useRef<number | null>(null)
 
     // Load chat history on mount
     useEffect(() => {
@@ -73,14 +76,17 @@ export function useChat() {
         // Upload files first if provided
         if (files && files.length > 0) {
             try {
+                setUploadProgress(10)
                 const formData = new FormData()
                 files.forEach(file => formData.append('files', file))
 
+                setUploadProgress(30)
                 const uploadResponse = await fetch('/api/chat/upload', {
                     method: 'POST',
                     body: formData,
                 })
 
+                setUploadProgress(70)
                 if (!uploadResponse.ok) {
                     const errorData = await uploadResponse.json()
                     throw new Error(errorData.error || 'Failed to upload files')
@@ -88,9 +94,15 @@ export function useChat() {
 
                 const uploadData = await uploadResponse.json()
                 uploadedFiles = uploadData.files
+                setUploadProgress(100)
+                
+                // Small delay to show 100% before clearing
+                await new Promise(resolve => setTimeout(resolve, 300))
+                setUploadProgress(0)
             } catch (err: any) {
                 console.error('File upload error:', err)
                 setError(err.message || 'Failed to upload files')
+                setUploadProgress(0)
                 return
             }
         }
@@ -146,31 +158,56 @@ export function useChat() {
                 throw new Error('No response body')
             }
 
-            // Read streaming response
+            // Read streaming response with typewriter animation
             const reader = response.body.getReader()
             const decoder = new TextDecoder()
             let fullContent = ''
+            let displayedContent = ''
 
+            // Read all chunks first
             while (true) {
                 const { done, value } = await reader.read()
-                
                 if (done) break
-
+                
                 const chunk = decoder.decode(value, { stream: true })
                 fullContent += chunk
-                
-                // Update AI message with streamed content
-                setMessages(prev => {
-                    const updated = [...prev]
-                    const lastMessage = updated[updated.length - 1]
-                    if (lastMessage.role === 'assistant') {
-                        lastMessage.content = fullContent
-                    }
-                    return updated
-                })
             }
 
-            // Save AI response to database after streaming completes
+            // Now display with smooth typewriter effect
+            await new Promise<void>((resolve) => {
+                let currentIndex = 0
+                const typewriterSpeed = 20 // milliseconds per chunk (50 chars/sec)
+                
+                const typeNextChunk = () => {
+                    if (currentIndex < fullContent.length) {
+                        // Display 2-3 characters at a time for smoother effect
+                        const chunkSize = Math.min(3, fullContent.length - currentIndex)
+                        const displayedContent = fullContent.substring(0, currentIndex + chunkSize)
+                        currentIndex += chunkSize
+
+                        setMessages(prev => {
+                            const updated = [...prev]
+                            const lastMessage = updated[updated.length - 1]
+                            if (lastMessage && lastMessage.role === 'assistant') {
+                                lastMessage.content = displayedContent
+                            }
+                            return updated
+                        })
+
+                        // Continue typing
+                        animationFrameRef.current = window.setTimeout(typeNextChunk, typewriterSpeed)
+                    } else {
+                        // Typing complete
+                        animationFrameRef.current = null
+                        resolve()
+                    }
+                }
+
+                // Start typewriter animation
+                typeNextChunk()
+            })
+
+            // Save AI response to database after animation completes
             if (fullContent) {
                 await saveMessage({
                     role: 'assistant',
@@ -189,6 +226,11 @@ export function useChat() {
         } finally {
             setIsLoading(false)
             abortControllerRef.current = null
+            streamingContentRef.current = ''
+            if (animationFrameRef.current) {
+                clearTimeout(animationFrameRef.current)
+                animationFrameRef.current = null
+            }
         }
     }, [messages, isLoading, saveMessage])
 
@@ -209,6 +251,11 @@ export function useChat() {
         if (abortControllerRef.current) {
             abortControllerRef.current.abort()
         }
+        // Stop typewriter animation
+        if (animationFrameRef.current) {
+            clearTimeout(animationFrameRef.current)
+            animationFrameRef.current = null
+        }
     }, [])
 
     return {
@@ -216,6 +263,7 @@ export function useChat() {
         isLoading,
         isLoadingHistory,
         error,
+        uploadProgress,
         sendMessage,
         clearChat,
         stopGeneration,

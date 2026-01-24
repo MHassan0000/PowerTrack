@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { isValidFileType } from '@/lib/ai/fileProcessor'
 
 export function ChatInterface() {
-    const { messages, isLoading, isLoadingHistory, error, sendMessage, stopGeneration, clearChat } = useChat()
+    const { messages, isLoading, isLoadingHistory, error, uploadProgress, sendMessage, stopGeneration, clearChat } = useChat()
     const [input, setInput] = useState('')
     const messagesEndRef = useRef<HTMLDivElement>(null)
     const inputRef = useRef<HTMLTextAreaElement>(null)
@@ -185,6 +185,23 @@ export function ChatInterface() {
                         </div>
                     )}
 
+                    {/* Upload Progress */}
+                    {uploadProgress > 0 && (
+                        <div className="mb-3">
+                            <div className="flex items-center gap-3 mb-2">
+                                <div className="text-xs text-[#10B981] font-medium">
+                                    Uploading files... {uploadProgress}%
+                                </div>
+                            </div>
+                            <div className="w-full h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                                <div 
+                                    className="h-full bg-linear-to-r from-[#10B981] to-[#059669] transition-all duration-300 ease-out"
+                                    style={{ width: `${uploadProgress}%` }}
+                                />
+                            </div>
+                        </div>
+                    )}
+
                     {/* Selected Files Preview */}
                     {selectedFiles.length > 0 && (
                         <div className="mb-3 flex flex-wrap gap-2">
@@ -216,7 +233,7 @@ export function ChatInterface() {
                             <button
                                 type="button"
                                 onClick={() => fileInputRef.current?.click()}
-                                disabled={isLoading || selectedFiles.length >= 3}
+                                disabled={isLoading || uploadProgress > 0 || selectedFiles.length >= 3}
                                 className="shrink-0 w-10 h-10 rounded-xl bg-transparent text-zinc-400 hover:text-[#10B981] hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-all duration-200"
                                 title={selectedFiles.length >= 3 ? 'Maximum 3 files' : 'Upload files'}
                             >
@@ -236,9 +253,10 @@ export function ChatInterface() {
                                         handleSubmit(e)
                                     }
                                 }}
-                                placeholder="Message PowerTrack AI..."
+                                placeholder={uploadProgress > 0 ? "Uploading files..." : "Message PowerTrack AI..."}
                                 rows={1}
-                                className="flex-1 bg-transparent px-4 py-3 text-white placeholder-zinc-500 focus:outline-none resize-none max-h-30 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent text-[15px]"
+                                disabled={uploadProgress > 0}
+                                className="flex-1 bg-transparent px-4 py-3 text-white placeholder-zinc-500 focus:outline-none resize-none max-h-30 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent text-[15px] disabled:opacity-50"
                                 style={{ minHeight: '44px' }}
                             />
                             
@@ -254,7 +272,7 @@ export function ChatInterface() {
                             ) : (
                                 <button
                                     type="submit"
-                                    disabled={!input.trim()}
+                                    disabled={!input.trim() || uploadProgress > 0}
                                     className="shrink-0 w-10 h-10 rounded-xl bg-[#10B981] disabled:bg-zinc-800 disabled:text-zinc-600 text-black flex items-center justify-center transition-all duration-200"
                                 >
                                     {/* Arrow Up Icon */}

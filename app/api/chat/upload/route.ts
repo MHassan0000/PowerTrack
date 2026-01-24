@@ -20,21 +20,38 @@ export async function POST(req: Request) {
             )
         }
 
-        // 2. Rate limiting (5 uploads per minute)
-        const rateLimitPassed = checkRateLimit(`upload:${user.id}`, 5, 60000)
+        // 2. Check daily upload limit (1 upload per day)
+        const today = new Date().toISOString().split('T')[0]
         
-        if (!rateLimitPassed) {
+        const { data: uploadRecord } = await supabase
+            .from('upload_tracking')
+            .select('*')
+            .eq('user_id', user.id)
+            .eq('upload_date', today)
+            .single()
+
+        if (uploadRecord && uploadRecord.upload_count >= 1) {
             return Response.json(
-                { error: 'Too many uploads. Please wait a minute.' },
+                { error: 'Daily upload limit reached. You can upload files again tomorrow.' },
                 { status: 429 }
             )
         }
 
-        // 3. Parse form data
+        // 3. Rate limiting (5 uploads per minute for spam prevention)
+        const rateLimitPassed = checkRateLimit(`upload:${user.id}`, 5, 60000)
+        
+        if (!rateLimitPassed) {
+            return Response.json(
+                { error: 'Too many upload attempts. Please wait a minute.' },
+                { status: 429 }
+            )
+        }
+
+        // 4. Parse form data
         const formData = await req.formData()
         const files = formData.getAll('files') as File[]
 
-        // 4. Validate file count
+        // 5. Validate file count
         if (files.length === 0) {
             return Response.json(
                 { error: 'No files provided' },
@@ -49,7 +66,7 @@ export async function POST(req: Request) {
             )
         }
 
-        // 5. Validate and process each file
+        // 6. Validate and process each file
         const processedFiles = []
         const uploadedFiles = []
 
@@ -111,7 +128,26 @@ export async function POST(req: Request) {
             })
         }
 
-        // 6. Return processed files
+        // 7. Update daily upload tracking
+        if (uploadRecord) {
+            await supabase
+                .from('upload_tracking')
+                .update({ 
+                    upload_count: uploadRecord.upload_count + 1,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', uploadRecord.id)
+        } else {
+            await supabase
+                .from('upload_tracking')
+                .insert({
+                    user_id: user.id,
+                    upload_date: today,
+                    upload_count: 1
+                })
+        }
+
+        // 8. Return processed files
         return Response.json(
             { 
                 success: true,

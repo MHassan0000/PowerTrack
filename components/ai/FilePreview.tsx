@@ -26,7 +26,7 @@ export function FilePreview({
         <div className="inline-flex items-center gap-2 px-3 py-2 bg-[#18181B] border border-zinc-800 rounded-lg text-sm group hover:border-[#10B981]/30 transition-all">
             {/* File Icon or Image Thumbnail */}
             {isImage && publicUrl ? (
-                <div className="w-8 h-8 rounded overflow-hidden flex-shrink-0">
+                <div className="w-8 h-8 rounded overflow-hidden shrink-0">
                     <img 
                         src={publicUrl} 
                         alt={fileName}
@@ -34,12 +34,12 @@ export function FilePreview({
                     />
                 </div>
             ) : (
-                <span className="text-xl flex-shrink-0">{icon}</span>
+                <span className="text-xl shrink-0">{icon}</span>
             )}
 
             {/* File Info */}
             <div className="flex flex-col min-w-0">
-                <span className="text-zinc-200 truncate max-w-[200px] text-xs font-medium">
+                <span className="text-zinc-200 truncate max-w-50 text-xs font-medium">
                     {fileName}
                 </span>
                 <span className="text-zinc-500 text-[11px]">
