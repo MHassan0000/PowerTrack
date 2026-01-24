@@ -160,7 +160,18 @@ export function useChat() {
             })
 
             if (!response.ok) {
-                throw new Error('Failed to get response from AI')
+                const errorData = await response.json().catch(() => ({}))
+                
+                // Handle different error types with user-friendly messages
+                if (response.status === 401) {
+                    throw new Error('Please sign in to use AI chat')
+                } else if (response.status === 429) {
+                    throw new Error(errorData.error || 'Too many requests. Please wait a moment and try again.')
+                } else if (response.status === 500) {
+                    throw new Error('AI service temporarily unavailable. Please try again.')
+                } else {
+                    throw new Error(errorData.error || 'Failed to get response from AI')
+                }
             }
 
             if (!response.body) {
@@ -225,17 +236,15 @@ export function useChat() {
 
             // Save AI response to database after animation completes normally
             if (fullContent && !hasSavedPartialRef.current) {
-                hasSavedPartialRef.current = true // Mark as saved for normal completion
-                console.log('Saving completed message')
+                hasSavedPartialRef.current = true
                 await saveMessage({
                     role: 'assistant',
                     content: fullContent,
                 })
-                console.log('Completed message saved')
             }
         } catch (err: any) {
             if (err.name === 'AbortError') {
-                console.log('Request aborted')
+                // Request was aborted by user
                 // Don't save here - will be saved in finally block
             } else {
                 console.error('Chat error:', err)
@@ -244,16 +253,14 @@ export function useChat() {
                 setMessages(prev => prev.slice(0, -1))
             }
         } finally {
-            // CRITICAL: Save partial response if stopped and not already saved
+            // Save partial response if stopped and not already saved
             if (!hasSavedPartialRef.current && streamingContentRef.current) {
-                console.log('Saving partial response:', streamingContentRef.current.substring(0, 50) + '...')
                 try {
                     await saveMessage({
                         role: 'assistant',
                         content: streamingContentRef.current,
                     })
                     hasSavedPartialRef.current = true
-                    console.log('Partial response saved successfully')
                 } catch (e) {
                     console.error('Failed to save partial response:', e)
                 }
@@ -285,20 +292,16 @@ export function useChat() {
     }, [])
 
     const stopGeneration = useCallback(() => {
-        console.log('Stop generation called')
-        
         // Stop typewriter animation
         if (animationFrameRef.current) {
             clearTimeout(animationFrameRef.current)
             animationFrameRef.current = null
         }
 
-        // SAVE ONLY WHAT WAS DISPLAYED (not full downloaded content)
+        // Save only what was displayed (not full downloaded content)
         const contentToSave = displayedContentRef.current || streamingContentRef.current
         
         if (!hasSavedPartialRef.current && contentToSave) {
-            console.log('Saving DISPLAYED content:', contentToSave.substring(0, 50) + '...')
-            console.log('Content length:', contentToSave.length, 'chars')
             hasSavedPartialRef.current = true
             
             // Save what was actually shown on screen
@@ -306,12 +309,10 @@ export function useChat() {
                 role: 'assistant',
                 content: contentToSave,
             }).then(() => {
-                console.log('Partial/displayed response saved successfully!')
+                // Saved successfully
             }).catch(err => {
                 console.error('Failed to save partial response:', err)
             })
-        } else {
-            console.log('Not saving - already saved:', hasSavedPartialRef.current, 'or no content:', !contentToSave)
         }
 
         // Abort fetch if still running
