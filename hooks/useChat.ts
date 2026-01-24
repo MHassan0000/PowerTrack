@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 
 export interface Message {
     role: 'user' | 'assistant'
@@ -11,8 +11,48 @@ export interface Message {
 export function useChat() {
     const [messages, setMessages] = useState<Message[]>([])
     const [isLoading, setIsLoading] = useState(false)
+    const [isLoadingHistory, setIsLoadingHistory] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const abortControllerRef = useRef<AbortController | null>(null)
+
+    // Load chat history on mount
+    useEffect(() => {
+        async function loadHistory() {
+            try {
+                const response = await fetch('/api/chat/history')
+                if (response.ok) {
+                    const { messages: history } = await response.json()
+                    setMessages(history.map((m: any) => ({
+                        id: m.id,
+                        role: m.role,
+                        content: m.content,
+                    })))
+                }
+            } catch (error) {
+                console.error('Failed to load chat history:', error)
+            } finally {
+                setIsLoadingHistory(false)
+            }
+        }
+
+        loadHistory()
+    }, [])
+
+    // Save message to database
+    const saveMessage = useCallback(async (message: Message) => {
+        try {
+            await fetch('/api/chat/history', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    role: message.role,
+                    content: message.content,
+                }),
+            })
+        } catch (error) {
+            console.error('Failed to save message:', error)
+        }
+    }, [])
 
     const sendMessage = useCallback(async (content: string) => {
         if (!content.trim() || isLoading) return
@@ -23,10 +63,13 @@ export function useChat() {
             id: Date.now().toString(),
         }
 
-        // Add user message
+        // Add user message to UI
         setMessages(prev => [...prev, userMessage])
         setIsLoading(true)
         setError(null)
+
+        // Save user message to database
+        await saveMessage(userMessage)
 
         // Create AI message placeholder
         const aiMessage: Message = {
@@ -66,6 +109,7 @@ export function useChat() {
             // Read streaming response
             const reader = response.body.getReader()
             const decoder = new TextDecoder()
+            let fullContent = ''
 
             while (true) {
                 const { done, value } = await reader.read()
@@ -73,15 +117,24 @@ export function useChat() {
                 if (done) break
 
                 const chunk = decoder.decode(value, { stream: true })
+                fullContent += chunk
                 
                 // Update AI message with streamed content
                 setMessages(prev => {
                     const updated = [...prev]
                     const lastMessage = updated[updated.length - 1]
                     if (lastMessage.role === 'assistant') {
-                        lastMessage.content += chunk
+                        lastMessage.content = fullContent
                     }
                     return updated
+                })
+            }
+
+            // Save AI response to database after streaming completes
+            if (fullContent) {
+                await saveMessage({
+                    role: 'assistant',
+                    content: fullContent,
                 })
             }
         } catch (err: any) {
@@ -97,11 +150,19 @@ export function useChat() {
             setIsLoading(false)
             abortControllerRef.current = null
         }
-    }, [messages, isLoading])
+    }, [messages, isLoading, saveMessage])
 
-    const clearChat = useCallback(() => {
-        setMessages([])
-        setError(null)
+    const clearChat = useCallback(async () => {
+        try {
+            const response = await fetch('/api/chat/history', { method: 'DELETE' })
+            if (response.ok) {
+                setMessages([])
+                setError(null)
+            }
+        } catch (error) {
+            console.error('Failed to clear chat:', error)
+            setError('Failed to clear chat history')
+        }
     }, [])
 
     const stopGeneration = useCallback(() => {
@@ -113,6 +174,7 @@ export function useChat() {
     return {
         messages,
         isLoading,
+        isLoadingHistory,
         error,
         sendMessage,
         clearChat,

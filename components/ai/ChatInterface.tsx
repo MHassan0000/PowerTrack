@@ -7,10 +7,11 @@ import { SUGGESTED_PROMPTS } from '@/lib/ai/prompts'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export function ChatInterface() {
-    const { messages, isLoading, error, sendMessage, stopGeneration } = useChat()
+    const { messages, isLoading, isLoadingHistory, error, sendMessage, stopGeneration, clearChat } = useChat()
     const [input, setInput] = useState('')
     const messagesEndRef = useRef<HTMLDivElement>(null)
     const inputRef = useRef<HTMLTextAreaElement>(null)
+    const [showClearConfirm, setShowClearConfirm] = useState(false)
 
     // Auto-scroll to bottom when new messages arrive
     useEffect(() => {
@@ -37,63 +38,77 @@ export function ChatInterface() {
         sendMessage(prompt)
     }
 
+    const handleClearChat = async () => {
+        await clearChat()
+        setShowClearConfirm(false)
+    }
+
     return (
         <div className="flex flex-col h-full relative font-sans">
             {/* Messages Area */}
             <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
                 <div className="max-w-3xl mx-auto px-4 py-8 space-y-8">
-                    <AnimatePresence mode="popLayout">
-                        {messages.length === 0 ? (
-                            <motion.div
-                                key="empty-state"
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -10 }}
-                                className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-12"
-                            >
-                                {/* Title & Description */}
+                    {/* Loading History */}
+                    {isLoadingHistory ? (
+                        <div className="flex items-center justify-center py-12">
+                            <div className="w-6 h-6 border-2 border-[#10B981] border-t-transparent rounded-full animate-spin" />
+                        </div>
+                    ) : (
+                        <AnimatePresence mode="popLayout">
+                            {messages.length === 0 ? (
                                 <motion.div
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    transition={{ delay: 0.1 }}
-                                    className="space-y-4"
+                                    key="empty-state"
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                    className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-12"
                                 >
-                                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#10B981]/10 border border-[#10B981]/20 mb-6">
-                                        {/* Abstract Green Logo */}
-                                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                            <path d="M2 17L12 22L22 17" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                            <path d="M2 12L12 17L22 12" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                        </svg>
-                                    </div>
-                                    <h2 className="text-3xl font-medium text-white tracking-tight">
-                                        How can I help you today?
-                                    </h2>
-                                </motion.div>
+                                    {/* Title & Description */}
+                                    <motion.div
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        transition={{ delay: 0.1 }}
+                                        className="space-y-4"
+                                    >
+                                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#10B981]/10 border border-[#10B981]/20 mb-6">
+                                            {/* Abstract Green Logo */}
+                                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                                <path d="M2 17L12 22L22 17" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                                <path d="M2 12L12 17L22 12" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                            </svg>
+                                        </div>
+                                        <h2 className="text-3xl font-medium text-white tracking-tight">
+                                            How can I help you today?
+                                        </h2>
+                                    </motion.div>
 
-                                {/* Suggested Prompts Grid */}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-2xl">
-                                    {SUGGESTED_PROMPTS.slice(0, 4).map((prompt, idx) => (
-                                        <button
-                                            key={idx}
-                                            onClick={() => handleSuggestedPrompt(prompt)}
-                                            className="px-5 py-4 bg-[#18181B] hover:bg-[#27272A] text-left text-[13px] text-zinc-400 hover:text-[#10B981] rounded-xl border border-zinc-800 hover:border-[#10B981]/30 transition-all duration-200"
-                                        >
-                                            {prompt}
-                                        </button>
+                                    {/* Suggested Prompts Grid */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-2xl">
+                                        {SUGGESTED_PROMPTS.slice(0, 4).map((prompt, idx) => (
+                                            <button
+                                                key={idx}
+                                                onClick={() => handleSuggestedPrompt(prompt)}
+                                                className="px-5 py-4 bg-[#18181B] hover:bg-[#27272A] text-left text-[13px] text-zinc-400 hover:text-[#10B981] rounded-xl border border-zinc-800 hover:border-[#10B981]/30 transition-all duration-200"
+                                            >
+                                                {prompt}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </motion.div>
+                            ) : (
+                                <>
+                                    {messages.map((message, index) => (
+                                        <ChatMessage
+                                            key={message.id || index}
+                                            message={message}
+                                            isLatest={index === messages.length - 1 && isLoading}
+                                        />
                                     ))}
-                                </div>
-                            </motion.div>
-                        ) : (
-                            messages.map((message, index) => (
-                                <ChatMessage
-                                    key={message.id || index}
-                                    message={message}
-                                    isLatest={index === messages.length - 1 && isLoading}
-                                />
-                            ))
-                        )}
-                    </AnimatePresence>
+                                </>
+                            )}
+                        </AnimatePresence>
+                    )}
 
                     {/* Error Message */}
                     {error && (
@@ -109,6 +124,18 @@ export function ChatInterface() {
             {/* Input Area */}
             <div className="sticky bottom-0 bg-[#0F0F10]/80 backdrop-blur-lg pt-4 pb-6 border-t border-white/5">
                 <div className="max-w-3xl mx-auto px-4">
+                    {/* Clear Chat Button - only show when messages exist */}
+                    {messages.length > 0 && !isLoadingHistory && (
+                        <div className="mb-3 flex justify-center">
+                            <button
+                                onClick={() => setShowClearConfirm(true)}
+                                className="text-xs text-zinc-500 hover:text-[#10B981] transition-colors"
+                            >
+                                Clear Chat History
+                            </button>
+                        </div>
+                    )}
+
                     <form onSubmit={handleSubmit} className="relative">
                         <div className="relative flex items-end gap-2 bg-[#18181B] border border-zinc-800 rounded-2xl p-2 focus-within:border-[#10B981]/50 focus-within:ring-1 focus-within:ring-[#10B981]/20 transition-all duration-200">
                             <textarea
@@ -123,7 +150,7 @@ export function ChatInterface() {
                                 }}
                                 placeholder="Message PowerTrack AI..."
                                 rows={1}
-                                className="flex-1 bg-transparent px-4 py-3 text-white placeholder-zinc-500 focus:outline-none resize-none max-h-[120px] scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent text-[15px]"
+                                className="flex-1 bg-transparent px-4 py-3 text-white placeholder-zinc-500 focus:outline-none resize-none max-h-30 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent text-[15px]"
                                 style={{ minHeight: '44px' }}
                             />
                             
@@ -155,6 +182,32 @@ export function ChatInterface() {
                     </p>
                 </div>
             </div>
+
+            {/* Clear Chat Confirmation Modal */}
+            {showClearConfirm && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-[#18181B] border border-white/10 rounded-2xl p-6 max-w-sm w-full">
+                        <h3 className="text-lg font-semibold text-white mb-2">Clear Chat History?</h3>
+                        <p className="text-sm text-zinc-400 mb-6">
+                            This will permanently delete all your chat messages. This action cannot be undone.
+                        </p>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setShowClearConfirm(false)}
+                                className="flex-1 px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl font-medium transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleClearChat}
+                                className="flex-1 px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium transition-colors"
+                            >
+                                Clear All
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }
