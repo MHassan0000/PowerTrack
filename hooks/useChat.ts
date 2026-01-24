@@ -40,6 +40,7 @@ export function useChat() {
                         id: m.id,
                         role: m.role,
                         content: m.content,
+                        attachments: m.attachments, // Include attachments from API
                     })))
                 }
             } catch (error) {
@@ -61,6 +62,7 @@ export function useChat() {
                 body: JSON.stringify({
                     role: message.role,
                     content: message.content,
+                    attachments: message.attachments, // Include attachments
                 }),
             })
         } catch (error) {

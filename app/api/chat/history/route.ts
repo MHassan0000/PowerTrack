@@ -16,10 +16,23 @@ export async function GET() {
             return Response.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
-        // Fetch user's chat history (last 50 messages)
+        // Fetch user's chat history with file attachments (last 50 messages)
         const { data, error } = await supabase
             .from('chat_messages')
-            .select('id, role, content, created_at')
+            .select(`
+                id, 
+                role, 
+                content, 
+                created_at,
+                chat_file_attachments(
+                    id,
+                    file_name,
+                    file_type,
+                    file_size,
+                    storage_path,
+                    extracted_content
+                )
+            `)
             .eq('user_id', user.id)
             .order('created_at', { ascending: true })
             .limit(50)
@@ -32,8 +45,37 @@ export async function GET() {
             )
         }
 
+        // Transform data to include file URLs
+        const messagesWithAttachments = await Promise.all((data || []).map(async (msg: any) => {
+            const attachments = msg.chat_file_attachments || []
+            
+            // Get public URLs for each attachment
+            const attachmentsWithUrls = attachments.map((file: any) => {
+                const { data: { publicUrl } } = supabase.storage
+                    .from('chat-attachments')
+                    .getPublicUrl(file.storage_path)
+                
+                return {
+                    fileName: file.file_name,
+                    fileType: file.file_type,
+                    fileSize: file.file_size,
+                    storagePath: file.storage_path,
+                    publicUrl,
+                    extractedContent: file.extracted_content,
+                }
+            })
+
+            return {
+                id: msg.id,
+                role: msg.role,
+                content: msg.content,
+                created_at: msg.created_at,
+                attachments: attachmentsWithUrls.length > 0 ? attachmentsWithUrls : undefined,
+            }
+        }))
+
         return Response.json(
-            { messages: data || [] },
+            { messages: messagesWithAttachments },
             {
                 headers: {
                     'Cache-Control': 'private, no-cache',
@@ -73,7 +115,7 @@ export async function POST(req: Request) {
             )
         }
 
-        const { role, content } = body
+        const { role, content, attachments } = body
 
         // Validate role
         const roleValidation = validateRole(role)
@@ -94,7 +136,7 @@ export async function POST(req: Request) {
         }
 
         // Save message to database
-        const { data, error } = await supabase
+        const { data: savedMessage, error } = await supabase
             .from('chat_messages')
             .insert({
                 user_id: user.id,
@@ -112,7 +154,29 @@ export async function POST(req: Request) {
             )
         }
 
-        return Response.json({ message: data })
+        // Save file attachments if present
+        if (attachments && Array.isArray(attachments) && attachments.length > 0) {
+            const attachmentRecords = attachments.map((file: any) => ({
+                message_id: savedMessage.id,
+                user_id: user.id,
+                file_name: file.fileName,
+                file_type: file.fileType,
+                file_size: file.fileSize,
+                storage_path: file.storagePath,
+                extracted_content: file.extractedContent,
+            }))
+
+            const { error: attachmentError } = await supabase
+                .from('chat_file_attachments')
+                .insert(attachmentRecords)
+
+            if (attachmentError) {
+                console.error('Error saving file attachments:', attachmentError)
+                // Don't fail the whole request, message is already saved
+            }
+        }
+
+        return Response.json({ message: savedMessage })
     } catch (error) {
         console.error('Save message error:', error)
         return Response.json(
@@ -134,7 +198,32 @@ export async function DELETE() {
             return Response.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
-        // Delete all user's messages
+        // Get all file attachments for this user to delete from storage
+        const { data: attachments } = await supabase
+            .from('chat_file_attachments')
+            .select('storage_path')
+            .eq('user_id', user.id)
+
+        // Delete files from storage
+        if (attachments && attachments.length > 0) {
+            const paths = attachments.map((a: any) => a.storage_path)
+            const { error: storageError } = await supabase.storage
+                .from('chat-attachments')
+                .remove(paths)
+
+            if (storageError) {
+                console.error('Error deleting files from storage:', storageError)
+                // Continue with deletion even if storage cleanup fails
+            }
+        }
+
+        // Delete all file attachments records
+        await supabase
+            .from('chat_file_attachments')
+            .delete()
+            .eq('user_id', user.id)
+
+        // Delete all user's messages (cascade will handle attachments table)
         const { error } = await supabase
             .from('chat_messages')
             .delete()
