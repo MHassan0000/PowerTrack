@@ -3,7 +3,8 @@ import { getExerciseById } from '@/lib/actions/exercises'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowLeft, Target, Dumbbell, Activity, AlertCircle, Play } from 'lucide-react'
+import { ArrowLeft, Target, Dumbbell, Activity, AlertCircle } from 'lucide-react'
+import { ExerciseActions } from '@/components/exercise/ExerciseActions'
 
 interface ExerciseDetailPageProps {
     params: Promise<{
@@ -139,15 +140,7 @@ export default async function ExerciseDetailPage({ params }: ExerciseDetailPageP
                             </div>
                         )}
 
-                        <div className="pt-2 space-y-3">
-                            <button className="w-full py-3.5 bg-[#10B981] hover:bg-[#059669] text-black font-bold rounded-xl transition-all shadow-lg hover:shadow-[#10B981]/20 flex items-center justify-center gap-2">
-                                <Play className="w-4 h-4 fill-current" />
-                                Start Stats
-                            </button>
-                            <button className="w-full py-3.5 bg-[#27272A] hover:bg-[#3F3F46] text-white font-medium rounded-xl transition-colors border border-white/5 hover:border-white/10">
-                                Add to Workout
-                            </button>
-                        </div>
+                        <ExerciseActions exerciseId={exercise.id} exerciseName={exercise.name} />
                     </div>
 
                     {/* Tips Card */}
