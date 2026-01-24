@@ -3,15 +3,20 @@
 import { useState, useRef, useEffect } from 'react'
 import { useChat } from '@/hooks/useChat'
 import { ChatMessage } from './ChatMessage'
+import { FilePreview } from './FilePreview'
 import { SUGGESTED_PROMPTS } from '@/lib/ai/prompts'
 import { motion, AnimatePresence } from 'framer-motion'
+import { isValidFileType } from '@/lib/ai/fileProcessor'
 
 export function ChatInterface() {
     const { messages, isLoading, isLoadingHistory, error, sendMessage, stopGeneration, clearChat } = useChat()
     const [input, setInput] = useState('')
     const messagesEndRef = useRef<HTMLDivElement>(null)
     const inputRef = useRef<HTMLTextAreaElement>(null)
+    const fileInputRef = useRef<HTMLInputElement>(null)
     const [showClearConfirm, setShowClearConfirm] = useState(false)
+    const [selectedFiles, setSelectedFiles] = useState<File[]>([])
+    const [fileError, setFileError] = useState<string | null>(null)
 
     // Auto-scroll to bottom when new messages arrive
     useEffect(() => {
@@ -29,9 +34,46 @@ export function ChatInterface() {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
         if (input.trim() && !isLoading) {
-            sendMessage(input)
+            sendMessage(input, selectedFiles.length > 0 ? selectedFiles : undefined)
             setInput('')
+            setSelectedFiles([])
+            setFileError(null)
         }
+    }
+
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files || [])
+        setFileError(null)
+
+        // Validate file count
+        if (selectedFiles.length + files.length > 3) {
+            setFileError('Maximum 3 files allowed')
+            return
+        }
+
+        // Validate each file
+        for (const file of files) {
+            // Check file size (5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                setFileError(`File "${file.name}" exceeds 5MB limit`)
+                return
+            }
+
+            // Check file type
+            if (!isValidFileType(file.type, file.name)) {
+                setFileError(`File type not supported: ${file.name}`)
+                return
+            }
+        }
+
+        setSelectedFiles(prev => [...prev, ...files])
+        // Reset input so same file can be selected again
+        if (e.target) e.target.value = ''
+    }
+
+    const handleRemoveFile = (index: number) => {
+        setSelectedFiles(prev => prev.filter((_, i) => i !== index))
+        setFileError(null)
     }
 
     const handleSuggestedPrompt = (prompt: string) => {
@@ -136,8 +178,54 @@ export function ChatInterface() {
                         </div>
                     )}
 
+                    {/* File Upload Error */}
+                    {fileError && (
+                        <div className="mb-2 text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
+                            {fileError}
+                        </div>
+                    )}
+
+                    {/* Selected Files Preview */}
+                    {selectedFiles.length > 0 && (
+                        <div className="mb-3 flex flex-wrap gap-2">
+                            {selectedFiles.map((file, index) => (
+                                <FilePreview
+                                    key={index}
+                                    fileName={file.name}
+                                    fileType={file.type}
+                                    fileSize={file.size}
+                                    onRemove={() => handleRemoveFile(index)}
+                                />
+                            ))}
+                        </div>
+                    )}
+
                     <form onSubmit={handleSubmit} className="relative">
                         <div className="relative flex items-end gap-2 bg-[#18181B] border border-zinc-800 rounded-2xl p-2 focus-within:border-[#10B981]/50 focus-within:ring-1 focus-within:ring-[#10B981]/20 transition-all duration-200">
+                            {/* Hidden File Input */}
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                multiple
+                                accept=".txt,.md,.csv,.json,.pdf,.jpg,.jpeg,.png,.gif,.webp"
+                                onChange={handleFileSelect}
+                                className="hidden"
+                            />
+
+                            {/* File Upload Button */}
+                            <button
+                                type="button"
+                                onClick={() => fileInputRef.current?.click()}
+                                disabled={isLoading || selectedFiles.length >= 3}
+                                className="shrink-0 w-10 h-10 rounded-xl bg-transparent text-zinc-400 hover:text-[#10B981] hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-all duration-200"
+                                title={selectedFiles.length >= 3 ? 'Maximum 3 files' : 'Upload files'}
+                            >
+                                {/* Paperclip Icon */}
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+                                </svg>
+                            </button>
+                            
                             <textarea
                                 ref={inputRef}
                                 value={input}

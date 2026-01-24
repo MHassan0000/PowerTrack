@@ -52,13 +52,21 @@ export async function POST(req: Request) {
             )
         }
 
-        const { messages } = body
+        const { messages, attachments } = body
 
         // 4. Validate messages array
         const validation = validateMessageArray(messages)
         if (!validation.valid) {
             return Response.json(
                 { error: validation.error || 'Invalid message format' },
+                { status: 400 }
+            )
+        }
+
+        // Validate attachments if present
+        if (attachments && (!Array.isArray(attachments) || attachments.length > 3)) {
+            return Response.json(
+                { error: 'Invalid attachments format or too many files' },
                 { status: 400 }
             )
         }
@@ -75,6 +83,34 @@ export async function POST(req: Request) {
         // 6. Get user context for personalization
         const context = await getUserContext(user.id)
         const formattedContext = formatContextForAI(context)
+
+        // Add file attachments to context if present
+        let fileContext = ''
+        if (attachments && attachments.length > 0) {
+            fileContext = '\n\n# Attached Files\n'
+            fileContext += `The user has attached ${attachments.length} file(s):\n\n`
+            
+            attachments.forEach((file: any, index: number) => {
+                fileContext += `## File ${index + 1}: ${file.fileName}\n`
+                fileContext += `Type: ${file.contentType || 'unknown'}\n`
+                fileContext += `Size: ${formatFileSize(file.fileSize)}\n\n`
+                
+                if (file.extractedContent) {
+                    fileContext += `Content:\n${file.extractedContent}\n\n`
+                }
+            })
+            
+            fileContext += 'Please reference these files when providing your response.\n'
+        }
+
+        // Helper function for file size formatting
+        function formatFileSize(bytes: number): string {
+            if (bytes === 0) return '0 Bytes'
+            const k = 1024
+            const sizes = ['Bytes', 'KB', 'MB', 'GB']
+            const i = Math.floor(Math.log(bytes) / Math.log(k))
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
+        }
 
         // 7. Initialize OpenAI client with OpenRouter
         // API key is only used server-side, never sent to client
@@ -93,7 +129,7 @@ export async function POST(req: Request) {
             messages: [
                 {
                     role: 'system',
-                    content: getSystemPrompt(formattedContext),
+                    content: getSystemPrompt(formattedContext + fileContext),
                 },
                 ...messages.map((m: any) => ({
                     role: m.role,

@@ -2,10 +2,21 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react'
 
+export interface FileAttachment {
+    fileName: string
+    fileType: string
+    fileSize: number
+    storagePath: string
+    publicUrl: string
+    extractedContent?: string
+    contentType?: string
+}
+
 export interface Message {
     role: 'user' | 'assistant'
     content: string
     id?: string
+    attachments?: FileAttachment[]
 }
 
 export function useChat() {
@@ -54,13 +65,41 @@ export function useChat() {
         }
     }, [])
 
-    const sendMessage = useCallback(async (content: string) => {
+    const sendMessage = useCallback(async (content: string, files?: File[]) => {
         if (!content.trim() || isLoading) return
+
+        let uploadedFiles: FileAttachment[] = []
+
+        // Upload files first if provided
+        if (files && files.length > 0) {
+            try {
+                const formData = new FormData()
+                files.forEach(file => formData.append('files', file))
+
+                const uploadResponse = await fetch('/api/chat/upload', {
+                    method: 'POST',
+                    body: formData,
+                })
+
+                if (!uploadResponse.ok) {
+                    const errorData = await uploadResponse.json()
+                    throw new Error(errorData.error || 'Failed to upload files')
+                }
+
+                const uploadData = await uploadResponse.json()
+                uploadedFiles = uploadData.files
+            } catch (err: any) {
+                console.error('File upload error:', err)
+                setError(err.message || 'Failed to upload files')
+                return
+            }
+        }
 
         const userMessage: Message = {
             role: 'user',
             content: content.trim(),
             id: Date.now().toString(),
+            attachments: uploadedFiles.length > 0 ? uploadedFiles : undefined,
         }
 
         // Add user message to UI
@@ -94,6 +133,7 @@ export function useChat() {
                         role: m.role,
                         content: m.content,
                     })),
+                    attachments: uploadedFiles.length > 0 ? uploadedFiles : undefined,
                 }),
                 signal: abortControllerRef.current.signal,
             })

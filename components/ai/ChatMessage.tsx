@@ -3,6 +3,7 @@
 import { Message } from '@/hooks/useChat'
 import { motion } from 'framer-motion'
 import ReactMarkdown from 'react-markdown'
+import { FilePreview } from './FilePreview'
 
 interface ChatMessageProps {
     message: Message
@@ -60,6 +61,22 @@ export function ChatMessage({ message, isLatest }: ChatMessageProps) {
                         </ReactMarkdown>
                     )}
                 </div>
+
+                {/* File Attachments */}
+                {message.attachments && message.attachments.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                        {message.attachments.map((file, index) => (
+                            <FilePreview
+                                key={index}
+                                fileName={file.fileName}
+                                fileType={file.fileType}
+                                fileSize={file.fileSize}
+                                publicUrl={file.publicUrl}
+                                showDownload={true}
+                            />
+                        ))}
+                    </div>
+                )}
             </div>
         </motion.div>
     )
