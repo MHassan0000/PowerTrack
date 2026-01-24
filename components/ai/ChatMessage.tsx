@@ -71,8 +71,6 @@ export function ChatMessage({ message, isLatest }: ChatMessageProps) {
                                 fileName={file.fileName}
                                 fileType={file.fileType}
                                 fileSize={file.fileSize}
-                                publicUrl={file.publicUrl}
-                                showDownload={true}
                             />
                         ))}
                     </div>
