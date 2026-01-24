@@ -222,6 +222,19 @@ export function useChat() {
         } catch (err: any) {
             if (err.name === 'AbortError') {
                 console.log('Request aborted')
+                // Save partial AI response if it exists
+                setMessages(prev => {
+                    const lastMessage = prev[prev.length - 1]
+                    if (lastMessage && lastMessage.role === 'assistant' && lastMessage.content) {
+                        // Keep the partial message and save it
+                        saveMessage({
+                            role: 'assistant',
+                            content: lastMessage.content,
+                        }).catch(e => console.error('Failed to save partial response:', e))
+                        return prev // Keep the partial message
+                    }
+                    return prev.slice(0, -1) // Remove empty placeholder if no content
+                })
             } else {
                 console.error('Chat error:', err)
                 setError(err.message || 'Failed to send message')
@@ -256,12 +269,30 @@ export function useChat() {
         if (abortControllerRef.current) {
             abortControllerRef.current.abort()
         }
+        
         // Stop typewriter animation
         if (animationFrameRef.current) {
             clearTimeout(animationFrameRef.current)
             animationFrameRef.current = null
         }
-    }, [])
+
+        // Save partial AI response if any content exists
+        setMessages(prev => {
+            const lastMessage = prev[prev.length - 1]
+            if (lastMessage && lastMessage.role === 'assistant' && lastMessage.content) {
+                // Save the partial response to database
+                saveMessage({
+                    role: 'assistant',
+                    content: lastMessage.content,
+                }).catch(err => console.error('Failed to save partial response:', err))
+            }
+            return prev
+        })
+
+        // Reset loading state so send button reappears
+        setIsLoading(false)
+        streamingContentRef.current = ''
+    }, [saveMessage])
 
     return {
         messages,
