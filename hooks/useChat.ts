@@ -27,7 +27,9 @@ export function useChat() {
     const [uploadProgress, setUploadProgress] = useState(0)
     const abortControllerRef = useRef<AbortController | null>(null)
     const streamingContentRef = useRef<string>('')
+    const displayedContentRef = useRef<string>('') // Track what's actually displayed
     const animationFrameRef = useRef<number | null>(null)
+    const hasSavedPartialRef = useRef<boolean>(false)
 
     // Load chat history on mount
     useEffect(() => {
@@ -73,6 +75,8 @@ export function useChat() {
     const sendMessage = useCallback(async (content: string, files?: File[]) => {
         if (!content.trim() || isLoading) return
 
+        // Reset partial save flag for new message
+        hasSavedPartialRef.current = false
         let uploadedFiles: FileAttachment[] = []
 
         // Upload files first if provided
@@ -178,6 +182,10 @@ export function useChat() {
                 fullContent += chunk
             }
 
+            // Store full content in ref for potential save on abort
+            streamingContentRef.current = fullContent
+            displayedContentRef.current = '' // Reset displayed content
+
             // Now display with smooth typewriter effect
             await new Promise<void>((resolve) => {
                 let currentIndex = 0
@@ -189,6 +197,9 @@ export function useChat() {
                         const chunkSize = Math.min(3, fullContent.length - currentIndex)
                         const displayedContent = fullContent.substring(0, currentIndex + chunkSize)
                         currentIndex += chunkSize
+
+                        // Track what's actually displayed
+                        displayedContentRef.current = displayedContent
 
                         setMessages(prev => {
                             const updated = [...prev]
@@ -212,43 +223,51 @@ export function useChat() {
                 typeNextChunk()
             })
 
-            // Save AI response to database after animation completes
-            if (fullContent) {
+            // Save AI response to database after animation completes normally
+            if (fullContent && !hasSavedPartialRef.current) {
+                hasSavedPartialRef.current = true // Mark as saved for normal completion
+                console.log('Saving completed message')
                 await saveMessage({
                     role: 'assistant',
                     content: fullContent,
                 })
+                console.log('Completed message saved')
             }
         } catch (err: any) {
             if (err.name === 'AbortError') {
                 console.log('Request aborted')
-                // Save partial AI response if it exists
-                setMessages(prev => {
-                    const lastMessage = prev[prev.length - 1]
-                    if (lastMessage && lastMessage.role === 'assistant' && lastMessage.content) {
-                        // Keep the partial message and save it
-                        saveMessage({
-                            role: 'assistant',
-                            content: lastMessage.content,
-                        }).catch(e => console.error('Failed to save partial response:', e))
-                        return prev // Keep the partial message
-                    }
-                    return prev.slice(0, -1) // Remove empty placeholder if no content
-                })
+                // Don't save here - will be saved in finally block
             } else {
                 console.error('Chat error:', err)
                 setError(err.message || 'Failed to send message')
-                // Remove the placeholder AI message on error
+                // Remove the placeholder AI message on error (non-abort errors)
                 setMessages(prev => prev.slice(0, -1))
             }
         } finally {
+            // CRITICAL: Save partial response if stopped and not already saved
+            if (!hasSavedPartialRef.current && streamingContentRef.current) {
+                console.log('Saving partial response:', streamingContentRef.current.substring(0, 50) + '...')
+                try {
+                    await saveMessage({
+                        role: 'assistant',
+                        content: streamingContentRef.current,
+                    })
+                    hasSavedPartialRef.current = true
+                    console.log('Partial response saved successfully')
+                } catch (e) {
+                    console.error('Failed to save partial response:', e)
+                }
+            }
+
             setIsLoading(false)
             abortControllerRef.current = null
             streamingContentRef.current = ''
+            displayedContentRef.current = ''
             if (animationFrameRef.current) {
                 clearTimeout(animationFrameRef.current)
                 animationFrameRef.current = null
             }
+            hasSavedPartialRef.current = false
         }
     }, [messages, isLoading, saveMessage])
 
@@ -266,9 +285,7 @@ export function useChat() {
     }, [])
 
     const stopGeneration = useCallback(() => {
-        if (abortControllerRef.current) {
-            abortControllerRef.current.abort()
-        }
+        console.log('Stop generation called')
         
         // Stop typewriter animation
         if (animationFrameRef.current) {
@@ -276,22 +293,34 @@ export function useChat() {
             animationFrameRef.current = null
         }
 
-        // Save partial AI response if any content exists
-        setMessages(prev => {
-            const lastMessage = prev[prev.length - 1]
-            if (lastMessage && lastMessage.role === 'assistant' && lastMessage.content) {
-                // Save the partial response to database
-                saveMessage({
-                    role: 'assistant',
-                    content: lastMessage.content,
-                }).catch(err => console.error('Failed to save partial response:', err))
-            }
-            return prev
-        })
+        // SAVE ONLY WHAT WAS DISPLAYED (not full downloaded content)
+        const contentToSave = displayedContentRef.current || streamingContentRef.current
+        
+        if (!hasSavedPartialRef.current && contentToSave) {
+            console.log('Saving DISPLAYED content:', contentToSave.substring(0, 50) + '...')
+            console.log('Content length:', contentToSave.length, 'chars')
+            hasSavedPartialRef.current = true
+            
+            // Save what was actually shown on screen
+            saveMessage({
+                role: 'assistant',
+                content: contentToSave,
+            }).then(() => {
+                console.log('Partial/displayed response saved successfully!')
+            }).catch(err => {
+                console.error('Failed to save partial response:', err)
+            })
+        } else {
+            console.log('Not saving - already saved:', hasSavedPartialRef.current, 'or no content:', !contentToSave)
+        }
+
+        // Abort fetch if still running
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort()
+        }
 
         // Reset loading state so send button reappears
         setIsLoading(false)
-        streamingContentRef.current = ''
     }, [saveMessage])
 
     return {
