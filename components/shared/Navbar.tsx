@@ -22,6 +22,7 @@ const NAV_ITEMS = {
         { label: 'Workouts', href: '/workouts' },
         { label: 'Exercises', href: '/exercises' },
         { label: 'Progress', href: '/progress' },
+        { label: 'Contact', href: '/contact' },
     ]
 }
 
