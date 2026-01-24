@@ -14,7 +14,8 @@ import {
     X,
     LogOut,
     User,
-    Target
+    Target,
+    Bot
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -25,9 +26,10 @@ const NAV_ITEMS = [
     { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { label: 'Workouts', href: '/workouts', icon: Dumbbell },
     { label: 'Exercises', href: '/exercises', icon: Zap },
+    { label: 'AI Coach', href: '/ai-coach', icon: Bot },
     { label: 'Progress', href: '/progress', icon: TrendingUp },
     { label: 'Nutrition', href: '/nutrition', icon: Utensils },
-    { label: 'Goals', href: '/goals', icon: Target },
+    { label:'Goals', href: '/goals', icon: Target },
     { label: 'Settings', href: '/settings', icon: Settings },
 ]
 
