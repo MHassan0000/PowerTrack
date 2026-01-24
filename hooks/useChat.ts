@@ -91,7 +91,10 @@ export function useChat() {
                 setUploadProgress(70)
                 if (!uploadResponse.ok) {
                     const errorData = await uploadResponse.json()
-                    throw new Error(errorData.error || 'Failed to upload files')
+                    // Just set error message, don't throw
+                    setError(errorData.error || 'Failed to upload files')
+                    setUploadProgress(0)
+                    return
                 }
 
                 const uploadData = await uploadResponse.json()
