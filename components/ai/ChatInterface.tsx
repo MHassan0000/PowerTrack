@@ -1,14 +1,13 @@
 'use client'
 
-import { useRef, useEffect } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useChat } from '@/hooks/useChat'
 import { ChatMessage } from './ChatMessage'
-import { Send, Loader2, Sparkles } from 'lucide-react'
 import { SUGGESTED_PROMPTS } from '@/lib/ai/prompts'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export function ChatInterface() {
-    const { messages, isLoading, error, sendMessage } = useChat()
+    const { messages, isLoading, error, sendMessage, stopGeneration } = useChat()
     const [input, setInput] = useState('')
     const messagesEndRef = useRef<HTMLDivElement>(null)
     const inputRef = useRef<HTMLTextAreaElement>(null)
@@ -17,6 +16,14 @@ export function ChatInterface() {
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
     }, [messages])
+
+    // Auto-resize textarea
+    useEffect(() => {
+        if (inputRef.current) {
+            inputRef.current.style.height = 'auto'
+            inputRef.current.style.height = `${Math.min(inputRef.current.scrollHeight, 120)}px`
+        }
+    }, [input])
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
@@ -27,103 +34,127 @@ export function ChatInterface() {
     }
 
     const handleSuggestedPrompt = (prompt: string) => {
-        setInput(prompt)
-        inputRef.current?.focus()
+        sendMessage(prompt)
     }
 
     return (
-        <div className="flex flex-col h-[calc(100vh-8rem)] max-w-4xl mx-auto">
+        <div className="flex flex-col h-full relative font-sans">
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
-                <AnimatePresence>
-                    {messages.length === 0 ? (
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="flex flex-col items-center justify-center h-full text-center space-y-6"
-                        >
-                            <div className="w-16 h-16 rounded-full bg-purple-500/10 flex items-center justify-center">
-                                <Sparkles className="w-8 h-8 text-purple-400" />
-                            </div>
-                            <div>
-                                <h2 className="text-2xl font-bold text-white mb-2">
-                                    Your AI Fitness Coach
-                                </h2>
-                                <p className="text-zinc-400">
-                                    Get personalized workout plans, form tips, and nutrition advice
-                                </p>
-                            </div>
+            <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
+                <div className="max-w-3xl mx-auto px-4 py-8 space-y-8">
+                    <AnimatePresence mode="popLayout">
+                        {messages.length === 0 ? (
+                            <motion.div
+                                key="empty-state"
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-12"
+                            >
+                                {/* Title & Description */}
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ delay: 0.1 }}
+                                    className="space-y-4"
+                                >
+                                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#10B981]/10 border border-[#10B981]/20 mb-6">
+                                        {/* Abstract Green Logo */}
+                                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                            <path d="M2 17L12 22L22 17" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                            <path d="M2 12L12 17L22 12" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                        </svg>
+                                    </div>
+                                    <h2 className="text-3xl font-medium text-white tracking-tight">
+                                        How can I help you today?
+                                    </h2>
+                                </motion.div>
 
-                            {/* Suggested Prompts */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-8 max-w-2xl">
-                                {SUGGESTED_PROMPTS.map((prompt, idx) => (
-                                    <button
-                                        key={idx}
-                                        onClick={() => handleSuggestedPrompt(prompt)}
-                                        className="px-4 py-3 bg-[#27272A] hover:bg-[#3F3F46] text-left text-sm text-zinc-300 rounded-xl border border-white/5 transition-all hover:border-[#10B981]/30"
-                                    >
-                                        {prompt}
-                                    </button>
-                                ))}
-                            </div>
-                        </motion.div>
-                    ) : (
-                        messages.map((message, index) => (
-                            <ChatMessage
-                                key={message.id || index}
-                                message={message}
-                                isLatest={index === messages.length - 1 && isLoading}
-                            />
-                        ))
+                                {/* Suggested Prompts Grid */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-2xl">
+                                    {SUGGESTED_PROMPTS.slice(0, 4).map((prompt, idx) => (
+                                        <button
+                                            key={idx}
+                                            onClick={() => handleSuggestedPrompt(prompt)}
+                                            className="px-5 py-4 bg-[#18181B] hover:bg-[#27272A] text-left text-[13px] text-zinc-400 hover:text-[#10B981] rounded-xl border border-zinc-800 hover:border-[#10B981]/30 transition-all duration-200"
+                                        >
+                                            {prompt}
+                                        </button>
+                                    ))}
+                                </div>
+                            </motion.div>
+                        ) : (
+                            messages.map((message, index) => (
+                                <ChatMessage
+                                    key={message.id || index}
+                                    message={message}
+                                    isLatest={index === messages.length - 1 && isLoading}
+                                />
+                            ))
+                        )}
+                    </AnimatePresence>
+
+                    {/* Error Message */}
+                    {error && (
+                        <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 text-red-400 text-sm">
+                            {error}
+                        </div>
                     )}
-                </AnimatePresence>
 
-                {/* Error Message */}
-                {error && (
-                    <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 text-red-400 text-sm">
-                        {error}
-                    </div>
-                )}
-
-                <div ref={messagesEndRef} />
+                    <div ref={messagesEndRef} />
+                </div>
             </div>
 
             {/* Input Area */}
-            <div className="border-t border-white/5 bg-[#18181B] p-4">
-                <form onSubmit={handleSubmit} className="flex gap-3 items-end max-w-4xl mx-auto">
-                    <div className="flex-1 relative">
-                        <textarea
-                            ref={inputRef}
-                            value={input}
-                            onChange={(e) => setInput(e.target.value)}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter' && !e.shiftKey) {
-                                    e.preventDefault()
-                                    handleSubmit(e)
-                                }
-                            }}
-                            placeholder="Ask me anything about fitness, workouts, or nutrition..."
-                            rows={1}
-                            className="w-full px-4 py-3 bg-[#27272A] border border-white/5 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-[#10B981]/50 focus:ring-1 focus:ring-[#10B981]/50 resize-none transition-all"
-                            style={{ minHeight: '52px', maxHeight: '120px' }}
-                        />
-                    </div>
-                    <button
-                        type="submit"
-                        disabled={!input.trim() || isLoading}
-                        className="px-5 py-3 bg-[#10B981] hover:bg-[#10B981]/90 disabled:bg-zinc-700 disabled:cursor-not-allowed text-black font-bold rounded-xl transition-all flex items-center gap-2"
-                    >
-                        {isLoading ? (
-                            <Loader2 className="w-5 h-5 animate-spin" />
-                        ) : (
-                            <Send className="w-5 h-5" />
-                        )}
-                    </button>
-                </form>
+            <div className="sticky bottom-0 bg-[#0F0F10]/80 backdrop-blur-lg pt-4 pb-6 border-t border-white/5">
+                <div className="max-w-3xl mx-auto px-4">
+                    <form onSubmit={handleSubmit} className="relative">
+                        <div className="relative flex items-end gap-2 bg-[#18181B] border border-zinc-800 rounded-2xl p-2 focus-within:border-[#10B981]/50 focus-within:ring-1 focus-within:ring-[#10B981]/20 transition-all duration-200">
+                            <textarea
+                                ref={inputRef}
+                                value={input}
+                                onChange={(e) => setInput(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && !e.shiftKey) {
+                                        e.preventDefault()
+                                        handleSubmit(e)
+                                    }
+                                }}
+                                placeholder="Message PowerTrack AI..."
+                                rows={1}
+                                className="flex-1 bg-transparent px-4 py-3 text-white placeholder-zinc-500 focus:outline-none resize-none max-h-[120px] scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent text-[15px]"
+                                style={{ minHeight: '44px' }}
+                            />
+                            
+                            {isLoading ? (
+                                <button
+                                    type="button"
+                                    onClick={stopGeneration}
+                                    className="shrink-0 w-10 h-10 rounded-xl bg-zinc-800 text-white flex items-center justify-center hover:bg-zinc-700 transition-colors"
+                                >
+                                    {/* Stop Icon */}
+                                    <div className="w-3 h-3 bg-white rounded-sm" />
+                                </button>
+                            ) : (
+                                <button
+                                    type="submit"
+                                    disabled={!input.trim()}
+                                    className="shrink-0 w-10 h-10 rounded-xl bg-[#10B981] disabled:bg-zinc-800 disabled:text-zinc-600 text-black flex items-center justify-center transition-all duration-200"
+                                >
+                                    {/* Arrow Up Icon */}
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M12 19V5M5 12l7-7 7 7"/>
+                                    </svg>
+                                </button>
+                            )}
+                        </div>
+                    </form>
+                    <p className="text-[11px] text-zinc-600 text-center mt-3">
+                        AI can make mistakes. Check important info.
+                    </p>
+                </div>
             </div>
         </div>
     )
 }
-
-// Add missing import
-import { useState } from 'react'

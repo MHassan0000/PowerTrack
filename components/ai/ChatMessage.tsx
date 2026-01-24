@@ -2,7 +2,6 @@
 
 import { Message } from '@/hooks/useChat'
 import { motion } from 'framer-motion'
-import { User, Sparkles } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 
 interface ChatMessageProps {
@@ -17,52 +16,48 @@ export function ChatMessage({ message, isLatest }: ChatMessageProps) {
         <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`flex gap-4 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}
+            className={`flex w-full ${isUser ? 'justify-end' : 'justify-start'}`}
         >
-            {/* Avatar */}
-            <div className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-                isUser ? 'bg-[#10B981]' : 'bg-purple-500/20'
-            }`}>
-                {isUser ? (
-                    <User className="w-5 h-5 text-black" />
-                ) : (
-                    <Sparkles className="w-5 h-5 text-purple-400" />
-                )}
-            </div>
-
-            {/* Message Content */}
-            <div className={`flex-1 max-w-[80%] ${isUser ? 'text-right' : 'text-left'}`}>
-                <div className={`inline-block px-4 py-3 rounded-2xl ${
+            <div
+                className={`max-w-[85%] sm:max-w-[75%] px-5 py-3.5 rounded-2xl text-[15px] leading-relaxed ${
                     isUser
-                        ? 'bg-[#10B981] text-black'
-                        : 'bg-[#27272A] text-white border border-white/5'
-                }`}>
+                        ? 'bg-[#18181B] text-white border border-[#10B981]/30'
+                        : 'bg-transparent text-zinc-100 pl-0'
+                }`}
+            >
+                {/* AI specific header */}
+                {!isUser && (
+                    <div className="flex items-center gap-2 mb-2 text-[#10B981] font-medium text-xs uppercase tracking-wider">
+                        <div className="w-2 h-2 rounded-full bg-[#10B981]" />
+                        PowerTrack AI
+                    </div>
+                )}
+                
+                <div className="prose prose-invert prose-sm max-w-none">
                     {isUser ? (
-                        <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                        <p className="whitespace-pre-wrap m-0">{message.content}</p>
                     ) : (
-                        <div className="prose prose-invert prose-sm max-w-none">
-                            <ReactMarkdown
-                                components={{
-                                    p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-                                    ul: ({ children }) => <ul className="list-disc ml-4 mb-2">{children}</ul>,
-                                    ol: ({ children }) => <ol className="list-decimal ml-4 mb-2">{children}</ol>,
-                                    li: ({ children }) => <li className="mb-1">{children}</li>,
-                                    strong: ({ children }) => <strong className="font-bold text-white">{children}</strong>,
-                                    code: ({ children }) => (
-                                        <code className="px-1.5 py-0.5 rounded bg-zinc-800 text-purple-400 text-xs">
-                                            {children}
-                                        </code>
-                                    ),
-                                    pre: ({ children }) => (
-                                        <pre className="bg-zinc-900 p-3 rounded-lg overflow-x-auto my-2">
-                                            {children}
-                                        </pre>
-                                    ),
-                                }}
-                            >
-                                {message.content || (isLatest ? '...' : '')}
-                            </ReactMarkdown>
-                        </div>
+                        <ReactMarkdown
+                            components={{
+                                p: ({ children }) => <p className="mb-4 last:mb-0 text-zinc-300">{children}</p>,
+                                ul: ({ children }) => <ul className="list-disc ml-4 mb-4 space-y-1 text-zinc-300">{children}</ul>,
+                                ol: ({ children }) => <ol className="list-decimal ml-4 mb-4 space-y-1 text-zinc-300">{children}</ol>,
+                                li: ({ children }) => <li className="pl-1">{children}</li>,
+                                strong: ({ children }) => <strong className="font-semibold text-white">{children}</strong>,
+                                code: ({ children }) => (
+                                    <code className="px-1.5 py-0.5 rounded bg-zinc-800 text-[#10B981] text-xs font-mono border border-white/5">
+                                        {children}
+                                    </code>
+                                ),
+                                pre: ({ children }) => (
+                                    <pre className="bg-[#18181B] p-4 rounded-xl overflow-x-auto my-4 border border-zinc-800">
+                                        {children}
+                                    </pre>
+                                ),
+                            }}
+                        >
+                            {message.content || (isLatest ? '...' : '')}
+                        </ReactMarkdown>
                     )}
                 </div>
             </div>
