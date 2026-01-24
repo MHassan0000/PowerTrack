@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { validateChatMessage, validateRole } from '@/lib/security/validation'
 
 export const runtime = 'edge'
 
@@ -9,9 +10,9 @@ export const runtime = 'edge'
 export async function GET() {
     try {
         const supabase = await createClient()
-        const { data: { user } } = await supabase.auth.getUser()
+        const { data: { user }, error: authError } = await supabase.auth.getUser()
         
-        if (!user) {
+        if (authError || !user) {
             return Response.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
@@ -25,13 +26,27 @@ export async function GET() {
 
         if (error) {
             console.error('Error fetching chat history:', error)
-            return Response.json({ error: 'Failed to fetch history' }, { status: 500 })
+            return Response.json(
+                { error: 'Failed to fetch chat history' },
+                { status: 500 }
+            )
         }
 
-        return Response.json({ messages: data || [] })
+        return Response.json(
+            { messages: data || [] },
+            {
+                headers: {
+                    'Cache-Control': 'private, no-cache',
+                    'X-Content-Type-Options': 'nosniff',
+                },
+            }
+        )
     } catch (error) {
         console.error('Chat history error:', error)
-        return Response.json({ error: 'Internal server error' }, { status: 500 })
+        return Response.json(
+            { error: 'An unexpected error occurred' },
+            { status: 500 }
+        )
     }
 }
 
@@ -41,20 +56,44 @@ export async function GET() {
 export async function POST(req: Request) {
     try {
         const supabase = await createClient()
-        const { data: { user } } = await supabase.auth.getUser()
+        const { data: { user }, error: authError } = await supabase.auth.getUser()
         
-        if (!user) {
+        if (authError || !user) {
             return Response.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
-        const { role, content } = await req.json()
-
-        // Validate input
-        if (!role || !content || !['user', 'assistant'].includes(role)) {
-            return Response.json({ error: 'Invalid message data' }, { status: 400 })
+        // Parse request body
+        let body: any
+        try {
+            body = await req.json()
+        } catch (error) {
+            return Response.json(
+                { error: 'Invalid JSON in request body' },
+                { status: 400 }
+            )
         }
 
-        // Save message
+        const { role, content } = body
+
+        // Validate role
+        const roleValidation = validateRole(role)
+        if (!roleValidation.valid) {
+            return Response.json(
+                { error: roleValidation.error },
+                { status: 400 }
+            )
+        }
+
+        // Validate content
+        const contentValidation = validateChatMessage(content)
+        if (!contentValidation.valid) {
+            return Response.json(
+                { error: contentValidation.error },
+                { status: 400 }
+            )
+        }
+
+        // Save message to database
         const { data, error } = await supabase
             .from('chat_messages')
             .insert({
@@ -67,13 +106,19 @@ export async function POST(req: Request) {
 
         if (error) {
             console.error('Error saving message:', error)
-            return Response.json({ error: 'Failed to save message' }, { status: 500 })
+            return Response.json(
+                { error: 'Failed to save message' },
+                { status: 500 }
+            )
         }
 
         return Response.json({ message: data })
     } catch (error) {
         console.error('Save message error:', error)
-        return Response.json({ error: 'Internal server error' }, { status: 500 })
+        return Response.json(
+            { error: 'An unexpected error occurred' },
+            { status: 500 }
+        )
     }
 }
 
@@ -83,9 +128,9 @@ export async function POST(req: Request) {
 export async function DELETE() {
     try {
         const supabase = await createClient()
-        const { data: { user } } = await supabase.auth.getUser()
+        const { data: { user }, error: authError } = await supabase.auth.getUser()
         
-        if (!user) {
+        if (authError || !user) {
             return Response.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
@@ -97,12 +142,18 @@ export async function DELETE() {
 
         if (error) {
             console.error('Error clearing chat history:', error)
-            return Response.json({ error: 'Failed to clear history' }, { status: 500 })
+            return Response.json(
+                { error: 'Failed to clear chat history' },
+                { status: 500 }
+            )
         }
 
         return Response.json({ success: true })
     } catch (error) {
         console.error('Clear history error:', error)
-        return Response.json({ error: 'Internal server error' }, { status: 500 })
+        return Response.json(
+            { error: 'An unexpected error occurred' },
+            { status: 500 }
+        )
     }
 }
