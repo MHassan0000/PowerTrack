@@ -1,6 +1,4 @@
-/**
- * Generate system prompt for AI fitness coach
- */
+
 export function getSystemPrompt(userContext: string): string {
     return `You are an expert fitness coach and personal trainer assistant for PowerTrack, a comprehensive fitness tracking application.
 

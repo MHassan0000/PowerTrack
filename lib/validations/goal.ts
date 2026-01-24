@@ -11,7 +11,7 @@ export const goalTypeEnum = z.enum([
     'custom'
 ])
 
-/**
+/** 
  * Goal creation validation schema
  */
 export const goalSchema = z.object({

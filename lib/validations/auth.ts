@@ -1,8 +1,5 @@
 import { z } from 'zod'
 
-/**
- * Login validation schema
- */
 export const loginSchema = z.object({
     email: z.string()
         .min(1, 'Email is required')
@@ -11,9 +8,7 @@ export const loginSchema = z.object({
         .min(8, 'Password must be at least 8 characters')
 })
 
-/**
- * Signup validation schema
- */
+
 export const signupSchema = z.object({
     email: z.string()
         .min(1, 'Email is required')

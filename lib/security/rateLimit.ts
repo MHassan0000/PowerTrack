@@ -1,12 +1,3 @@
-/**
- * Simple in-memory rate limiter for API protection
- * Tracks request counts per user with automatic window reset
- * 
- * For production with multiple instances, consider using:
- * - Upstash Redis for distributed rate limiting
- * - Vercel Edge Config for global state
- */
-
 interface RateLimitEntry {
     count: number
     resetTime: number
@@ -49,9 +40,6 @@ export function checkRateLimit(
     return true
 }
 
-/**
- * Get remaining requests for a user (useful for headers)
- */
 export function getRemainingRequests(
     userId: string,
     maxRequests: number = 10

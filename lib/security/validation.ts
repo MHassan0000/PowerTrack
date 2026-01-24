@@ -1,8 +1,3 @@
-/**
- * Input validation and sanitization utilities
- * Prevents injection attacks, validates data formats, and enforces limits
- */
-
 export interface ValidationResult {
     valid: boolean
     error?: string
@@ -54,10 +49,7 @@ export function validateChatMessage(content: unknown): ValidationResult {
     return { valid: true }
 }
 
-/**
- * Validate array of messages
- * Ensures proper format and validates each message
- */
+
 export function validateMessageArray(messages: unknown): ValidationResult {
     // Check if array
     if (!Array.isArray(messages)) {
@@ -106,9 +98,6 @@ export function validateMessageArray(messages: unknown): ValidationResult {
     return { valid: true }
 }
 
-/**
- * Validate role for chat history
- */
 export function validateRole(role: unknown): ValidationResult {
     if (typeof role !== 'string') {
         return { valid: false, error: 'Role must be a string' }
@@ -121,10 +110,7 @@ export function validateRole(role: unknown): ValidationResult {
     return { valid: true }
 }
 
-/**
- * Sanitize string input (remove potentially harmful characters)
- * Useful for logging or displaying user input
- */
+
 export function sanitizeString(input: string): string {
     return input
         .replace(/[<>]/g, '') // Remove angle brackets
