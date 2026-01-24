@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Play } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { AddToWorkoutModal } from './AddToWorkoutModal'
+import { QuickSessionConfigModal } from './QuickSessionConfigModal'
 import { createWorkout, addExerciseToWorkout } from '@/lib/actions/workouts'
 import { toast } from 'sonner'
 
@@ -14,10 +15,17 @@ interface ExerciseActionsProps {
 
 export function ExerciseActions({ exerciseId, exerciseName }: ExerciseActionsProps) {
     const [isModalOpen, setIsModalOpen] = useState(false)
+    const [isQuickSessionModalOpen, setIsQuickSessionModalOpen] = useState(false)
     const [isStarting, setIsStarting] = useState(false)
     const router = useRouter()
 
-    const handleStartStats = async () => {
+    const handleQuickSessionConfig = async (config: {
+        sets: number
+        reps: number
+        duration: number | ''
+        rest: number
+    }) => {
+        setIsQuickSessionModalOpen(false)
         setIsStarting(true)
 
         try {
@@ -25,7 +33,7 @@ export function ExerciseActions({ exerciseId, exerciseName }: ExerciseActionsPro
             const formData = new FormData()
             formData.append('name', `${exerciseName} - Quick Session`)
             formData.append('description', 'Quick workout session')
-            formData.append('is_template', 'true') // ✅ Fixed: Create as template
+            formData.append('is_template', 'true')
 
             const { data: workout, error: workoutError } = await createWorkout(formData)
             
@@ -35,11 +43,12 @@ export function ExerciseActions({ exerciseId, exerciseName }: ExerciseActionsPro
                 return
             }
 
-            // 2. Add exercise to workout
+            // 2. Add exercise to workout with user configuration
             const { error: addError } = await addExerciseToWorkout(workout.id, exerciseId, {
-                sets: 3,
-                reps: 10,
-                rest_seconds: 60,
+                sets: config.sets,
+                reps: config.reps > 0 ? config.reps : undefined,
+                duration_seconds: config.duration || undefined,
+                rest_seconds: config.rest,
             })
 
             if (addError) {
@@ -62,7 +71,7 @@ export function ExerciseActions({ exerciseId, exerciseName }: ExerciseActionsPro
         <>
             <div className="pt-2 space-y-3">
                 <button
-                    onClick={handleStartStats}
+                    onClick={() => setIsQuickSessionModalOpen(true)}
                     disabled={isStarting}
                     className="w-full py-3.5 bg-[#10B981] hover:bg-[#059669] disabled:bg-zinc-700 disabled:text-zinc-500 text-black font-bold rounded-xl transition-all shadow-lg hover:shadow-[#10B981]/20 flex items-center justify-center gap-2"
                 >
@@ -76,6 +85,13 @@ export function ExerciseActions({ exerciseId, exerciseName }: ExerciseActionsPro
                     Add to Workout
                 </button>
             </div>
+
+            <QuickSessionConfigModal
+                isOpen={isQuickSessionModalOpen}
+                onClose={() => setIsQuickSessionModalOpen(false)}
+                onConfirm={handleQuickSessionConfig}
+                exerciseName={exerciseName}
+            />
 
             <AddToWorkoutModal
                 isOpen={isModalOpen}
