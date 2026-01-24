@@ -29,11 +29,19 @@ export function ExerciseActions({ exerciseId, exerciseName }: ExerciseActionsPro
         setIsStarting(true)
 
         try {
-            // 1. Create a quick workout as TEMPLATE (so it can be started)
+            // Calculate estimated workout duration
+            // Each set takes: duration (if set) + rest time
+            // For non-timed exercises, estimate ~3-5 seconds per rep
+            const setDuration = config.duration || (config.reps * 4) // 4 seconds per rep estimate
+            const totalSeconds = config.sets * (setDuration + config.rest)
+            const estimatedMinutes = Math.ceil(totalSeconds / 60)
+
+            // 1. Create a quick workout with estimated duration
             const formData = new FormData()
             formData.append('name', `${exerciseName} - Quick Session`)
             formData.append('description', 'Quick workout session')
             formData.append('is_template', 'true')
+            formData.append('duration_minutes', estimatedMinutes.toString())
 
             const { data: workout, error: workoutError } = await createWorkout(formData)
             

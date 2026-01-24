@@ -60,6 +60,13 @@ export function ActiveWorkoutView({ session, sets: initialSets }: ActiveWorkoutV
         }
     }, [isPaused, setStartTime])
 
+    const currentExercise = workoutExercises[currentExerciseIndex]
+    const progress = workoutExercises.length > 0 ? ((currentExerciseIndex + 1) / workoutExercises.length) * 100 : 0
+
+    // Check if workout is truly complete
+    const isWorkoutComplete = currentExerciseIndex >= workoutExercises.length - 1 && 
+                              currentSetNumber > (currentExercise?.sets || 0)
+
     const handlePauseToggle = () => {
         setIsPaused(!isPaused)
         // Start tracking set duration when unpausing
@@ -67,9 +74,6 @@ export function ActiveWorkoutView({ session, sets: initialSets }: ActiveWorkoutV
             setSetStartTime(Date.now())
         }
     }
-
-    const currentExercise = workoutExercises[currentExerciseIndex]
-    const progress = workoutExercises.length > 0 ? ((currentExerciseIndex + 1) / workoutExercises.length) * 100 : 0
 
     // Group sets by exercise
     const setsByExercise = sets.reduce((acc, set) => {
@@ -114,8 +118,12 @@ export function ActiveWorkoutView({ session, sets: initialSets }: ActiveWorkoutV
                     setCurrentExerciseIndex(currentExerciseIndex + 1)
                     setCurrentSetNumber(1)
                 } else {
-                    // Workout complete
+                    // Workout complete - auto-trigger completion
                     toast.success('All exercises complete! 🎉')
+                    // Small delay then auto-complete
+                    setTimeout(() => {
+                        handleCompleteWorkout()
+                    }, 1500)
                 }
             } else {
                 setCurrentSetNumber(currentSetNumber + 1)
@@ -152,6 +160,16 @@ export function ActiveWorkoutView({ session, sets: initialSets }: ActiveWorkoutV
         const result = await completeWorkoutSession(session.id)
 
         if (!result.error && result.data) {
+            // Fetch estimated duration from workout if not already loaded
+            let estimatedMinutes = workoutData?.duration_minutes
+            
+            // Try to fetch from workout if we have a workout_id
+            const workoutId = result.data.workoutId || session.workout_id
+            if (!estimatedMinutes && workoutId) {
+                const { data: workoutInfo } = await getWorkoutById(workoutId)
+                estimatedMinutes = workoutInfo?.duration_minutes
+            }
+
             // Show completion summary
             setCompletionStats({
                 workoutName: session.workout_name,
@@ -159,7 +177,7 @@ export function ActiveWorkoutView({ session, sets: initialSets }: ActiveWorkoutV
                 totalReps: result.data.session?.total_reps || 0,
                 totalVolume: result.data.session?.total_volume_kg || 0,
                 actualDurationSeconds: result.data.durationSeconds,
-                estimatedDurationMinutes: workoutData?.duration_minutes
+                estimatedDurationMinutes: estimatedMinutes
             })
             setShowCompletionSummary(true)
             toast.success('Workout completed! Great job! 💪')
@@ -226,7 +244,8 @@ export function ActiveWorkoutView({ session, sets: initialSets }: ActiveWorkoutV
                             <div>
                                 <h1 className="text-2xl font-bold text-white">{session.workout_name}</h1>
                                 <DurationCounter 
-                                    startedAt={session.started_at} 
+                                    startedAt={session.started_at}
+                                    delaySeconds={3} 
                                     isPaused={isPaused}
                                     onPauseToggle={handlePauseToggle}
                                 />
@@ -253,7 +272,7 @@ export function ActiveWorkoutView({ session, sets: initialSets }: ActiveWorkoutV
                 </div>
 
                 {/* Current Exercise */}
-                {currentExercise && !allExercisesComplete && (
+                {currentExercise && !isWorkoutComplete && (
                     <div className="mb-8">
                         <div className="bg-[#18181B] rounded-3xl p-8 border border-white/5">
                             <div className="text-center mb-6">
@@ -311,8 +330,8 @@ export function ActiveWorkoutView({ session, sets: initialSets }: ActiveWorkoutV
                     </div>
                 )}
 
-                {/* Complete Workout Button */}
-                {(allExercisesComplete || sets.length > 0) && (
+                {/* Complete Workout Button - Only show if not auto-completing */}
+                {(sets.length > 0) && !completing && (
                     <motion.button
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}

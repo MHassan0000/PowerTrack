@@ -8,17 +8,20 @@ interface DurationCounterProps {
     startedAt: string // ISO timestamp
     isPaused: boolean
     onPauseToggle: () => void
+    delaySeconds?: number // Optional delay to offset timer start
 }
 
-export function DurationCounter({ startedAt, isPaused, onPauseToggle }: DurationCounterProps) {
+export function DurationCounter({ startedAt, isPaused, onPauseToggle, delaySeconds = 0 }: DurationCounterProps) {
     const [elapsed, setElapsed] = useState(0)
 
     useEffect(() => {
-        // Calculate initial elapsed time
-        const startTime = new Date(startedAt).getTime()
+        // Calculate initial elapsed time with delay offset
+        const startTime = new Date(startedAt).getTime() + (delaySeconds * 1000)
         const calculateElapsed = () => {
             const now = Date.now()
-            return Math.floor((now - startTime) / 1000)
+            const elapsedMs = now - startTime
+            // Don't show negative time during delay period
+            return Math.max(0, Math.floor(elapsedMs / 1000))
         }
 
         // Set initial value

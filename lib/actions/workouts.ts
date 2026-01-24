@@ -149,11 +149,14 @@ export async function createWorkout(formData: FormData) {
         return { error: 'Not authenticated' }
     }
 
+    const durationMinutes = formData.get('duration_minutes')
+
     const workout = {
         user_id: user.id,
         name: formData.get('name') as string,
         description: formData.get('description') as string,
         is_template: formData.get('is_template') === 'true',
+        duration_minutes: durationMinutes ? parseInt(durationMinutes as string) : null,
     }
 
     const { data, error } = await supabase
