@@ -120,6 +120,10 @@ export async function getEquipmentTypes() {
     return { data: equipment, error: null }
 }
 
+import { createExerciseSchema } from '@/lib/validations/exercises'
+
+// ... existing code ...
+
 /**
  * Create new exercise (admin only)
  */
@@ -134,8 +138,7 @@ export async function createExercise(formData: FormData) {
         return { error: 'Not authenticated' }
     }
 
-    // Extract form data
-    const exercise = {
+    const rawData = {
         name: formData.get('name') as string,
         description: formData.get('description') as string,
         primary_muscle: formData.get('primary_muscle') as string,
@@ -145,12 +148,20 @@ export async function createExercise(formData: FormData) {
         media_url: formData.get('media_url') as string,
         instructions: formData.get('instructions') as string,
         tips: formData.get('tips') as string,
-        created_by: user.id,
     }
+
+    const validationResult = createExerciseSchema.safeParse(rawData)
+    if (!validationResult.success) {
+        return { error: validationResult.error.issues[0].message }
+    }
+    const validatedData = validationResult.data
 
     const { data, error } = await supabase
         .from('exercise_library')
-        .insert(exercise)
+        .insert({
+            ...validatedData,
+            created_by: user.id
+        })
         .select()
         .single()
 

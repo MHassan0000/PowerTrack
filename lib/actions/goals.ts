@@ -25,16 +25,11 @@ export interface FitnessGoal {
     updated_at: string
 }
 
-export interface CreateGoalData {
-    title: string
-    description?: string
-    goal_type: GoalType
-    target_value: number
-    unit: string
-    exercise_id?: string
-    initial_value?: number
-    target_date?: string
-}
+// CreateGoalData is imported from validations
+
+import { createGoalSchema, updateGoalSchema, CreateGoalData } from '@/lib/validations/goals'
+
+// ... existing code ...
 
 /**
  * Create a new fitness goal
@@ -47,11 +42,17 @@ export async function createGoal(data: CreateGoalData) {
         return { error: 'Not authenticated' }
     }
 
+    const validationResult = createGoalSchema.safeParse(data)
+    if (!validationResult.success) {
+        return { error: validationResult.error.issues[0].message }
+    }
+    const validatedData = validationResult.data
+
     const { data: goal, error } = await supabase
         .from('fitness_goals')
         .insert({
             user_id: user.id,
-            ...data,
+            ...validatedData,
         })
         .select()
         .single()
@@ -146,10 +147,17 @@ export async function getGoalById(id: string) {
  */
 export async function updateGoal(id: string, updates: Partial<CreateGoalData> & { current_value?: number }) {
     const supabase = await createClient()
+    
+    // Validate inputs
+    const validationResult = updateGoalSchema.safeParse(updates)
+    if (!validationResult.success) {
+        return { error: validationResult.error.issues[0].message }
+    }
+    const validatedUpdates = validationResult.data
 
     const { error } = await supabase
         .from('fitness_goals')
-        .update(updates)
+        .update(validatedUpdates)
         .eq('id', id)
 
     if (error) {

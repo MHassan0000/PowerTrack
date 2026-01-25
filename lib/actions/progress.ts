@@ -37,6 +37,10 @@ export interface WeightProgressPoint {
     max_volume: number
 }
 
+import { bodyStatSchema, updateBodyStatSchema } from '@/lib/validations/progress'
+
+// ... existing code ...
+
 /**
  * Add body stat entry
  */
@@ -48,13 +52,19 @@ export async function addBodyStat(weight_kg: number, measured_at: string, notes?
         return { error: 'Not authenticated' }
     }
 
+    const validationResult = bodyStatSchema.safeParse({ weight_kg, measured_at, notes })
+    if (!validationResult.success) {
+        return { data: null, error: validationResult.error.issues[0].message }
+    }
+    const validatedData = validationResult.data
+
     const { data, error } = await supabase
         .from('body_stats')
         .insert({
             user_id: user.id,
-            weight_kg,
-            measured_at,
-            notes: notes || null,
+            weight_kg: validatedData.weight_kg,
+            measured_at: validatedData.measured_at,
+            notes: validatedData.notes || null,
         })
         .select()
         .single()
@@ -67,33 +77,7 @@ export async function addBodyStat(weight_kg: number, measured_at: string, notes?
     return { data, error: null }
 }
 
-/**
- * Get body stats for a user
- */
-export async function getBodyStats(days: number = 90) {
-    const supabase = await createClient()
-
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-        return { data: null, error: 'Not authenticated' }
-    }
-
-    const startDate = new Date()
-    startDate.setDate(startDate.getDate() - days)
-
-    const { data, error } = await supabase
-        .from('body_stats')
-        .select('*')
-        .eq('user_id', user.id)
-        .gte('measured_at', startDate.toISOString().split('T')[0])
-        .order('measured_at', { ascending: true })
-
-    if (error) {
-        return { data: null, error: error.message }
-    }
-
-    return { data, error: null }
-}
+// ... getBodyStats ...
 
 /**
  * Update body stat
@@ -101,9 +85,15 @@ export async function getBodyStats(days: number = 90) {
 export async function updateBodyStat(id: string, updates: { weight_kg?: number; notes?: string }) {
     const supabase = await createClient()
 
+    const validationResult = updateBodyStatSchema.safeParse(updates)
+    if (!validationResult.success) {
+        return { error: validationResult.error.issues[0].message }
+    }
+    const validatedUpdates = validationResult.data
+
     const { error } = await supabase
         .from('body_stats')
-        .update(updates)
+        .update(validatedUpdates)
         .eq('id', id)
 
     if (error) {

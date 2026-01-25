@@ -135,33 +135,43 @@ export async function getWorkoutById(id: string) {
     }
 }
 
+import { createWorkoutSchema, updateWorkoutSchema, workoutExerciseSchema, updateWorkoutExerciseSchema } from '@/lib/validations/workouts'
+
 /**
  * Create new workout
  */
 export async function createWorkout(formData: FormData) {
     const supabase = await createClient()
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser()
-
+    const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
         return { error: 'Not authenticated' }
     }
 
-    const durationMinutes = formData.get('duration_minutes')
-
-    const workout = {
-        user_id: user.id,
+    const rawData = {
         name: formData.get('name') as string,
         description: formData.get('description') as string,
         is_template: formData.get('is_template') === 'true',
-        duration_minutes: durationMinutes ? parseInt(durationMinutes as string) : null,
+        scheduled_date: formData.get('scheduled_date') as string,
+        notes: formData.get('notes') as string,
     }
 
-    const { data, error } = await supabase
+    const validationResult = createWorkoutSchema.safeParse(rawData)
+    if (!validationResult.success) {
+        return { error: validationResult.error.issues[0].message }
+    }
+    const data = validationResult.data
+
+    const { data: workout, error } = await supabase
         .from('workouts')
-        .insert(workout)
+        .insert({
+            user_id: user.id,
+            name: data.name,
+            description: data.description || null,
+            is_template: data.is_template || false,
+            scheduled_date: data.scheduled_date || null,
+            notes: data.notes || null,
+        })
         .select()
         .single()
 
@@ -170,8 +180,7 @@ export async function createWorkout(formData: FormData) {
     }
 
     revalidatePath('/workouts')
-
-    return { data, error: null }
+    return { data: workout, error: null }
 }
 
 /**
@@ -180,26 +189,29 @@ export async function createWorkout(formData: FormData) {
 export async function updateWorkout(id: string, formData: FormData) {
     const supabase = await createClient()
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser()
-
+    const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
         return { error: 'Not authenticated' }
     }
 
-    const updates = {
-        name: formData.get('name') as string,
-        description: formData.get('description') as string,
-    }
+    const rawData: any = {}
+    if (formData.has('name')) rawData.name = formData.get('name')
+    if (formData.has('description')) rawData.description = formData.get('description')
+    if (formData.has('is_template')) rawData.is_template = formData.get('is_template') === 'true'
+    if (formData.has('scheduled_date')) rawData.scheduled_date = formData.get('scheduled_date')
+    if (formData.has('notes')) rawData.notes = formData.get('notes')
 
-    const { data, error } = await supabase
+    const validationResult = updateWorkoutSchema.safeParse(rawData)
+    if (!validationResult.success) {
+        return { error: validationResult.error.issues[0].message }
+    }
+    const data = validationResult.data
+
+    const { error } = await supabase
         .from('workouts')
-        .update(updates)
+        .update(data)
         .eq('id', id)
         .eq('user_id', user.id)
-        .select()
-        .single()
 
     if (error) {
         return { error: error.message }
@@ -207,8 +219,7 @@ export async function updateWorkout(id: string, formData: FormData) {
 
     revalidatePath('/workouts')
     revalidatePath(`/workouts/${id}`)
-
-    return { data, error: null }
+    return { error: null }
 }
 
 /**
@@ -257,40 +268,44 @@ export async function addExerciseToWorkout(
 ) {
     const supabase = await createClient()
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser()
-
+    const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
         return { error: 'Not authenticated' }
     }
 
-    // Get current max order_index
-    const { data: maxOrder } = await supabase
+    const validationResult = workoutExerciseSchema.safeParse({
+        exercise_id: exerciseId,
+        ...config
+    })
+
+    if (!validationResult.success) {
+        return { error: validationResult.error.issues[0].message }
+    }
+    const validatedConfig = validationResult.data
+
+    // Get current max order index
+    const { data: exercises } = await supabase
         .from('workout_exercises')
         .select('order_index')
         .eq('workout_id', workoutId)
         .order('order_index', { ascending: false })
         .limit(1)
-        .single()
 
-    const orderIndex = (maxOrder?.order_index ?? -1) + 1
-
-    const workoutExercise = {
-        workout_id: workoutId,
-        exercise_id: exerciseId,
-        order_index: orderIndex,
-        sets: config.sets,
-        reps: config.reps || null,
-        duration_seconds: config.duration_seconds || null,
-        rest_seconds: config.rest_seconds,
-        weight_kg: config.weight_kg || null,
-        notes: config.notes || null,
-    }
+    const nextOrderIndex = (exercises?.[0]?.order_index ?? -1) + 1
 
     const { data, error } = await supabase
         .from('workout_exercises')
-        .insert(workoutExercise)
+        .insert({
+            workout_id: workoutId,
+            exercise_id: validatedConfig.exercise_id,
+            order_index: nextOrderIndex,
+            sets: validatedConfig.sets,
+            reps: validatedConfig.reps || null,
+            duration_seconds: validatedConfig.duration_seconds || null,
+            rest_seconds: validatedConfig.rest_seconds,
+            weight_kg: validatedConfig.weight_kg || null,
+            notes: validatedConfig.notes || null,
+        })
         .select()
         .single()
 
@@ -298,8 +313,9 @@ export async function addExerciseToWorkout(
         return { error: error.message }
     }
 
-    revalidatePath(`/workouts/${workoutId}`)
+    await recalculateWorkoutDuration(workoutId)
 
+    revalidatePath(`/workouts/${workoutId}`)
     return { data, error: null }
 }
 
@@ -381,23 +397,33 @@ export async function updateWorkoutExercise(
 ) {
     const supabase = await createClient()
 
-    const { data, error } = await supabase
+    const validationResult = updateWorkoutExerciseSchema.safeParse(updates)
+    if (!validationResult.success) {
+        return { error: validationResult.error.issues[0].message }
+    }
+    const validatedUpdates = validationResult.data
+
+    const { error } = await supabase
         .from('workout_exercises')
-        .update(updates)
+        .update({
+             ...validatedUpdates,
+             // Ensure optional fields are handled if explicit null/undefined logic needed, 
+             // but here we just spread validated partial updates
+        })
         .eq('id', id)
-        .select()
-        .single()
 
     if (error) {
         return { error: error.message }
     }
 
-    // Revalidate the parent workout page
-    if (data.workout_id) {
-        revalidatePath(`/workouts/${data.workout_id}`)
+    // Get workout_id to revalidate and recalculate duration
+    const { data: we } = await supabase.from('workout_exercises').select('workout_id').eq('id', id).single()
+    if (we) {
+        await recalculateWorkoutDuration(we.workout_id)
+        revalidatePath(`/workouts/${we.workout_id}`)
     }
 
-    return { data, error: null }
+    return { error: null }
 }
 
 /**

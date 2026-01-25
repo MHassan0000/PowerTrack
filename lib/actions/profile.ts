@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { profileSchema } from '@/lib/validations/profile'
 
 export interface ProfileFormData {
     full_name: string
@@ -51,57 +52,41 @@ export async function getProfile() {
 export async function updateProfile(formData: FormData) {
     const supabase = await createClient()
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser()
-
+    const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
         return { error: 'Not authenticated' }
     }
 
-    // Extract and validate form data
-    const full_name = formData.get('full_name') as string
-    const age = parseInt(formData.get('age') as string)
-    const height_cm = parseFloat(formData.get('height_cm') as string)
-    const weight_kg = parseFloat(formData.get('weight_kg') as string)
-    const fitness_goal = formData.get('fitness_goal') as string
-    const experience_level = formData.get('experience_level') as string
-    const preferred_units = formData.get('preferred_units') as string
-    const bio = formData.get('bio') as string
+    const rawData: any = {}
+    if (formData.has('full_name')) rawData.full_name = formData.get('full_name')
+    if (formData.has('bio')) rawData.bio = formData.get('bio')
+    
+    // Parse numbers
+    if (formData.has('age')) rawData.age = parseInt(formData.get('age') as string)
+    if (formData.has('height_cm')) rawData.height_cm = parseFloat(formData.get('height_cm') as string)
+    if (formData.has('weight_kg')) rawData.weight_kg = parseFloat(formData.get('weight_kg') as string)
+    
+    // Enums - pass string, Zod will validate
+    if (formData.has('fitness_goal')) rawData.fitness_goal = formData.get('fitness_goal')
+    if (formData.has('experience_level')) rawData.experience_level = formData.get('experience_level')
+    if (formData.has('preferred_units')) rawData.preferred_units = formData.get('preferred_units')
 
-    // Validation
-    if (!full_name || full_name.trim().length === 0) {
-        return { error: 'Name is required' }
+    // Goals
+    if (formData.has('daily_calorie_goal')) rawData.daily_calorie_goal = parseInt(formData.get('daily_calorie_goal') as string)
+    if (formData.has('daily_protein_goal_g')) rawData.daily_protein_goal_g = parseInt(formData.get('daily_protein_goal_g') as string)
+    if (formData.has('daily_carbs_goal_g')) rawData.daily_carbs_goal_g = parseInt(formData.get('daily_carbs_goal_g') as string)
+    if (formData.has('daily_fat_goal_g')) rawData.daily_fat_goal_g = parseInt(formData.get('daily_fat_goal_g') as string)
+
+    const validationResult = profileSchema.safeParse(rawData)
+    if (!validationResult.success) {
+        return { error: validationResult.error.issues[0].message }
     }
+    const validatedData = validationResult.data
 
-    if (!age || age < 13 || age > 120) {
-        return { error: 'Please enter a valid age (13-120)' }
-    }
-
-    if (!height_cm || height_cm <= 0) {
-        return { error: 'Please enter a valid height' }
-    }
-
-    if (!weight_kg || weight_kg <= 0) {
-        return { error: 'Please enter a valid weight' }
-    }
-
-    // Update profile
     const { error } = await supabase
         .from('users')
         .update({
-            full_name,
-            age,
-            height_cm,
-            weight_kg,
-            fitness_goal,
-            experience_level,
-            preferred_units,
-            bio: bio || null,
-            daily_calorie_goal: formData.get('daily_calorie_goal') ? parseInt(formData.get('daily_calorie_goal') as string) : null,
-            daily_protein_goal_g: formData.get('daily_protein_goal_g') ? parseFloat(formData.get('daily_protein_goal_g') as string) : null,
-            daily_carbs_goal_g: formData.get('daily_carbs_goal_g') ? parseFloat(formData.get('daily_carbs_goal_g') as string) : null,
-            daily_fat_goal_g: formData.get('daily_fat_goal_g') ? parseFloat(formData.get('daily_fat_goal_g') as string) : null,
+            ...validatedData,
             updated_at: new Date().toISOString(),
         })
         .eq('id', user.id)

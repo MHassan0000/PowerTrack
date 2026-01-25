@@ -36,18 +36,7 @@ export interface SetLog {
     created_at: string
 }
 
-export interface SetData {
-    exercise_id: string
-    set_number: number
-    reps?: number
-    weight_kg?: number
-    duration_seconds?: number
-    rest_seconds?: number
-    rpe?: number
-    is_warmup?: boolean
-    is_failure?: boolean
-    notes?: string
-}
+import { setLogSchema, startSessionSchema, completeSessionSchema, SetData } from '@/lib/validations/workouts'
 
 /**
  * Start a new workout session
@@ -60,12 +49,30 @@ export async function startWorkoutSession(workoutId: string | null, workoutName:
         return { error: 'Not authenticated' }
     }
 
-    const { data, error } = await supabase
+    const validationResult = startSessionSchema.safeParse({ workoutId, workoutName })
+    if (!validationResult.success) {
+        return { error: validationResult.error.issues[0].message }
+    }
+    const data = validationResult.data
+
+    // Verify user doesn't have an active session
+    const { data: activeSession } = await supabase
+        .from('workout_sessions')
+        .select('id')
+        .eq('user_id', user.id)
+        .is('completed_at', null)
+        .single()
+
+    if (activeSession) {
+        return { error: 'You already have an active session' }
+    }
+
+    const { data: session, error } = await supabase
         .from('workout_sessions')
         .insert({
             user_id: user.id,
-            workout_id: workoutId,
-            workout_name: workoutName,
+            workout_id: data.workoutId || null,
+            workout_name: data.workoutName,
             started_at: new Date().toISOString(),
         })
         .select()
@@ -76,7 +83,7 @@ export async function startWorkoutSession(workoutId: string | null, workoutName:
     }
 
     revalidatePath('/workouts')
-    return { data, error: null }
+    return { data: session, error: null }
 }
 
 /**
@@ -85,11 +92,43 @@ export async function startWorkoutSession(workoutId: string | null, workoutName:
 export async function logSet(sessionId: string, setData: SetData) {
     const supabase = await createClient()
 
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+        return { error: 'Not authenticated' }
+    }
+
+    const validationResult = setLogSchema.safeParse(setData)
+    if (!validationResult.success) {
+        return { error: validationResult.error.issues[0].message }
+    }
+    const validatedSet = validationResult.data
+
+    // Verify session belongs to user
+    const { data: session } = await supabase
+        .from('workout_sessions')
+        .select('id')
+        .eq('id', sessionId)
+        .eq('user_id', user.id)
+        .single()
+
+    if (!session) {
+        return { error: 'Session not found' }
+    }
+
     const { data, error } = await supabase
         .from('set_logs')
         .insert({
             session_id: sessionId,
-            ...setData,
+            exercise_id: validatedSet.exercise_id,
+            set_number: validatedSet.set_number,
+            reps: validatedSet.reps || null,
+            weight_kg: validatedSet.weight_kg || null,
+            duration_seconds: validatedSet.duration_seconds || null,
+            rest_seconds: validatedSet.rest_seconds || null,
+            rpe: validatedSet.rpe || null,
+            is_warmup: validatedSet.is_warmup || false,
+            is_failure: validatedSet.is_failure || false,
+            notes: validatedSet.notes || null,
         })
         .select()
         .single()
@@ -98,7 +137,9 @@ export async function logSet(sessionId: string, setData: SetData) {
         return { error: error.message }
     }
 
-    revalidatePath('/workouts/active')
+    // Update session stats
+    await updateSessionStats(sessionId)
+
     return { data, error: null }
 }
 
@@ -124,11 +165,23 @@ export async function updateSessionStats(sessionId: string) {
 export async function completeWorkoutSession(sessionId: string, notes?: string) {
     const supabase = await createClient()
 
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+        return { error: 'Not authenticated' }
+    }
+
+    const validationResult = completeSessionSchema.safeParse({ sessionId, notes })
+    if (!validationResult.success) {
+        return { error: validationResult.error.issues[0].message }
+    }
+    const validatedData = validationResult.data
+
     // Get session start time to calculate duration
     const { data: session } = await supabase
         .from('workout_sessions')
         .select('started_at, workout_id')
         .eq('id', sessionId)
+        .eq('user_id', user.id)
         .single()
 
     if (!session) {
@@ -140,16 +193,15 @@ export async function completeWorkoutSession(sessionId: string, notes?: string) 
     const durationSeconds = Math.floor((completedAt.getTime() - startedAt.getTime()) / 1000)
 
     // Update session
-    const { data: updatedSession, error: updateError } = await supabase
+    const { error: updateError } = await supabase
         .from('workout_sessions')
         .update({
             completed_at: completedAt.toISOString(),
             duration_seconds: durationSeconds,
-            notes: notes || null,
+            notes: validatedData.notes || null,
         })
         .eq('id', sessionId)
-        .select()
-        .single()
+        .eq('user_id', user.id)
 
     if (updateError) {
         console.error('Error completing workout session:', updateError)
@@ -167,8 +219,6 @@ export async function completeWorkoutSession(sessionId: string, notes?: string) 
         .single()
 
     // Don't revalidate here - let the user navigate manually from completion summary
-    // revalidatePath('/workouts')
-    // revalidatePath('/workouts/history')
     
     return { 
         data: {

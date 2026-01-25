@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { createNutritionLogSchema, updateNutritionLogSchema, CreateNutritionLogInput } from '@/lib/validations/nutrition'
 
 export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack' | 'other'
 
@@ -23,7 +24,7 @@ export interface NutritionLog {
 
 export interface DailyNutritionSummary {
     totalCalories: number
-   totalProtein: number
+    totalProtein: number
     totalCarbs: number
     totalFat: number
     totalFiber: number
@@ -35,18 +36,7 @@ export interface DailyNutritionSummary {
     fatGoal: number | null
 }
 
-export interface CreateNutritionLogInput {
-    meal_type: MealType
-    food_item: string
-    calories?: number
-    protein_g?: number
-    carbs_g?: number
-    fat_g?: number
-    fiber_g?: number
-    sugar_g?: number
-    notes?: string
-    logged_at?: string
-}
+// CreateNutritionLogInput is now imported from validations
 
 /**
  * Add a new nutrition log
@@ -59,20 +49,26 @@ export async function addNutritionLog(input: CreateNutritionLogInput): Promise<{
         return { data: null, error: 'Not authenticated' }
     }
 
+    const validationResult = createNutritionLogSchema.safeParse(input)
+    if (!validationResult.success) {
+        return { data: null, error: validationResult.error.issues[0].message }
+    }
+    const validatedData = validationResult.data
+
     const { data, error } = await supabase
         .from('nutrition_logs')
         .insert({
             user_id: user.id,
-            meal_type: input.meal_type,
-            food_item: input.food_item,
-            calories: input.calories || null,
-            protein_g: input.protein_g || null,
-            carbs_g: input.carbs_g || null,
-            fat_g: input.fat_g || null,
-            fiber_g: input.fiber_g || null,
-            sugar_g: input.sugar_g || null,
-            notes: input.notes || null,
-            logged_at: input.logged_at || new Date().toISOString(),
+            meal_type: validatedData.meal_type,
+            food_item: validatedData.food_item,
+            calories: validatedData.calories || null,
+            protein_g: validatedData.protein_g || null,
+            carbs_g: validatedData.carbs_g || null,
+            fat_g: validatedData.fat_g || null,
+            fiber_g: validatedData.fiber_g || null,
+            sugar_g: validatedData.sugar_g || null,
+            notes: validatedData.notes || null,
+            logged_at: validatedData.logged_at || new Date().toISOString(),
         })
         .select()
         .single()
@@ -224,16 +220,22 @@ export async function updateNutritionLog(logId: string, input: Partial<CreateNut
         return { data: null, error: 'Not authenticated' }
     }
 
+    const validationResult = updateNutritionLogSchema.safeParse(input)
+    if (!validationResult.success) {
+        return { data: null, error: validationResult.error.issues[0].message }
+    }
+    const validatedData = validationResult.data
+
     const updateData: any = {}
-    if (input.food_item !== undefined) updateData.food_item = input.food_item
-    if (input.meal_type !== undefined) updateData.meal_type = input.meal_type
-    if (input.calories !== undefined) updateData.calories = input.calories || null
-    if (input.protein_g !== undefined) updateData.protein_g = input.protein_g || null
-    if (input.carbs_g !== undefined) updateData.carbs_g = input.carbs_g || null
-    if (input.fat_g !== undefined) updateData.fat_g = input.fat_g || null
-    if (input.fiber_g !== undefined) updateData.fiber_g = input.fiber_g || null
-    if (input.sugar_g !== undefined) updateData.sugar_g = input.sugar_g || null
-    if (input.notes !== undefined) updateData.notes = input.notes || null
+    if (validatedData.food_item !== undefined) updateData.food_item = validatedData.food_item
+    if (validatedData.meal_type !== undefined) updateData.meal_type = validatedData.meal_type
+    if (validatedData.calories !== undefined) updateData.calories = validatedData.calories
+    if (validatedData.protein_g !== undefined) updateData.protein_g = validatedData.protein_g
+    if (validatedData.carbs_g !== undefined) updateData.carbs_g = validatedData.carbs_g
+    if (validatedData.fat_g !== undefined) updateData.fat_g = validatedData.fat_g
+    if (validatedData.fiber_g !== undefined) updateData.fiber_g = validatedData.fiber_g
+    if (validatedData.sugar_g !== undefined) updateData.sugar_g = validatedData.sugar_g
+    if (validatedData.notes !== undefined) updateData.notes = validatedData.notes
 
     const { data, error } = await supabase
         .from('nutrition_logs')
