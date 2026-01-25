@@ -5,6 +5,7 @@ import Navbar from "@/components/shared/Navbar";
 import { PageTransition } from "@/components/shared/PageTransition";
 import { createClient } from "@/lib/supabase/server";
 import { Toaster } from "sonner";
+import PwaRegistry from "@/components/pwa/PwaRegistry";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -15,6 +16,7 @@ export const metadata: Metadata = {
   title: "PowerTrack - Your AI-Powered Fitness Companion",
   description: "Track workouts, monitor progress, and achieve your fitness goals with PowerTrack - the ultimate fitness tracking app powered by AI.",
   keywords: ["fitness", "workout", "tracking", "health", "nutrition", "exercise"],
+  manifest: "/manifest.json",
 };
 
 export default async function RootLayout({
@@ -30,6 +32,7 @@ export default async function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={`${inter.variable} antialiased matrix-lines bg-[rgb(var(--background))]`}>
+        <PwaRegistry />
         {children}
         <Toaster
           theme="dark"
