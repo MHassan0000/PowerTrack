@@ -335,11 +335,16 @@ export async function recalculateWorkoutDuration(workoutId: string) {
     }
 
     // Calculate total estimated duration
+    // Formula: (sets × duration) + ((sets - 1) × rest)
+    // No rest after the last set!
     let totalSeconds = 0
     exercises.forEach(exercise => {
         const setDuration = exercise.duration_seconds || (exercise.reps ? exercise.reps * 4 : 0)
         const restTime = exercise.rest_seconds || 60
-        totalSeconds += exercise.sets * (setDuration + restTime)
+        const sets = exercise.sets || 1
+        
+        // Total time = all sets + rest between sets (not after last set)
+        totalSeconds += (sets * setDuration) + ((sets - 1) * restTime)
     })
 
     const estimatedMinutes = Math.ceil(totalSeconds / 60)

@@ -192,12 +192,8 @@ export default function WorkoutEditPage({ params }: WorkoutEditPageProps) {
         if (result.error) {
             toast.error(result.error, { id: toastId })
         } else {
-            console.log('=== WORKOUT EDIT PAGE DEBUG ===')
-            console.log('Exercise added, recalculating duration for workout:', id)
-            
             // Recalculate workout duration
-            const recalcResult = await recalculateWorkoutDuration(id)
-            console.log('Recalculation result:', recalcResult)
+            await recalculateWorkoutDuration(id)
             
             toast.success(`Added ${selectedExercise.name}`, { id: toastId })
             // Reload workout

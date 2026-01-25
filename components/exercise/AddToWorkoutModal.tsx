@@ -116,10 +116,7 @@ export function AddToWorkoutModal({ isOpen, onClose, exerciseId, exerciseName }:
         }
 
         // Recalculate workout duration
-        console.log('=== ADD TO WORKOUT DEBUG ===')
-        console.log('Calling recalculateWorkoutDuration for workout:', selectedWorkoutId)
-        const recalcResult = await recalculateWorkoutDuration(selectedWorkoutId)
-        console.log('Recalculation result:', recalcResult)
+        await recalculateWorkoutDuration(selectedWorkoutId)
 
         // Success!
         toast.success(`${exerciseName} added to workout!`)

@@ -30,14 +30,10 @@ export function ExerciseActions({ exerciseId, exerciseName }: ExerciseActionsPro
 
         try {
             // Calculate estimated workout duration
-            // Each set takes: duration (if set) + rest time
-            // For non-timed exercises, estimate ~3-5 seconds per rep
+            // Formula: (sets × duration) + ((sets - 1) × rest) - no rest after last set
             const setDuration = config.duration || (config.reps * 4) // 4 seconds per rep estimate
-            const totalSeconds = config.sets * (setDuration + config.rest)
+            const totalSeconds = (config.sets * setDuration) + ((config.sets - 1) * config.rest)
             const estimatedMinutes = Math.ceil(totalSeconds / 60)
-
-            console.log('=== QUICK SESSION CREATION DEBUG ===')
-            console.log('Estimated duration (minutes):', estimatedMinutes)
 
             // 1. Create a quick workout with estimated duration
             const formData = new FormData()
@@ -54,9 +50,6 @@ export function ExerciseActions({ exerciseId, exerciseName }: ExerciseActionsPro
                 return
             }
 
-            console.log('Created workout:', workout)
-            console.log('Workout has duration_minutes:', workout.duration_minutes)
-
             // 2. Add exercise to workout with user configuration
             const { error: addError } = await addExerciseToWorkout(workout.id, exerciseId, {
                 sets: config.sets,
@@ -71,10 +64,8 @@ export function ExerciseActions({ exerciseId, exerciseName }: ExerciseActionsPro
                 return
             }
 
-            console.log('Exercise added, recalculating duration...')
             // Recalculate to ensure consistency
-            const recalcResult = await recalculateWorkoutDuration(workout.id)
-            console.log('Recalculation result:', recalcResult)
+            await recalculateWorkoutDuration(workout.id)
 
             // 3. Navigate to workout (user can start session from there)
             toast.success('Workout created! Start your session now.')
