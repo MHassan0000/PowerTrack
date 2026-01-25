@@ -21,10 +21,6 @@ const MEAL_CONFIG: Record<MealType, { label: string; icon: React.ReactNode; colo
     other: { label: 'Other', icon: <Apple className="w-5 h-5" />, color: 'text-green-400' },
 }
 
-const CALORIE_GOAL = 2000
-const CARBS_GOAL = 250
-const FAT_GOAL = 65
-
 export function NutritionPageContent({ initialLogs, initialSummary, initialDate }: NutritionPageContentProps) {
     const [isPending, startTransition] = useTransition()
     const [isCopying, setIsCopying] = useState(false)
@@ -108,26 +104,7 @@ export function NutritionPageContent({ initialLogs, initialSummary, initialDate 
         })
     }
 
-    const handleDuplicateFood = async (logId: string) => {
-        startTransition(async () => {
-            const result = await duplicateNutritionLog(logId, currentDate.toISOString())
-            if (result.data) {
-                const newLog = result.data
-                setLogs(prev => ({
-                    ...prev,
-                    [newLog.meal_type]: [...prev[newLog.meal_type], newLog]
-                }))
-                setSummary(prev => ({
-                    ...prev,
-                    totalCalories: prev.totalCalories + (newLog.calories || 0),
-                    totalProtein: prev.totalProtein + (Number(newLog.protein_g) || 0),
-                    totalCarbs: prev.totalCarbs + (Number(newLog.carbs_g) || 0),
-                    totalFat: prev.totalFat + (Number(newLog.fat_g) || 0),
-                    mealCount: prev.mealCount + 1,
-                }))
-            }
-        })
-    }
+
 
     const handleRightClick = (e: React.MouseEvent, logId: string) => {
         e.preventDefault()
@@ -157,6 +134,33 @@ export function NutritionPageContent({ initialLogs, initialSummary, initialDate 
         }
     }
 
+    const handleDuplicateFood = async (logId: string) => {
+        try {
+            const result = await duplicateNutritionLog(logId)
+            if (result.data) {
+                const newLog = result.data
+                setLogs(prev => ({
+                    ...prev,
+                    [newLog.meal_type]: [...prev[newLog.meal_type], newLog]
+                }))
+                setSummary(prev => ({
+                    ...prev,
+                    totalCalories: prev.totalCalories + (newLog.calories || 0),
+                    totalProtein: prev.totalProtein + (Number(newLog.protein_g) || 0),
+                    totalCarbs: prev.totalCarbs + (Number(newLog.carbs_g) || 0),
+                    totalFat: prev.totalFat + (Number(newLog.fat_g) || 0),
+                    totalFiber: prev.totalFiber + (Number(newLog.fiber_g) || 0),
+                    totalSugar: prev.totalSugar + (Number(newLog.sugar_g) || 0),
+                    mealCount: prev.mealCount + 1,
+                    proteinGoal: prev.proteinGoal,
+                }))
+                setContextMenu({ isOpen: false, position: { x: 0, y: 0 }, logId: null })
+            }
+        } catch (error) {
+            console.error('Failed to duplicate food:', error)
+        }
+    }
+
     const handleCopyYesterdaysMeals = async () => {
         setIsCopying(true)
         try {
@@ -182,21 +186,18 @@ export function NutritionPageContent({ initialLogs, initialSummary, initialDate 
         window.location.href = `/nutrition?date=${date.toISOString().split('T')[0]}`
     }
 
-    const calorieProgress = Math.min((summary.totalCalories / CALORIE_GOAL) * 100, 100)
+    // Helper function to get progress bar color based on percentage
+    const getProgressColor = (current: number, goal: number) => {
+        const progress = (current / goal) * 100
+        if (progress > 100) return 'bg-red-500'      // Exceeded
+        if (progress >= 80) return 'bg-[#10B981]'    // On target (green)
+        if (progress >= 60) return 'bg-yellow-500'   // Close (yellow)
+        return 'bg-zinc-600'                          // Below target (gray)
+    }
+
     const proteinProgress = summary.proteinGoal 
         ? Math.min((summary.totalProtein / summary.proteinGoal) * 100, 100) 
         : 0
-    const carbsProgress = Math.min((summary.totalCarbs / CARBS_GOAL) * 100, 100)
-    const fatProgress = Math.min((summary.totalFat / FAT_GOAL) * 100, 100)
-
-    // Helper function to get progress bar color based on percentage
-    const getProgressColor = (progress: number, actual: number, goal: number) => {
-        const rawProgress = (actual / goal) * 100
-        if (rawProgress > 100) return 'bg-red-500' // Exceeded
-        if (progress >= 80) return 'bg-[#10B981]' // On target (green)
-        if (progress >= 60) return 'bg-yellow-500' // Close (yellow)
-        return 'bg-zinc-600' // Below target
-    }
 
     // Check if protein goal is met/exceeded for emphasis
     const isProteinGoalMet = summary.proteinGoal && summary.totalProtein >= summary.proteinGoal
@@ -265,28 +266,33 @@ export function NutritionPageContent({ initialLogs, initialSummary, initialDate 
 
             {/* Daily Summary Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {/* Calories Card */}
                 <div className="bg-[#18181B] rounded-2xl p-5 border border-white/5">
                     <p className="text-zinc-400 text-sm mb-2">Calories</p>
-                    <h3 className="text-2xl font-bold text-white mb-3">{summary.totalCalories} <span className="text-base font-normal text-zinc-500">/ {CALORIE_GOAL}</span></h3>
-                    <div className="h-2 bg-[#27272A] rounded-full overflow-hidden">
-                        <motion.div 
-                            className={`h-full ${getProgressColor(calorieProgress, summary.totalCalories, CALORIE_GOAL)} rounded-full`}
-                            initial={{ width: 0 }}
-                            animate={{ width: `${calorieProgress}%` }}
-                        />
-                    </div>
+                    {summary.calorieGoal ? (
+                        <>
+                            <h3 className="text-2xl font-bold text-white mb-3">
+                                {summary.totalCalories} <span className="text-base font-normal text-zinc-500">/ {summary.calorieGoal}</span>
+                            </h3>
+                            <div className="h-2 bg-[#27272A] rounded-full overflow-hidden">
+                                <motion.div 
+                                    className={`h-full ${getProgressColor(summary.totalCalories, summary.calorieGoal)} rounded-full`}
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${Math.min((summary.totalCalories / summary.calorieGoal) * 100, 100)}%` }}
+                                />
+                            </div>
+                        </>
+                    ) : (
+                        <>
+                            <h3 className="text-2xl font-bold text-white">{summary.totalCalories}</h3>
+                            <a href="/settings" className="text-xs text-zinc-500 hover:text-[#10B981] transition-colors">
+                                Set goal in settings →
+                            </a>
+                        </>
+                    )}
                 </div>
-                <motion.div 
-                    className={`bg-[#18181B] rounded-2xl p-5 border ${isProteinGoalMet ? 'border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.15)]' : 'border-white/5'}`}
-                    animate={isProteinGoalMet ? { 
-                        boxShadow: [
-                            '0 0 15px rgba(59,130,246,0.15)',
-                            '0 0 20px rgba(59,130,246,0.25)',
-                            '0 0 15px rgba(59,130,246,0.15)'
-                        ]
-                    } : {}}
-                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                >
+                {/* Protein Card */}
+                <div className="bg-[#18181B] rounded-2xl p-5 border border-white/5">
                     <p className="text-zinc-400 text-sm mb-2">Protein</p>
                     {summary.proteinGoal ? (
                         <>
@@ -295,44 +301,70 @@ export function NutritionPageContent({ initialLogs, initialSummary, initialDate 
                             </h3>
                             <div className="h-2 bg-[#27272A] rounded-full overflow-hidden">
                                 <motion.div 
-                                    className={`h-full ${getProgressColor(proteinProgress, summary.totalProtein, summary.proteinGoal)} rounded-full`}
+                                    className={`h-full ${getProgressColor(summary.totalProtein, summary.proteinGoal)} rounded-full`}
                                     initial={{ width: 0 }}
-                                    animate={{ width: `${proteinProgress}%` }}
+                                    animate={{ width: `${Math.min((summary.totalProtein / summary.proteinGoal) * 100, 100)}%` }}
                                 />
                             </div>
                         </>
                     ) : (
                         <>
-                            <h3 className="text-2xl font-bold text-white mb-3">
-                                {Math.round(summary.totalProtein)}g
-                            </h3>
-                            <p className="text-xs text-zinc-500">
-                                Enter your body weight to set your protein goal
-                            </p>
+                            <h3 className="text-2xl font-bold text-white">{Math.round(summary.totalProtein)}g</h3>
+                            <a href="/settings" className="text-xs text-zinc-500 hover:text-[#10B981] transition-colors">
+                                Set goal in settings →
+                            </a>
                         </>
                     )}
-                </motion.div>
+                </div>
+                {/* Carbs Card */}
                 <div className="bg-[#18181B] rounded-2xl p-5 border border-white/5">
                     <p className="text-zinc-400 text-sm mb-2">Carbs</p>
-                    <h3 className="text-2xl font-bold text-white mb-3">{Math.round(summary.totalCarbs)}g <span className="text-base font-normal text-zinc-500">/ {CARBS_GOAL}g</span></h3>
-                    <div className="h-2 bg-[#27272A] rounded-full overflow-hidden">
-                        <motion.div 
-                            className={`h-full ${getProgressColor(carbsProgress, summary.totalCarbs, CARBS_GOAL)} rounded-full`}
-                            initial={{ width: 0 }}
-                            animate={{ width: `${carbsProgress}%` }}
-                        />
-                    </div>
+                    {summary.carbsGoal ? (
+                        <>
+                            <h3 className="text-2xl font-bold text-white mb-3">
+                                {Math.round(summary.totalCarbs)}g <span className="text-base font-normal text-zinc-500">/ {summary.carbsGoal}g</span>
+                            </h3>
+                            <div className="h-2 bg-[#27272A] rounded-full overflow-hidden">
+                                <motion.div 
+                                    className={`h-full ${getProgressColor(summary.totalCarbs, summary.carbsGoal)} rounded-full`}
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${Math.min((summary.totalCarbs / summary.carbsGoal) * 100, 100)}%` }}
+                                />
+                            </div>
+                        </>
+                    ) : (
+                        <>
+                            <h3 className="text-2xl font-bold text-white">{Math.round(summary.totalCarbs)}g</h3>
+                            <a href="/settings" className="text-xs text-zinc-500 hover:text-[#10B981] transition-colors">
+                                Set goal in settings →
+                            </a>
+                        </>
+                    )}
                 </div>
+                {/* Fat Card */}
                 <div className="bg-[#18181B] rounded-2xl p-5 border border-white/5">
                     <p className="text-zinc-400 text-sm mb-2">Fat</p>
-                    <h3 className="text-2xl font-bold text-white mb-3">{Math.round(summary.totalFat)}g <span className="text-base font-normal text-zinc-500">/ {FAT_GOAL}g</span></h3>
-                    <div className="h-2 bg-[#27272A] rounded-full overflow-hidden">
-                        <motion.div 
-                            className={`h-full ${getProgressColor(fatProgress, summary.totalFat, FAT_GOAL)} rounded-full`}
-                            initial={{ width: 0 }}
-                            animate={{ width: `${fatProgress}%` }}
-                        />
-                    </div>
+                    {summary.fatGoal ? (
+                        <>
+                            <h3 className="text-2xl font-bold text-white mb-3">
+                                {Math.round(summary.totalFat)}g <span className="text-base font-normal text-zinc-500">/ {summary.fatGoal}g</span>
+                            </h3>
+                            <div className="h-2 bg-[#27272A] rounded-full overflow-hidden">
+                                <motion.div 
+                                    className={`h-full ${getProgressColor(summary.totalFat, summary.fatGoal)} rounded-full`}
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${Math.min((summary.totalFat / summary.fatGoal) * 100, 100)}%` }}
+                                />
+                            </div>
+                        </>
+                    ) : (
+                        <>
+                            <h3 className="text-2xl font-bold text-white">{Math.round(summary.totalFat)}g</h3>
+                            <a href="/settings" className="text-xs text-zinc-500 hover:text-[#10B981] transition-colors">
+                                Set goal in settings →
+                            </a>
+                        </>
+                    )}
                 </div>
             </div>
 

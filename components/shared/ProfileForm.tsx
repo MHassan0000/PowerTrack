@@ -18,6 +18,10 @@ interface ProfileFormProps {
         preferred_units: string | null
         bio: string | null
         avatar_url: string | null
+        daily_calorie_goal: number | null
+        daily_protein_goal_g: number | null
+        daily_carbs_goal_g: number | null
+        daily_fat_goal_g: number | null
     }
 }
 
@@ -217,6 +221,81 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
                             defaultValue={initialData.weight_kg || ''}
                             className="w-full px-4 py-3 bg-[#27272A] border border-white/5 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-[#10B981] transition-all placeholder:text-zinc-600"
                             placeholder="70"
+                        />
+                    </div>
+                </div>
+            </div>
+
+            {/* Nutrition Goals */}
+            <div className="bg-[#18181B] border border-white/5 rounded-2xl p-8 space-y-6">
+                <div>
+                    <h3 className="text-xl font-bold text-white mb-2">Nutrition Goals</h3>
+                    <p className="text-sm text-zinc-400 mb-6">
+                        Set your daily macro targets. Leave blank to see only current values without goals.
+                    </p>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label htmlFor="daily_calorie_goal" className="block text-sm font-bold text-zinc-400 mb-2">
+                            Daily Calories Goal
+                        </label>
+                        <input
+                            id="daily_calorie_goal"
+                            name="daily_calorie_goal"
+                            type="number"
+                            min="0"
+                            defaultValue={initialData.daily_calorie_goal || ''}
+                            className="w-full px-4 py-3 bg-[#27272A] border border-white/5 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-[#10B981] transition-all placeholder:text-zinc-600"
+                            placeholder="e.g., 2000"
+                        />
+                    </div>
+                    
+                    <div>
+                        <label htmlFor="daily_protein_goal_g" className="block text-sm font-bold text-zinc-400 mb-2">
+                            Daily Protein Goal (g)
+                        </label>
+                        <input
+                            id="daily_protein_goal_g"
+                            name="daily_protein_goal_g"
+                            type="number"
+                            step="0.1"
+                            min="0"
+                            defaultValue={initialData.daily_protein_goal_g || ''}
+                            className="w-full px-4 py-3 bg-[#27272A] border border-white/5 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-[#10B981] transition-all placeholder:text-zinc-600"
+                            placeholder="e.g., 150"
+                        />
+                    </div>
+                    
+                    <div>
+                        <label htmlFor="daily_carbs_goal_g" className="block text-sm font-bold text-zinc-400 mb-2">
+                            Daily Carbs Goal (g)
+                        </label>
+                        <input
+                            id="daily_carbs_goal_g"
+                            name="daily_carbs_goal_g"
+                            type="number"
+                            step="0.1"
+                            min="0"
+                            defaultValue={initialData.daily_carbs_goal_g || ''}
+                            className="w-full px-4 py-3 bg-[#27272A] border border-white/5 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-[#10B981] transition-all placeholder:text-zinc-600"
+                            placeholder="e.g., 250"
+                        />
+                    </div>
+                    
+                    <div>
+                        <label htmlFor="daily_fat_goal_g" className="block text-sm font-bold text-zinc-400 mb-2">
+                            Daily Fat Goal (g)
+                        </label>
+                        <input
+                            id="daily_fat_goal_g"
+                            name="daily_fat_goal_g"
+                            type="number"
+                            step="0.1"
+                            min="0"
+                            defaultValue={initialData.daily_fat_goal_g || ''}
+                            className="w-full px-4 py-3 bg-[#27272A] border border-white/5 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-[#10B981] transition-all placeholder:text-zinc-600"
+                            placeholder="e.g., 65"
                         />
                     </div>
                 </div>

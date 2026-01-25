@@ -12,6 +12,10 @@ export interface ProfileFormData {
     experience_level: 'beginner' | 'intermediate' | 'advanced'
     preferred_units: 'metric' | 'imperial'
     bio?: string
+    daily_calorie_goal?: number
+    daily_protein_goal_g?: number
+    daily_carbs_goal_g?: number
+    daily_fat_goal_g?: number
 }
 
 /**
@@ -94,6 +98,10 @@ export async function updateProfile(formData: FormData) {
             experience_level,
             preferred_units,
             bio: bio || null,
+            daily_calorie_goal: formData.get('daily_calorie_goal') ? parseInt(formData.get('daily_calorie_goal') as string) : null,
+            daily_protein_goal_g: formData.get('daily_protein_goal_g') ? parseFloat(formData.get('daily_protein_goal_g') as string) : null,
+            daily_carbs_goal_g: formData.get('daily_carbs_goal_g') ? parseFloat(formData.get('daily_carbs_goal_g') as string) : null,
+            daily_fat_goal_g: formData.get('daily_fat_goal_g') ? parseFloat(formData.get('daily_fat_goal_g') as string) : null,
             updated_at: new Date().toISOString(),
         })
         .eq('id', user.id)

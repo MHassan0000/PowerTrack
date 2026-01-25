@@ -23,13 +23,16 @@ export interface NutritionLog {
 
 export interface DailyNutritionSummary {
     totalCalories: number
-    totalProtein: number
+   totalProtein: number
     totalCarbs: number
     totalFat: number
     totalFiber: number
     totalSugar: number
     mealCount: number
-    proteinGoal: number | null // Calculated from user weight, null if weight not set
+    calorieGoal: number | null
+    proteinGoal: number | null
+    carbsGoal: number | null
+    fatGoal: number | null
 }
 
 export interface CreateNutritionLogInput {
@@ -123,27 +126,47 @@ export async function getDailyNutritionSummary(date?: string): Promise<{ data: D
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
         return {
-            data: { totalCalories: 0, totalProtein: 0, totalCarbs: 0, totalFat: 0, totalFiber: 0, totalSugar: 0, mealCount: 0, proteinGoal: null },
+            data: { 
+                totalCalories: 0, 
+                totalProtein: 0, 
+                totalCarbs: 0, 
+                totalFat: 0, 
+                totalFiber: 0, 
+                totalSugar: 0, 
+                mealCount: 0, 
+                calorieGoal: null,
+                proteinGoal: null,
+                carbsGoal: null,
+                fatGoal: null
+            },
             error: 'Not authenticated'
         }
     }
 
-    // Fetch user profile to get weight for protein goal calculation
+    // Fetch user's nutrition goals
     const { data: profile } = await supabase
         .from('users')
-        .select('weight_kg')
+        .select('daily_calorie_goal, daily_protein_goal_g, daily_carbs_goal_g, daily_fat_goal_g')
         .eq('id', user.id)
         .single()
-
-    // Calculate protein goal: bodyweight (in pounds) × 1g
-    // weight_kg * 2.20462 = weight in pounds
-    const proteinGoal = profile?.weight_kg ? Math.round(profile.weight_kg * 2.20462) : null
 
     const { data: logs, error } = await getNutritionLogs(date)
 
     if (error) {
         return {
-            data: { totalCalories: 0, totalProtein: 0, totalCarbs: 0, totalFat: 0, totalFiber: 0, totalSugar: 0, mealCount: 0, proteinGoal },
+            data: { 
+                totalCalories: 0, 
+                totalProtein: 0, 
+                totalCarbs: 0, 
+                totalFat: 0, 
+                totalFiber: 0, 
+                totalSugar: 0, 
+                mealCount: 0,
+                calorieGoal: profile?.daily_calorie_goal || null,
+                proteinGoal: profile?.daily_protein_goal_g || null,
+                carbsGoal: profile?.daily_carbs_goal_g || null,
+                fatGoal: profile?.daily_fat_goal_g || null
+            },
             error
         }
     }
@@ -156,7 +179,10 @@ export async function getDailyNutritionSummary(date?: string): Promise<{ data: D
         totalFiber: logs.reduce((acc, log) => acc + (Number(log.fiber_g) || 0), 0),
         totalSugar: logs.reduce((acc, log) => acc + (Number(log.sugar_g) || 0), 0),
         mealCount: logs.length,
-        proteinGoal,
+        calorieGoal: profile?.daily_calorie_goal || null,
+        proteinGoal: profile?.daily_protein_goal_g || null,
+        carbsGoal: profile?.daily_carbs_goal_g || null,
+        fatGoal: profile?.daily_fat_goal_g || null,
     }
 
     return { data: summary, error: null }
