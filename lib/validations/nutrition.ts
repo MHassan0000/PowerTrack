@@ -11,7 +11,7 @@ export const createNutritionLogSchema = z.object({
     fat_g: z.number().nonnegative('Fat cannot be negative').optional().nullable(),
     fiber_g: z.number().nonnegative('Fiber cannot be negative').optional().nullable(),
     sugar_g: z.number().nonnegative('Sugar cannot be negative').optional().nullable(),
-    notes: z.string().max(500, 'Notes are too long').optional().nullable(),
+    notes: z.string().max(60, 'Notes are too long (max 60 chars)').optional().nullable(),
     logged_at: z.string().optional(),
 })
 

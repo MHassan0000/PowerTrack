@@ -65,7 +65,7 @@ export function NutritionPageContent({ initialLogs, initialSummary, initialDate 
                     protein_g: formData.protein_g ? parseFloat(formData.protein_g) : undefined,
                     carbs_g: formData.carbs_g ? parseFloat(formData.carbs_g) : undefined,
                     fat_g: formData.fat_g ? parseFloat(formData.fat_g) : undefined,
-                    notes: formData.notes || undefined,
+                    notes: formData.notes || null,
                 })
 
                 if (result.data) {
@@ -477,6 +477,11 @@ export function NutritionPageContent({ initialLogs, initialSummary, initialDate 
                                                 {log.carbs_g && ` • ${log.carbs_g}g carbs`}
                                                 {log.fat_g && ` • ${log.fat_g}g fat`}
                                             </p>
+                                            {log.notes && (
+                                                <p className="text-xs text-zinc-500 italic mt-0.5">
+                                                    Note: {log.notes}
+                                                </p>
+                                            )}
                                         </div>
                                         <div className="flex gap-2">
                                             <button
@@ -591,8 +596,9 @@ export function NutritionPageContent({ initialLogs, initialSummary, initialDate 
                                     <textarea
                                         value={formData.notes}
                                         onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-                                        placeholder="Any additional notes..."
+                                        placeholder="Any additional notes... (max 60 chars)"
                                         rows={2}
+                                        maxLength={60}
                                         className="w-full bg-[#27272A] border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-zinc-500 focus:outline-none focus:border-[#10B981] resize-none"
                                     />
                                 </div>
