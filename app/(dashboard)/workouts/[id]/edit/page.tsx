@@ -4,7 +4,7 @@ import { use, useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, Plus, Trash2, GripVertical, Save, Loader2 } from 'lucide-react'
 import Link from 'next/link'
-import { getWorkoutById, addExerciseToWorkout, removeExerciseFromWorkout, updateWorkout, reorderWorkoutExercises } from '@/lib/actions/workouts'
+import { getWorkoutById, addExerciseToWorkout, removeExerciseFromWorkout, updateWorkout, reorderWorkoutExercises, recalculateWorkoutDuration } from '@/lib/actions/workouts'
 import { ExercisePicker } from '@/components/workout/ExercisePicker'
 import { ExerciseConfigModal } from '@/components/workout/ExerciseConfigModal'
 import type { Exercise } from '@/lib/actions/exercises'
@@ -192,6 +192,13 @@ export default function WorkoutEditPage({ params }: WorkoutEditPageProps) {
         if (result.error) {
             toast.error(result.error, { id: toastId })
         } else {
+            console.log('=== WORKOUT EDIT PAGE DEBUG ===')
+            console.log('Exercise added, recalculating duration for workout:', id)
+            
+            // Recalculate workout duration
+            const recalcResult = await recalculateWorkoutDuration(id)
+            console.log('Recalculation result:', recalcResult)
+            
             toast.success(`Added ${selectedExercise.name}`, { id: toastId })
             // Reload workout
             const { data } = await getWorkoutById(id)

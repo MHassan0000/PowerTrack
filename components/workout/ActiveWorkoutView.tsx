@@ -155,6 +155,26 @@ export function ActiveWorkoutView({ session, sets: initialSets }: ActiveWorkoutV
         }
     }
 
+    const handleSkipSet = () => {
+        // Move to next set without logging
+        if (currentSetNumber < currentExercise.sets) {
+            setCurrentSetNumber(currentSetNumber + 1)
+            setShowRestTimer(true)
+            setIsPaused(true)
+        } else if (currentExerciseIndex < workoutExercises.length - 1) {
+            // Move to next exercise
+            toast.success(`${currentExercise.exercise_library.name} complete! Moving to next exercise.`)
+            setCurrentExerciseIndex(currentExerciseIndex + 1)
+            setCurrentSetNumber(1)
+        } else {
+            // Workout complete
+            toast.success('All exercises complete! 🎉')
+            setTimeout(() => {
+                handleCompleteWorkout()
+            }, 1500)
+        }
+    }
+
     const handleCompleteWorkout = async () => {
         setCompleting(true)
         const result = await completeWorkoutSession(session.id)
@@ -163,11 +183,13 @@ export function ActiveWorkoutView({ session, sets: initialSets }: ActiveWorkoutV
             // Fetch estimated duration from workout if not already loaded
             let estimatedMinutes = workoutData?.duration_minutes
             
-            // Try to fetch from workout if we have a workout_id
-            const workoutId = result.data.workoutId || session.workout_id
+            // Try multiple sources for workout ID
+            const workoutId = session.workout_id || result.data.workoutId
+            
+            // Always try to fetch if we don't have duration and we have a workout_id
             if (!estimatedMinutes && workoutId) {
                 const { data: workoutInfo } = await getWorkoutById(workoutId)
-                estimatedMinutes = workoutInfo?.duration_minutes
+                estimatedMinutes = workoutInfo?.duration_minutes || null
             }
 
             // Show completion summary
@@ -294,7 +316,7 @@ export function ActiveWorkoutView({ session, sets: initialSets }: ActiveWorkoutV
                                     setNumber={currentSetNumber}
                                     previousSet={setsByExercise[currentExercise.exercise_id]?.slice(-1)[0]}
                                     onLogSet={handleLogSet}
-                                    onSkip={handleSkipExercise}
+                                    onSkip={handleSkipSet}
                                 />
                             )}
                         </div>

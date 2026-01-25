@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { X, Plus, Loader2 } from 'lucide-react'
-import { addExerciseToWorkout, createWorkout, getWorkouts } from '@/lib/actions/workouts'
+import { addExerciseToWorkout, createWorkout, getWorkouts, recalculateWorkoutDuration } from '@/lib/actions/workouts'
 import { toast } from 'sonner'
 
 interface AddToWorkoutModalProps {
@@ -114,6 +114,12 @@ export function AddToWorkoutModal({ isOpen, onClose, exerciseId, exerciseName }:
             setIsSubmitting(false)
             return
         }
+
+        // Recalculate workout duration
+        console.log('=== ADD TO WORKOUT DEBUG ===')
+        console.log('Calling recalculateWorkoutDuration for workout:', selectedWorkoutId)
+        const recalcResult = await recalculateWorkoutDuration(selectedWorkoutId)
+        console.log('Recalculation result:', recalcResult)
 
         // Success!
         toast.success(`${exerciseName} added to workout!`)

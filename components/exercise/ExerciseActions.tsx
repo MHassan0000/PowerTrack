@@ -5,7 +5,7 @@ import { Play } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { AddToWorkoutModal } from './AddToWorkoutModal'
 import { QuickSessionConfigModal } from './QuickSessionConfigModal'
-import { createWorkout, addExerciseToWorkout } from '@/lib/actions/workouts'
+import { createWorkout, addExerciseToWorkout, recalculateWorkoutDuration } from '@/lib/actions/workouts'
 import { toast } from 'sonner'
 
 interface ExerciseActionsProps {
@@ -36,6 +36,9 @@ export function ExerciseActions({ exerciseId, exerciseName }: ExerciseActionsPro
             const totalSeconds = config.sets * (setDuration + config.rest)
             const estimatedMinutes = Math.ceil(totalSeconds / 60)
 
+            console.log('=== QUICK SESSION CREATION DEBUG ===')
+            console.log('Estimated duration (minutes):', estimatedMinutes)
+
             // 1. Create a quick workout with estimated duration
             const formData = new FormData()
             formData.append('name', `${exerciseName} - Quick Session`)
@@ -51,6 +54,9 @@ export function ExerciseActions({ exerciseId, exerciseName }: ExerciseActionsPro
                 return
             }
 
+            console.log('Created workout:', workout)
+            console.log('Workout has duration_minutes:', workout.duration_minutes)
+
             // 2. Add exercise to workout with user configuration
             const { error: addError } = await addExerciseToWorkout(workout.id, exerciseId, {
                 sets: config.sets,
@@ -64,6 +70,11 @@ export function ExerciseActions({ exerciseId, exerciseName }: ExerciseActionsPro
                 setIsStarting(false)
                 return
             }
+
+            console.log('Exercise added, recalculating duration...')
+            // Recalculate to ensure consistency
+            const recalcResult = await recalculateWorkoutDuration(workout.id)
+            console.log('Recalculation result:', recalcResult)
 
             // 3. Navigate to workout (user can start session from there)
             toast.success('Workout created! Start your session now.')

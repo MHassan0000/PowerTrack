@@ -304,6 +304,63 @@ export async function addExerciseToWorkout(
 }
 
 /**
+ * Recalculate and update workout estimated duration based on all exercises
+ */
+export async function recalculateWorkoutDuration(workoutId: string) {
+    const supabase = await createClient()
+
+    const {
+        data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) {
+        return { error: 'Not authenticated' }
+    }
+
+    // Get all exercises for this workout
+    const { data: exercises, error: fetchError } = await supabase
+        .from('workout_exercises')
+        .select('sets, reps, duration_seconds, rest_seconds')
+        .eq('workout_id', workoutId)
+
+    if (fetchError || !exercises || exercises.length === 0) {
+        // No exercises, set duration to null
+        await supabase
+            .from('workouts')
+            .update({ duration_minutes: null })
+            .eq('id', workoutId)
+            .eq('user_id', user.id)
+        
+        return { data: null, error: null }
+    }
+
+    // Calculate total estimated duration
+    let totalSeconds = 0
+    exercises.forEach(exercise => {
+        const setDuration = exercise.duration_seconds || (exercise.reps ? exercise.reps * 4 : 0)
+        const restTime = exercise.rest_seconds || 60
+        totalSeconds += exercise.sets * (setDuration + restTime)
+    })
+
+    const estimatedMinutes = Math.ceil(totalSeconds / 60)
+
+    // Update workout duration
+    const { error: updateError } = await supabase
+        .from('workouts')
+        .update({ duration_minutes: estimatedMinutes })
+        .eq('id', workoutId)
+        .eq('user_id', user.id)
+
+    if (updateError) {
+        return { error: updateError.message }
+    }
+
+    revalidatePath(`/workouts/${workoutId}`)
+
+    return { data: estimatedMinutes, error: null }
+}
+
+/**
  * Update workout exercise
  */
 export async function updateWorkoutExercise(
