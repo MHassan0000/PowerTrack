@@ -139,12 +139,48 @@ export async function getDailyNutritionSummary(date?: string): Promise<{ data: D
         }
     }
 
-    // Fetch user's nutrition goals
-    const { data: profile } = await supabase
-        .from('users')
-        .select('daily_calorie_goal, daily_protein_goal_g, daily_carbs_goal_g, daily_fat_goal_g')
-        .eq('id', user.id)
-        .single()
+    // Fetch effective nutrition goals for the target date
+    // Query: Get the most recent goal history entry on or before the target date
+    // If no entry found (e.g. date before 2000-01-01 implicit backfill), it returns null, handling graceful fallback optional
+    const targetDateObj = date ? new Date(date) : new Date()
+    const targetDateStr = targetDateObj.toISOString().split('T')[0]
+
+    const { data: goalHistory } = await supabase
+        .from('nutrition_goals_history')
+        .select('*')
+        .eq('user_id', user.id)
+        .lte('effective_date', targetDateStr)
+        .order('effective_date', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+    // Fallback: Use current user profile goals if no history found (shouldn't happen with migration backfill, but safe)
+    let profileGoals = {
+        daily_calorie_goal: null,
+        daily_protein_goal_g: null,
+        daily_carbs_goal_g: null,
+        daily_fat_goal_g: null
+    }
+
+    if (goalHistory) {
+        profileGoals = {
+            daily_calorie_goal: goalHistory.daily_calorie_goal,
+            daily_protein_goal_g: goalHistory.daily_protein_goal_g,
+            daily_carbs_goal_g: goalHistory.daily_carbs_goal_g,
+            daily_fat_goal_g: goalHistory.daily_fat_goal_g
+        }
+    } else {
+        // Double fallback to live profile
+        const { data: liveProfile } = await supabase
+            .from('users')
+            .select('daily_calorie_goal, daily_protein_goal_g, daily_carbs_goal_g, daily_fat_goal_g')
+            .eq('id', user.id)
+            .single()
+        
+        if (liveProfile) {
+            profileGoals = liveProfile as any
+        }
+    }
 
     const { data: logs, error } = await getNutritionLogs(date)
 
@@ -158,10 +194,10 @@ export async function getDailyNutritionSummary(date?: string): Promise<{ data: D
                 totalFiber: 0, 
                 totalSugar: 0, 
                 mealCount: 0,
-                calorieGoal: profile?.daily_calorie_goal || null,
-                proteinGoal: profile?.daily_protein_goal_g || null,
-                carbsGoal: profile?.daily_carbs_goal_g || null,
-                fatGoal: profile?.daily_fat_goal_g || null
+                calorieGoal: profileGoals.daily_calorie_goal || null,
+                proteinGoal: profileGoals.daily_protein_goal_g || null,
+                carbsGoal: profileGoals.daily_carbs_goal_g || null,
+                fatGoal: profileGoals.daily_fat_goal_g || null
             },
             error
         }
@@ -175,10 +211,10 @@ export async function getDailyNutritionSummary(date?: string): Promise<{ data: D
         totalFiber: logs.reduce((acc, log) => acc + (Number(log.fiber_g) || 0), 0),
         totalSugar: logs.reduce((acc, log) => acc + (Number(log.sugar_g) || 0), 0),
         mealCount: logs.length,
-        calorieGoal: profile?.daily_calorie_goal || null,
-        proteinGoal: profile?.daily_protein_goal_g || null,
-        carbsGoal: profile?.daily_carbs_goal_g || null,
-        fatGoal: profile?.daily_fat_goal_g || null,
+        calorieGoal: profileGoals.daily_calorie_goal || null,
+        proteinGoal: profileGoals.daily_protein_goal_g || null,
+        carbsGoal: profileGoals.daily_carbs_goal_g || null,
+        fatGoal: profileGoals.daily_fat_goal_g || null,
     }
 
     return { data: summary, error: null }

@@ -95,8 +95,38 @@ export async function updateProfile(formData: FormData) {
         return { error: error.message }
     }
 
+    // Update Goal History (Type 2 SCD)
+    // Check if we have any goal fields to update
+    const goalFields = ['daily_calorie_goal', 'daily_protein_goal_g', 'daily_carbs_goal_g', 'daily_fat_goal_g']
+    const hasGoalUpdates = goalFields.some(field => field in validatedData)
+
+    if (hasGoalUpdates) {
+        const today = new Date().toISOString().split('T')[0]
+        
+        // Fetch current state to ensure complete snapshot from the DB (handles partial updates)
+        const { data: updatedUser } = await supabase
+            .from('users')
+            .select('daily_calorie_goal, daily_protein_goal_g, daily_carbs_goal_g, daily_fat_goal_g')
+            .eq('id', user.id)
+            .single()
+            
+        if (updatedUser) {
+             await supabase
+                .from('nutrition_goals_history')
+                .upsert({
+                    user_id: user.id,
+                    effective_date: today,
+                    daily_calorie_goal: updatedUser.daily_calorie_goal,
+                    daily_protein_goal_g: updatedUser.daily_protein_goal_g,
+                    daily_carbs_goal_g: updatedUser.daily_carbs_goal_g,
+                    daily_fat_goal_g: updatedUser.daily_fat_goal_g,
+                }, { onConflict: 'user_id, effective_date' })
+        }
+    }
+
     revalidatePath('/settings')
     revalidatePath('/dashboard')
+    revalidatePath('/nutrition') // Ensure nutrition page reflects new goals
 
     return { success: true, message: 'Profile updated successfully!' }
 }
