@@ -94,11 +94,6 @@ function SortableExerciseItem({ exercise, index, onRemove }: SortableExerciseIte
                 <div className="flex-1">
                     <h3 className="font-bold text-white">{exercise.exercise_library.name}</h3>
                     <p className="text-sm text-zinc-500">{exercise.exercise_library.primary_muscle}</p>
-                    {exercise.notes && (
-                        <p className="text-xs text-zinc-400 mt-1 italic">
-                            📝 {exercise.notes}
-                        </p>
-                    )}
                 </div>
 
                 {/* Config */}

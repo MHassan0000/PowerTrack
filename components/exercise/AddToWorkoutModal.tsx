@@ -94,14 +94,13 @@ export function AddToWorkoutModal({ isOpen, onClose, exerciseId, exerciseName }:
         // Validate with Zod
         const config = {
             sets,
-            reps: reps || null,
             duration_seconds: duration || null,
             rest_seconds: rest,
             notes: notes || null
         }
 
         const validation = exerciseConfigSchema.safeParse(config)
-        if (!validation.success) {
+        if(!validation.success) {
             const errors = validation.error.flatten().fieldErrors
             const firstError = Object.values(errors).flat()[0]
             setError(firstError || 'Invalid input')
@@ -113,7 +112,6 @@ export function AddToWorkoutModal({ isOpen, onClose, exerciseId, exerciseName }:
 
         const { error } = await addExerciseToWorkout(selectedWorkoutId, exerciseId, {
             sets,
-            reps: reps > 0 ? reps : undefined,
             duration_seconds: duration || undefined,
             rest_seconds: rest,
             notes: notes || undefined,
@@ -255,26 +253,16 @@ export function AddToWorkoutModal({ isOpen, onClose, exerciseId, exerciseName }:
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-3">
+                                <div className="grid grid-cols-1 gap-3">
                                     <div>
                                         <label className="text-xs text-zinc-500 uppercase tracking-wider mb-1 block">Duration (per set) - Seconds</label>
                                         <input
                                             type="number"
                                             value={duration}
                                             onChange={(e) => setDuration(e.target.value ? parseInt(e.target.value) : '')}
-                                            min="0"
-                                            placeholder="For timed"
-                                            className="w-full px-3 py-2 bg-[#27272A] text-white rounded-lg border border-white/10 focus:border-[#10B981] focus:outline-none text-center"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-xs text-zinc-500 uppercase tracking-wider mb-1 block">Rest (s)</label>
-                                        <input
-                                            type="number"
-                                            value={rest}
-                                            onChange={(e) => setRest(parseInt(e.target.value) || 0)}
-                                            min="0"
-                                            step="15"
+                                            min="5"
+                                            required
+                                            placeholder="e.g., 30"
                                             className="w-full px-3 py-2 bg-[#27272A] text-white rounded-lg border border-white/10 focus:border-[#10B981] focus:outline-none text-center"
                                         />
                                     </div>

@@ -21,7 +21,6 @@ export function ExerciseActions({ exerciseId, exerciseName }: ExerciseActionsPro
 
     const handleQuickSessionConfig = async (config: {
         sets: number
-        reps: number
         duration: number | ''
         rest: number
         notes?: string
@@ -32,7 +31,7 @@ export function ExerciseActions({ exerciseId, exerciseName }: ExerciseActionsPro
         try {
             // Calculate estimated workout duration
             // Formula: (sets × duration) + ((sets - 1) × rest) - no rest after last set
-            const setDuration = config.duration || (config.reps * 4) // 4 seconds per rep estimate
+            const setDuration = config.duration || 30 // Default 30 seconds if not provided
             const totalSeconds = (config.sets * setDuration) + ((config.sets - 1) * config.rest)
             const estimatedMinutes = Math.ceil(totalSeconds / 60)
 
@@ -54,7 +53,6 @@ export function ExerciseActions({ exerciseId, exerciseName }: ExerciseActionsPro
             // 2. Add exercise to workout with user configuration
             const { error: addError } = await addExerciseToWorkout(workout.id, exerciseId, {
                 sets: config.sets,
-                reps: config.reps > 0 ? config.reps : undefined,
                 duration_seconds: config.duration || undefined,
                 rest_seconds: config.rest,
                 notes: config.notes || undefined,

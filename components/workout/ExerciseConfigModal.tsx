@@ -13,7 +13,6 @@ interface ExerciseConfigModalProps {
     onClose: () => void
     onConfirm: (config: {
         sets: number
-        reps?: number
         duration_seconds?: number
         rest_seconds: number
         notes?: string
@@ -22,9 +21,8 @@ interface ExerciseConfigModalProps {
 
 export function ExerciseConfigModal({ exercise, onClose, onConfirm }: ExerciseConfigModalProps) {
     const [sets, setSets] = useState(3)
-    const [reps, setReps] = useState(10)
     const [restSeconds, setRestSeconds] = useState(60)
-    const [duration, setDuration] = useState<number | ''>('')
+    const [duration, setDuration] = useState<number | ''>(30)
     const [notes, setNotes] = useState('')
 
     if (!exercise) return null
@@ -34,7 +32,6 @@ export function ExerciseConfigModal({ exercise, onClose, onConfirm }: ExerciseCo
         
         const config = {
             sets,
-            reps: reps || undefined,
             rest_seconds: restSeconds,
             duration_seconds: duration || undefined,
             notes: notes || undefined
@@ -52,7 +49,6 @@ export function ExerciseConfigModal({ exercise, onClose, onConfirm }: ExerciseCo
         // Convert null to undefined for TypeScript compatibility
         onConfirm({
             sets: validation.data.sets,
-            reps: validation.data.reps ?? undefined,
             rest_seconds: validation.data.rest_seconds,
             duration_seconds: validation.data.duration_seconds ?? undefined,
             notes: validation.data.notes ?? undefined
@@ -139,26 +135,6 @@ export function ExerciseConfigModal({ exercise, onClose, onConfirm }: ExerciseCo
                                 />
                             </div>
 
-                            {/* Reps */}
-                            <div>
-                                <label htmlFor="reps" className="text-sm font-bold text-zinc-300 uppercase tracking-wider mb-2 flex items-center gap-2">
-                                    <Hash className="w-4 h-4 text-[#10B981]" />
-                                    Reps
-                                </label>
-                                <input
-                                    type="number"
-                                    id="reps"
-                                    min="1"
-                                    max="100"
-                                    placeholder="e.g., 10"
-                                    value={reps}
-                                    onChange={(e) => setReps(Number(e.target.value))}
-                                    className="w-full px-4 py-3 bg-[#27272A] border border-white/5 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-[#10B981] transition-all"
-                                />
-                            </div>
-
-
-
                             {/* Rest Time */}
                             <div>
                                 <label htmlFor="rest" className="text-sm font-bold text-zinc-300 uppercase tracking-wider mb-2 flex items-center gap-2">
@@ -186,13 +162,14 @@ export function ExerciseConfigModal({ exercise, onClose, onConfirm }: ExerciseCo
                                 <input
                                     type="number"
                                     id="duration"
-                                    min="0"
-                                    placeholder="For timed exercises (e.g., planks)"
+                                    min="5"
+                                    required
+                                    placeholder="e.g., 30"
                                     value={duration}
                                     onChange={(e) => setDuration(e.target.value ? Number(e.target.value) : '')}
                                     className="w-full px-4 py-3 bg-[#27272A] border border-white/5 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-[#10B981] transition-all"
                                 />
-                                <p className="text-xs text-zinc-500 mt-1">Leave empty for rep-based exercises</p>
+                                <p className="text-xs text-zinc-500 mt-1">Minimum 5 seconds per set</p>
                             </div>
 
                             {/* Notes */}

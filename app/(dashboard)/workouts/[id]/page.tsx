@@ -151,6 +151,12 @@ export default async function WorkoutDetailPage({ params }: WorkoutDetailPagePro
                                         <div>
                                             <h3 className="text-xl font-bold text-white mb-1 group-hover:text-[#10B981] transition-colors">{ex.exercise_library.name}</h3>
                                             <p className="text-sm text-zinc-400 line-clamp-1">{ex.exercise_library.primary_muscle} • {ex.exercise_library.equipment}</p>
+                                            {ex.notes && (
+                                                <p className="text-xs text-zinc-500 mt-2 italic flex items-start gap-1">
+                                                    <span className="shrink-0">📝</span>
+                                                    <span>{ex.notes}</span>
+                                                </p>
+                                            )}
                                         </div>
                                     </div>
 

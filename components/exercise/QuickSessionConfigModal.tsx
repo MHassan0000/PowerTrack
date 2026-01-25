@@ -10,7 +10,6 @@ interface QuickSessionConfigModalProps {
     onClose: () => void
     onConfirm: (config: {
         sets: number
-        reps: number
         duration: number | ''
         rest: number
         notes?: string
@@ -30,7 +29,6 @@ export function QuickSessionConfigModal({ isOpen, onClose, onConfirm, exerciseNa
         // Validate with Zod
         const config = {
             sets,
-            reps: reps || null,
             duration_seconds: duration || null,
             rest_seconds: rest,
             notes: notes || null
@@ -44,7 +42,7 @@ export function QuickSessionConfigModal({ isOpen, onClose, onConfirm, exerciseNa
             return
         }
 
-        onConfirm({ sets, reps, duration, rest, notes: notes || undefined })
+        onConfirm({ sets, duration, rest, notes: notes || undefined })
     }
 
     if (!isOpen) return null
@@ -72,7 +70,7 @@ export function QuickSessionConfigModal({ isOpen, onClose, onConfirm, exerciseNa
                     <div className="space-y-4">
                         <h3 className="text-sm font-medium text-zinc-300">Configure Your Session</h3>
                         
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-2 gap-3 mb-3">
                             <div>
                                 <label className="text-xs text-zinc-500 uppercase tracking-wider mb-1 block">Sets</label>
                                 <input
@@ -81,32 +79,6 @@ export function QuickSessionConfigModal({ isOpen, onClose, onConfirm, exerciseNa
                                     onChange={(e) => setSets(parseInt(e.target.value) || 0)}
                                     min="1"
                                     max="10"
-                                    className="w-full px-3 py-2 bg-[#27272A] text-white rounded-lg border border-white/10 focus:border-[#10B981] focus:outline-none text-center"
-                                />
-                            </div>
-                            <div>
-                                <label className="text-xs text-zinc-500 uppercase tracking-wider mb-1 block">Reps</label>
-                                <input
-                                    type="number"
-                                    value={reps}
-                                    onChange={(e) => setReps(parseInt(e.target.value) || 0)}
-                                    min="0"
-                                    max="50"
-                                    placeholder="0 for timed"
-                                    className="w-full px-3 py-2 bg-[#27272A] text-white rounded-lg border border-white/10 focus:border-[#10B981] focus:outline-none text-center"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-3">
-                            <div>
-                                <label className="text-xs text-zinc-500 uppercase tracking-wider mb-1 block">Duration (per set) - Seconds</label>
-                                <input
-                                    type="number"
-                                    value={duration}
-                                    onChange={(e) => setDuration(e.target.value ? parseInt(e.target.value) : '')}
-                                    min="0"
-                                    placeholder="For timed"
                                     className="w-full px-3 py-2 bg-[#27272A] text-white rounded-lg border border-white/10 focus:border-[#10B981] focus:outline-none text-center"
                                 />
                             </div>
@@ -123,8 +95,23 @@ export function QuickSessionConfigModal({ isOpen, onClose, onConfirm, exerciseNa
                             </div>
                         </div>
 
+                        <div className="grid grid-cols-1 gap-3">
+                            <div>
+                                <label className="text-xs text-zinc-500 uppercase tracking-wider mb-1 block">Duration (per set) - Seconds</label>
+                                <input
+                                    type="number"
+                                    value={duration}
+                                    onChange={(e) => setDuration(e.target.value ? parseInt(e.target.value) : '')}
+                                    min="5"
+                                    required
+                                    placeholder="e.g., 30"
+                                    className="w-full px-3 py-2 bg-[#27272A] text-white rounded-lg border border-white/10 focus:border-[#10B981] focus:outline-none text-center"
+                                />
+                            </div>
+                        </div>
+
                         <p className="text-xs text-zinc-500 mt-2">
-                            💡 Use reps for count-based exercises, duration for timed exercises (e.g., planks)
+                            💡 Minimum 5 seconds per set required
                         </p>
 
                         {/* Notes */}
