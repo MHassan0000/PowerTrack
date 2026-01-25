@@ -281,22 +281,25 @@ export function NutritionPageContent({ initialLogs, initialSummary, initialDate 
                 </div>
                 <div className="flex items-center gap-3">
                     {/* Copy Yesterday's Meals Button - Shows when current date has no meals */}
-            {summary.mealCount === 0 && (
-                <motion.button
-                    onClick={handleCopyYesterdaysMeals}
-                    disabled={isCopying}
-                    className="w-full py-3 px-3 bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20 rounded-xl hover:bg-[#10B981]/20 transition-all font-bold flex items-center justify-center gap-2 disabled:opacity-50"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                >
-                    <Copy className="w-4 4-5" />
-                    {isCopying ? 'Copying...' : 
-                        formatDate(currentDate) === 'Today' 
-                            ? "Copy Yesterday's Meals" 
-                            : "Copy Previous Day's Meals"
-                    }
-                </motion.button>
-            )}
+                    {summary.mealCount === 0 && (
+                        <motion.button
+                            onClick={handleCopyYesterdaysMeals}
+                            disabled={isCopying}
+                            className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20 rounded-xl hover:bg-[#10B981]/20 transition-all font-medium text-sm disabled:opacity-50"
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            title={formatDate(currentDate) === 'Today' ? "Copy Yesterday's Meals" : "Copy Previous Day's Meals"}
+                        >
+                            <Copy className="w-4 h-4" />
+                            <span className="hidden md:inline whitespace-nowrap">
+                                {isCopying ? 'Copying...' : 
+                                    formatDate(currentDate) === 'Today' 
+                                        ? "Copy Yesterday's Meals" 
+                                        : "Copy Previous Day's Meals"
+                                }
+                            </span>
+                        </motion.button>
+                    )}
                     <div className="flex items-center gap-2 bg-[#18181B] rounded-xl p-1">
                     <button 
                         onClick={() => navigateDate('prev')}
