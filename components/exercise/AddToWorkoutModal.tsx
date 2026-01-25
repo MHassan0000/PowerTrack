@@ -233,21 +233,20 @@ export function AddToWorkoutModal({ isOpen, onClose, exerciseId, exerciseName }:
                                         <input
                                             type="number"
                                             value={sets}
-                                            onChange={(e) => setSets(parseInt(e.target.value) || 0)}
+                                            onChange={(e) => setSets(parseInt(e.target.value) || 1)}
                                             min="1"
-                                            max="10"
+                                            max="20"
                                             className="w-full px-3 py-2 bg-[#27272A] text-white rounded-lg border border-white/10 focus:border-[#10B981] focus:outline-none text-center"
                                         />
                                     </div>
                                     <div>
-                                        <label className="text-xs text-zinc-500 uppercase tracking-wider mb-1 block">Reps</label>
+                                        <label className="text-xs text-zinc-500 uppercase tracking-wider mb-1 block">Rest (s)</label>
                                         <input
                                             type="number"
-                                            value={reps}
-                                            onChange={(e) => setReps(parseInt(e.target.value) || 0)}
+                                            value={rest}
+                                            onChange={(e) => setRest(parseInt(e.target.value) || 0)}
                                             min="0"
-                                            max="50"
-                                            placeholder="0 for timed"
+                                            step="15"
                                             className="w-full px-3 py-2 bg-[#27272A] text-white rounded-lg border border-white/10 focus:border-[#10B981] focus:outline-none text-center"
                                         />
                                     </div>
