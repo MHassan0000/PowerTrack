@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { X, Plus, Loader2 } from 'lucide-react'
 import { addExerciseToWorkout, createWorkout, getWorkouts, recalculateWorkoutDuration } from '@/lib/actions/workouts'
 import { toast } from 'sonner'
+import { exerciseConfigSchema } from '@/lib/validations/workout'
 
 interface AddToWorkoutModalProps {
     isOpen: boolean
@@ -90,13 +91,20 @@ export function AddToWorkoutModal({ isOpen, onClose, exerciseId, exerciseName }:
             return
         }
 
-        if (sets <= 0) {
-            setError('Sets must be greater than 0')
-            return
+        // Validate with Zod
+        const config = {
+            sets,
+            reps: reps || null,
+            duration_seconds: duration || null,
+            rest_seconds: rest,
+            notes: notes || null
         }
 
-        if (reps <= 0 && !duration) {
-            setError('Either reps or duration must be provided')
+        const validation = exerciseConfigSchema.safeParse(config)
+        if (!validation.success) {
+            const errors = validation.error.flatten().fieldErrors
+            const firstError = Object.values(errors).flat()[0]
+            setError(firstError || 'Invalid input')
             return
         }
 
@@ -249,7 +257,7 @@ export function AddToWorkoutModal({ isOpen, onClose, exerciseId, exerciseName }:
 
                                 <div className="grid grid-cols-2 gap-3">
                                     <div>
-                                        <label className="text-xs text-zinc-500 uppercase tracking-wider mb-1 block">Duration (s)</label>
+                                        <label className="text-xs text-zinc-500 uppercase tracking-wider mb-1 block">Duration (per set) - Seconds</label>
                                         <input
                                             type="number"
                                             value={duration}

@@ -25,7 +25,7 @@ export const exerciseConfigSchema = z.object({
         .max(20, 'Maximum 20 sets allowed'),
     reps: z.number()
         .int('Reps must be a whole number')
-        .min(1, 'At least 1 rep required')
+        .min(1, 'Reps must be at least 1')
         .max(100, 'Maximum 100 reps allowed')
         .optional()
         .nullable(),
@@ -35,12 +35,12 @@ export const exerciseConfigSchema = z.object({
         .max(600, 'Maximum 10 minutes rest'),
     duration_seconds: z.number()
         .int('Duration must be in whole seconds')
-        .min(0, 'Duration cannot be negative')
+        .min(5, 'Duration must be at least 5 seconds')
         .max(3600, 'Maximum 1 hour duration')
         .optional()
         .nullable(),
     notes: z.string()
-        .max(500, 'Notes must be less than 500 characters')
+        .max(200, 'Notes cannot exceed 200 characters')
         .optional()
         .nullable()
 })

@@ -177,12 +177,11 @@ export function ExerciseConfigModal({ exercise, onClose, onConfirm }: ExerciseCo
                                 />
                             </div>
 
-                            {/* Duration (for timed exercises) */}
                             <div>
                                 <label htmlFor="duration" className="text-sm font-bold text-zinc-300 uppercase tracking-wider mb-2 flex items-center gap-2">
                                     <Clock className="w-4 h-4 text-[#10B981]" />
 
-                                    Duration Per Set (seconds)
+                                    Duration (per set) - Seconds
                                 </label>
                                 <input
                                     type="number"

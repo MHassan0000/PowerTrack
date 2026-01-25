@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { X, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { exerciseConfigSchema } from '@/lib/validations/workout'
 
 interface QuickSessionConfigModalProps {
     isOpen: boolean
@@ -26,13 +27,20 @@ export function QuickSessionConfigModal({ isOpen, onClose, onConfirm, exerciseNa
     const [notes, setNotes] = useState('')
 
     const handleSubmit = () => {
-        if (sets <= 0) {
-            toast.error('Sets must be greater than 0')
-            return
+        // Validate with Zod
+        const config = {
+            sets,
+            reps: reps || null,
+            duration_seconds: duration || null,
+            rest_seconds: rest,
+            notes: notes || null
         }
 
-        if (reps <= 0 && !duration) {
-            toast.error('Either reps or duration must be provided')
+        const validation = exerciseConfigSchema.safeParse(config)
+        if (!validation.success) {
+            const errors = validation.error.flatten().fieldErrors
+            const firstError = Object.values(errors).flat()[0]
+            toast.error(firstError || 'Invalid input')
             return
         }
 
@@ -92,7 +100,7 @@ export function QuickSessionConfigModal({ isOpen, onClose, onConfirm, exerciseNa
 
                         <div className="grid grid-cols-2 gap-3">
                             <div>
-                                <label className="text-xs text-zinc-500 uppercase tracking-wider mb-1 block">Duration (s)</label>
+                                <label className="text-xs text-zinc-500 uppercase tracking-wider mb-1 block">Duration (per set) - Seconds</label>
                                 <input
                                     type="number"
                                     value={duration}
