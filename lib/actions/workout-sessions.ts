@@ -166,8 +166,9 @@ export async function completeWorkoutSession(sessionId: string, notes?: string) 
         .eq('id', sessionId)
         .single()
 
-    revalidatePath('/workouts')
-    revalidatePath('/workouts/history')
+    // Don't revalidate here - let the user navigate manually from completion summary
+    // revalidatePath('/workouts')
+    // revalidatePath('/workouts/history')
     
     return { 
         data: {

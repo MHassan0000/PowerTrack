@@ -211,7 +211,7 @@ export function ActiveWorkoutView({ session, sets: initialSets }: ActiveWorkoutV
 
     const handleCloseSummary = () => {
         setShowCompletionSummary(false)
-        router.push('/workouts/history')
+        setCompleting(false)
     }
 
     const handleCancel = () => {

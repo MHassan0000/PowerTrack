@@ -88,25 +88,15 @@ export function WorkoutCompletionSummary({ isOpen, onClose, stats }: WorkoutComp
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
-                    onClick={onClose}
                 >
                     <motion.div
                         initial={{ scale: 0.9, y: 50 }}
                         animate={{ scale: 1, y: 0 }}
                         exit={{ scale: 0.9, y: 50 }}
-                        onClick={(e) => e.stopPropagation()}
                         className="bg-[#18181B] rounded-3xl max-w-md w-full border border-white/10 relative max-h-[90vh] flex flex-col"
                     >
                         {/* Background decoration */}
                         <div className="absolute top-0 right-0 w-64 h-64 bg-[#10B981]/10 rounded-full blur-3xl -z-10" />
-                        
-                        {/* Close button */}
-                        <button
-                            onClick={onClose}
-                            className="absolute top-4 right-4 w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-zinc-400 hover:text-white transition-colors z-10"
-                        >
-                            <X className="w-4 h-4" />
-                        </button>
 
                         {/* Scrollable content */}
                         <div className="overflow-y-auto px-8 py-8">
