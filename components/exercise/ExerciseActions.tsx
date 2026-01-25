@@ -71,8 +71,7 @@ export function ExerciseActions({ exerciseId, exerciseName }: ExerciseActionsPro
             toast.success('Workout created! Start your session now.')
             router.push(`/workouts/${workout.id}`)
         } catch (error) {
-            console.error('Error starting workout:', error)
-            toast.error('Failed to start workout session')
+            toast.error('Failed to start workout')
             setIsStarting(false)
         }
     }
