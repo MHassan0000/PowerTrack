@@ -1,9 +1,11 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, Apple, Coffee, Sun, Moon, Cookie, Trash2, ChevronLeft, ChevronRight } from 'lucide-react'
-import { addNutritionLog, deleteNutritionLog, MealType, NutritionLog, DailyNutritionSummary } from '@/lib/actions/nutrition'
+import { Plus, Apple, Coffee, Sun, Moon, Cookie, Trash2, ChevronLeft, ChevronRight, Calendar, Copy } from 'lucide-react'
+import { addNutritionLog, deleteNutritionLog, duplicateNutritionLog, copyYesterdaysMeals, MealType, NutritionLog, DailyNutritionSummary } from '@/lib/actions/nutrition'
+import { CalendarModal } from './CalendarModal'
+import { FoodContextMenu } from './FoodContextMenu'
 
 interface NutritionPageContentProps {
     initialLogs: Record<MealType, NutritionLog[]>
@@ -20,17 +22,24 @@ const MEAL_CONFIG: Record<MealType, { label: string; icon: React.ReactNode; colo
 }
 
 const CALORIE_GOAL = 2000
-const PROTEIN_GOAL = 150
 const CARBS_GOAL = 250
 const FAT_GOAL = 65
 
 export function NutritionPageContent({ initialLogs, initialSummary, initialDate }: NutritionPageContentProps) {
     const [isPending, startTransition] = useTransition()
+    const [isCopying, setIsCopying] = useState(false)
     const [logs, setLogs] = useState(initialLogs)
     const [summary, setSummary] = useState(initialSummary)
     const [showAddModal, setShowAddModal] = useState(false)
+    const [showCalendar, setShowCalendar] = useState(false)
     const [selectedMeal, setSelectedMeal] = useState<MealType>('breakfast')
     const [currentDate, setCurrentDate] = useState(new Date(initialDate))
+    const [contextMenu, setContextMenu] = useState<{ isOpen: boolean; position: { x: number; y: number }; logId: string | null }>({
+        isOpen: false,
+        position: { x: 0, y: 0 },
+        logId: null,
+    })
+    const longPressTimerRef = useRef<NodeJS.Timeout | null>(null)
 
     const [formData, setFormData] = useState({
         food_item: '',
@@ -99,16 +108,98 @@ export function NutritionPageContent({ initialLogs, initialSummary, initialDate 
         })
     }
 
+    const handleDuplicateFood = async (logId: string) => {
+        startTransition(async () => {
+            const result = await duplicateNutritionLog(logId, currentDate.toISOString())
+            if (result.data) {
+                const newLog = result.data
+                setLogs(prev => ({
+                    ...prev,
+                    [newLog.meal_type]: [...prev[newLog.meal_type], newLog]
+                }))
+                setSummary(prev => ({
+                    ...prev,
+                    totalCalories: prev.totalCalories + (newLog.calories || 0),
+                    totalProtein: prev.totalProtein + (Number(newLog.protein_g) || 0),
+                    totalCarbs: prev.totalCarbs + (Number(newLog.carbs_g) || 0),
+                    totalFat: prev.totalFat + (Number(newLog.fat_g) || 0),
+                    mealCount: prev.mealCount + 1,
+                }))
+            }
+        })
+    }
+
+    const handleRightClick = (e: React.MouseEvent, logId: string) => {
+        e.preventDefault()
+        setContextMenu({
+            isOpen: true,
+            position: { x: e.clientX, y: e.clientY },
+            logId,
+        })
+    }
+
+    const handleLongPressStart = (e: React.TouchEvent | React.MouseEvent, logId: string) => {
+        longPressTimerRef.current = setTimeout(() => {
+            const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX
+            const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY
+            setContextMenu({
+                isOpen: true,
+                position: { x: clientX, y: clientY },
+                logId,
+            })
+        }, 500)
+    }
+
+    const handleLongPressEnd = () => {
+        if (longPressTimerRef.current) {
+            clearTimeout(longPressTimerRef.current)
+            longPressTimerRef.current = null
+        }
+    }
+
+    const handleCopyYesterdaysMeals = async () => {
+        setIsCopying(true)
+        try {
+            const result = await copyYesterdaysMeals(currentDate.toISOString())
+            if (result.data && !result.skipped) {
+                // Refresh the page to show the copied meals
+                window.location.reload()
+            }
+        } catch (error) {
+            console.error('Failed to copy meals:', error)
+        } finally {
+            setIsCopying(false)
+        }
+    }
+
     const navigateDate = (direction: 'prev' | 'next') => {
         const newDate = new Date(currentDate)
         newDate.setDate(currentDate.getDate() + (direction === 'next' ? 1 : -1))
         window.location.href = `/nutrition?date=${newDate.toISOString().split('T')[0]}`
     }
 
+    const handleDateSelect = (date: Date) => {
+        window.location.href = `/nutrition?date=${date.toISOString().split('T')[0]}`
+    }
+
     const calorieProgress = Math.min((summary.totalCalories / CALORIE_GOAL) * 100, 100)
-    const proteinProgress = Math.min((summary.totalProtein / PROTEIN_GOAL) * 100, 100)
+    const proteinProgress = summary.proteinGoal 
+        ? Math.min((summary.totalProtein / summary.proteinGoal) * 100, 100) 
+        : 0
     const carbsProgress = Math.min((summary.totalCarbs / CARBS_GOAL) * 100, 100)
     const fatProgress = Math.min((summary.totalFat / FAT_GOAL) * 100, 100)
+
+    // Helper function to get progress bar color based on percentage
+    const getProgressColor = (progress: number, actual: number, goal: number) => {
+        const rawProgress = (actual / goal) * 100
+        if (rawProgress > 100) return 'bg-red-500' // Exceeded
+        if (progress >= 80) return 'bg-[#10B981]' // On target (green)
+        if (progress >= 60) return 'bg-yellow-500' // Close (yellow)
+        return 'bg-zinc-600' // Below target
+    }
+
+    // Check if protein goal is met/exceeded for emphasis
+    const isProteinGoalMet = summary.proteinGoal && summary.totalProtein >= summary.proteinGoal
 
     const formatDate = (date: Date) => {
         const today = new Date()
@@ -128,21 +219,47 @@ export function NutritionPageContent({ initialLogs, initialSummary, initialDate 
                     <h1 className="text-4xl font-bold tracking-tight text-white mb-2">Nutrition</h1>
                     <p className="text-zinc-400">Track your daily meals and macros</p>
                 </div>
-                <div className="flex items-center gap-2 bg-[#18181B] rounded-xl p-1">
+                <div className="flex items-center gap-3">
+                    {/* Copy Yesterday's Meals Button - Only show if today has no entries */}
+                    {summary.mealCount === 0 && currentDate.toDateString() === new Date().toDateString() && (
+                        <motion.button
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            onClick={handleCopyYesterdaysMeals}
+                            disabled={isCopying}
+                            className="flex items-center gap-2 px-4 py-2 bg-[#10B981]/10 text-[#10B981] rounded-lg hover:bg-[#10B981]/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <Copy className="w-4 h-4" />
+                            <span className="font-medium text-sm">
+                                {isCopying ? 'Copying...' : "Copy yesterday's meals"}
+                            </span>
+                        </motion.button>
+                    )}
+                    <div className="flex items-center gap-2 bg-[#18181B] rounded-xl p-1">
                     <button 
                         onClick={() => navigateDate('prev')}
                         className="p-2 hover:bg-[#27272A] rounded-lg transition-colors"
+                        aria-label="Previous day"
                     >
                         <ChevronLeft className="w-5 h-5" />
                     </button>
-                    <span className="px-4 py-2 font-medium">{formatDate(currentDate)}</span>
+                    <button
+                        onClick={() => setShowCalendar(true)}
+                        className="px-4 py-2 font-medium hover:bg-[#27272A] rounded-lg transition-colors flex items-center gap-2 group"
+                        aria-label="Open calendar"
+                    >
+                        <span>{formatDate(currentDate)}</span>
+                        <Calendar className="w-4 h-4 text-zinc-500 group-hover:text-[#10B981] transition-colors" />
+                    </button>
                     <button 
                         onClick={() => navigateDate('next')}
-                        className="p-2 hover:bg-[#27272A] rounded-lg transition-colors"
+                        className="p-2 hover:bg-[#27272A] rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled={currentDate.toDateString() === new Date().toDateString()}
+                        aria-label="Next day"
                     >
                         <ChevronRight className="w-5 h-5" />
                     </button>
+                </div>
                 </div>
             </div>
 
@@ -153,29 +270,54 @@ export function NutritionPageContent({ initialLogs, initialSummary, initialDate 
                     <h3 className="text-2xl font-bold text-white mb-3">{summary.totalCalories} <span className="text-base font-normal text-zinc-500">/ {CALORIE_GOAL}</span></h3>
                     <div className="h-2 bg-[#27272A] rounded-full overflow-hidden">
                         <motion.div 
-                            className="h-full bg-[#10B981] rounded-full"
+                            className={`h-full ${getProgressColor(calorieProgress, summary.totalCalories, CALORIE_GOAL)} rounded-full`}
                             initial={{ width: 0 }}
                             animate={{ width: `${calorieProgress}%` }}
                         />
                     </div>
                 </div>
-                <div className="bg-[#18181B] rounded-2xl p-5 border border-white/5">
+                <motion.div 
+                    className={`bg-[#18181B] rounded-2xl p-5 border ${isProteinGoalMet ? 'border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.15)]' : 'border-white/5'}`}
+                    animate={isProteinGoalMet ? { 
+                        boxShadow: [
+                            '0 0 15px rgba(59,130,246,0.15)',
+                            '0 0 20px rgba(59,130,246,0.25)',
+                            '0 0 15px rgba(59,130,246,0.15)'
+                        ]
+                    } : {}}
+                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                >
                     <p className="text-zinc-400 text-sm mb-2">Protein</p>
-                    <h3 className="text-2xl font-bold text-white mb-3">{Math.round(summary.totalProtein)}g <span className="text-base font-normal text-zinc-500">/ {PROTEIN_GOAL}g</span></h3>
-                    <div className="h-2 bg-[#27272A] rounded-full overflow-hidden">
-                        <motion.div 
-                            className="h-full bg-blue-500 rounded-full"
-                            initial={{ width: 0 }}
-                            animate={{ width: `${proteinProgress}%` }}
-                        />
-                    </div>
-                </div>
+                    {summary.proteinGoal ? (
+                        <>
+                            <h3 className="text-2xl font-bold text-white mb-3">
+                                {Math.round(summary.totalProtein)}g <span className="text-base font-normal text-zinc-500">/ {summary.proteinGoal}g</span>
+                            </h3>
+                            <div className="h-2 bg-[#27272A] rounded-full overflow-hidden">
+                                <motion.div 
+                                    className={`h-full ${getProgressColor(proteinProgress, summary.totalProtein, summary.proteinGoal)} rounded-full`}
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${proteinProgress}%` }}
+                                />
+                            </div>
+                        </>
+                    ) : (
+                        <>
+                            <h3 className="text-2xl font-bold text-white mb-3">
+                                {Math.round(summary.totalProtein)}g
+                            </h3>
+                            <p className="text-xs text-zinc-500">
+                                Enter your body weight to set your protein goal
+                            </p>
+                        </>
+                    )}
+                </motion.div>
                 <div className="bg-[#18181B] rounded-2xl p-5 border border-white/5">
                     <p className="text-zinc-400 text-sm mb-2">Carbs</p>
                     <h3 className="text-2xl font-bold text-white mb-3">{Math.round(summary.totalCarbs)}g <span className="text-base font-normal text-zinc-500">/ {CARBS_GOAL}g</span></h3>
                     <div className="h-2 bg-[#27272A] rounded-full overflow-hidden">
                         <motion.div 
-                            className="h-full bg-orange-500 rounded-full"
+                            className={`h-full ${getProgressColor(carbsProgress, summary.totalCarbs, CARBS_GOAL)} rounded-full`}
                             initial={{ width: 0 }}
                             animate={{ width: `${carbsProgress}%` }}
                         />
@@ -186,7 +328,7 @@ export function NutritionPageContent({ initialLogs, initialSummary, initialDate 
                     <h3 className="text-2xl font-bold text-white mb-3">{Math.round(summary.totalFat)}g <span className="text-base font-normal text-zinc-500">/ {FAT_GOAL}g</span></h3>
                     <div className="h-2 bg-[#27272A] rounded-full overflow-hidden">
                         <motion.div 
-                            className="h-full bg-purple-500 rounded-full"
+                            className={`h-full ${getProgressColor(fatProgress, summary.totalFat, FAT_GOAL)} rounded-full`}
                             initial={{ width: 0 }}
                             animate={{ width: `${fatProgress}%` }}
                         />
@@ -223,7 +365,13 @@ export function NutritionPageContent({ initialLogs, initialSummary, initialDate 
                                         key={log.id}
                                         initial={{ opacity: 0, y: 10 }}
                                         animate={{ opacity: 1, y: 0 }}
-                                        className="flex items-center justify-between p-3 bg-[#27272A] rounded-xl group"
+                                        className="flex items-center justify-between p-3 bg-[#27272A] rounded-xl group cursor-context-menu select-none"
+                                        onContextMenu={(e) => handleRightClick(e, log.id)}
+                                        onTouchStart={(e) => handleLongPressStart(e, log.id)}
+                                        onTouchEnd={handleLongPressEnd}
+                                        onMouseDown={(e) => e.button === 0 && handleLongPressStart(e, log.id)}
+                                        onMouseUp={handleLongPressEnd}
+                                        onMouseLeave={handleLongPressEnd}
                                     >
                                         <div>
                                             <p className="font-medium">{log.food_item}</p>
@@ -361,6 +509,26 @@ export function NutritionPageContent({ initialLogs, initialSummary, initialDate 
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            {/* Food Context Menu */}
+            <FoodContextMenu
+                isOpen={contextMenu.isOpen}
+                position={contextMenu.position}
+                onClose={() => setContextMenu({ isOpen: false, position: { x: 0, y: 0 }, logId: null })}
+                onLogAgain={() => {
+                    if (contextMenu.logId) {
+                        handleDuplicateFood(contextMenu.logId)
+                    }
+                }}
+            />
+
+            {/* Calendar Modal */}
+            <CalendarModal
+                isOpen={showCalendar}
+                onClose={() => setShowCalendar(false)}
+                currentDate={currentDate}
+                onDateSelect={handleDateSelect}
+            />
         </div>
     )
 }

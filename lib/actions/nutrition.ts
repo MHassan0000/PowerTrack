@@ -29,6 +29,7 @@ export interface DailyNutritionSummary {
     totalFiber: number
     totalSugar: number
     mealCount: number
+    proteinGoal: number | null // Calculated from user weight, null if weight not set
 }
 
 export interface CreateNutritionLogInput {
@@ -117,11 +118,32 @@ export async function getNutritionLogs(date?: string): Promise<{ data: Nutrition
  * Get daily nutrition summary for a specific date
  */
 export async function getDailyNutritionSummary(date?: string): Promise<{ data: DailyNutritionSummary; error: string | null }> {
+    const supabase = await createClient()
+    
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+        return {
+            data: { totalCalories: 0, totalProtein: 0, totalCarbs: 0, totalFat: 0, totalFiber: 0, totalSugar: 0, mealCount: 0, proteinGoal: null },
+            error: 'Not authenticated'
+        }
+    }
+
+    // Fetch user profile to get weight for protein goal calculation
+    const { data: profile } = await supabase
+        .from('users')
+        .select('weight_kg')
+        .eq('id', user.id)
+        .single()
+
+    // Calculate protein goal: bodyweight (in pounds) × 1g
+    // weight_kg * 2.20462 = weight in pounds
+    const proteinGoal = profile?.weight_kg ? Math.round(profile.weight_kg * 2.20462) : null
+
     const { data: logs, error } = await getNutritionLogs(date)
 
     if (error) {
         return {
-            data: { totalCalories: 0, totalProtein: 0, totalCarbs: 0, totalFat: 0, totalFiber: 0, totalSugar: 0, mealCount: 0 },
+            data: { totalCalories: 0, totalProtein: 0, totalCarbs: 0, totalFat: 0, totalFiber: 0, totalSugar: 0, mealCount: 0, proteinGoal },
             error
         }
     }
@@ -134,6 +156,7 @@ export async function getDailyNutritionSummary(date?: string): Promise<{ data: D
         totalFiber: logs.reduce((acc, log) => acc + (Number(log.fiber_g) || 0), 0),
         totalSugar: logs.reduce((acc, log) => acc + (Number(log.sugar_g) || 0), 0),
         mealCount: logs.length,
+        proteinGoal,
     }
 
     return { data: summary, error: null }
@@ -192,4 +215,140 @@ export async function getNutritionLogsByMeal(date?: string): Promise<{ data: Rec
     })
 
     return { data: grouped, error: null }
+}
+/**
+ * Duplicate a nutrition log for the current date
+ * This creates a copy of an existing log entry with the same meal type and nutritional values
+ */
+export async function duplicateNutritionLog(logId: string, targetDate?: string): Promise<{ data: NutritionLog | null; error: string | null }> {
+    const supabase = await createClient()
+
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+        return { data: null, error: 'Not authenticated' }
+    }
+
+    // First, fetch the original log to ensure it belongs to the current user
+    const { data: originalLog, error: fetchError } = await supabase
+        .from('nutrition_logs')
+        .select('*')
+        .eq('id', logId)
+        .eq('user_id', user.id) // RLS protection: ensure user owns this log
+        .single()
+
+    if (fetchError || !originalLog) {
+        return { data: null, error: 'Log not found or unauthorized' }
+    }
+
+    // Create a duplicate with the same nutritional data but new timestamp
+    const { data, error } = await supabase
+        .from('nutrition_logs')
+        .insert({
+            user_id: user.id,
+            meal_type: originalLog.meal_type,
+            food_item: originalLog.food_item,
+            calories: originalLog.calories,
+            protein_g: originalLog.protein_g,
+            carbs_g: originalLog.carbs_g,
+            fat_g: originalLog.fat_g,
+            fiber_g: originalLog.fiber_g,
+            sugar_g: originalLog.sugar_g,
+            notes: originalLog.notes,
+            logged_at: targetDate || new Date().toISOString(),
+        })
+        .select()
+        .single()
+
+    if (error) {
+        return { data: null, error: error.message }
+    }
+
+    revalidatePath('/nutrition')
+    return { data, error: null }
+}
+/**
+ * Copy all meals from yesterday to today
+ * Idempotent - only copies if today has no entries yet
+ */
+export async function copyYesterdaysMeals(targetDate: string): Promise<{ data: NutritionLog[] | null; error: string | null; skipped?: boolean }> {
+    const supabase = await createClient()
+
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+        return { data: null, error: 'Not authenticated' }
+    }
+
+    // Parse target date and calculate yesterday
+    const target = new Date(targetDate)
+    const yesterday = new Date(target)
+    yesterday.setDate(yesterday.getDate() - 1)
+
+    const targetStartOfDay = new Date(target)
+    targetStartOfDay.setHours(0, 0, 0, 0)
+    const targetEndOfDay = new Date(target)
+    targetEndOfDay.setHours(23, 59, 59, 999)
+
+    const yesterdayStartOfDay = new Date(yesterday)
+    yesterdayStartOfDay.setHours(0, 0, 0, 0)
+    const yesterdayEndOfDay = new Date(yesterday)
+    yesterdayEndOfDay.setHours(23, 59, 59, 999)
+
+    // Check if target date already has entries (idempotent)
+    const { data: existingLogs, error: checkError } = await supabase
+        .from('nutrition_logs')
+        .select('id')
+        .eq('user_id', user.id)
+        .gte('logged_at', targetStartOfDay.toISOString())
+        .lte('logged_at', targetEndOfDay.toISOString())
+
+    if (checkError) {
+        return { data: null, error: checkError.message }
+    }
+
+    if (existingLogs && existingLogs.length > 0) {
+        return { data: null, error: null, skipped: true }
+    }
+
+    // Fetch yesterday's meals (with ownership validation)
+    const { data: yesterdayLogs, error: fetchError } = await supabase
+        .from('nutrition_logs')
+        .select('*')
+        .eq('user_id', user.id) // RLS: ensure user owns these logs
+        .gte('logged_at', yesterdayStartOfDay.toISOString())
+        .lte('logged_at', yesterdayEndOfDay.toISOString())
+
+    if (fetchError) {
+        return { data: null, error: fetchError.message }
+    }
+
+    if (!yesterdayLogs || yesterdayLogs.length === 0) {
+        return { data: [], error: null }
+    }
+
+    // Create duplicates with current timestamp
+    const newEntries = yesterdayLogs.map(log => ({
+        user_id: user.id,
+        meal_type: log.meal_type,
+        food_item: log.food_item,
+        calories: log.calories,
+        protein_g: log.protein_g,
+        carbs_g: log.carbs_g,
+        fat_g: log.fat_g,
+        fiber_g: log.fiber_g,
+        sugar_g: log.sugar_g,
+        notes: log.notes,
+        logged_at: targetDate,
+    }))
+
+    const { data, error } = await supabase
+        .from('nutrition_logs')
+        .insert(newEntries)
+        .select()
+
+    if (error) {
+        return { data: null, error: error.message }
+    }
+
+    revalidatePath('/nutrition')
+    return { data, error: null }
 }
