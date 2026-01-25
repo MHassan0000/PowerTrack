@@ -24,6 +24,7 @@ export function ExerciseActions({ exerciseId, exerciseName }: ExerciseActionsPro
         reps: number
         duration: number | ''
         rest: number
+        notes?: string
     }) => {
         setIsQuickSessionModalOpen(false)
         setIsStarting(true)
@@ -56,6 +57,7 @@ export function ExerciseActions({ exerciseId, exerciseName }: ExerciseActionsPro
                 reps: config.reps > 0 ? config.reps : undefined,
                 duration_seconds: config.duration || undefined,
                 rest_seconds: config.rest,
+                notes: config.notes || undefined,
             })
 
             if (addError) {

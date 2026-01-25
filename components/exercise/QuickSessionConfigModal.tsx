@@ -12,6 +12,7 @@ interface QuickSessionConfigModalProps {
         reps: number
         duration: number | ''
         rest: number
+        notes?: string
     }) => void
     exerciseName: string
 }
@@ -22,6 +23,7 @@ export function QuickSessionConfigModal({ isOpen, onClose, onConfirm, exerciseNa
     const [reps, setReps] = useState(10)
     const [duration, setDuration] = useState<number | ''>('')
     const [rest, setRest] = useState(60)
+    const [notes, setNotes] = useState('')
 
     const handleSubmit = () => {
         if (sets <= 0) {
@@ -34,7 +36,7 @@ export function QuickSessionConfigModal({ isOpen, onClose, onConfirm, exerciseNa
             return
         }
 
-        onConfirm({ sets, reps, duration, rest })
+        onConfirm({ sets, reps, duration, rest, notes: notes || undefined })
     }
 
     if (!isOpen) return null
@@ -116,6 +118,21 @@ export function QuickSessionConfigModal({ isOpen, onClose, onConfirm, exerciseNa
                         <p className="text-xs text-zinc-500 mt-2">
                             💡 Use reps for count-based exercises, duration for timed exercises (e.g., planks)
                         </p>
+
+                        {/* Notes */}
+                        <div className="mt-4">
+                            <label htmlFor="notes" className="text-xs text-zinc-500 uppercase tracking-wider mb-1 block">
+                                Notes (Optional)
+                            </label>
+                            <textarea
+                                id="notes"
+                                value={notes}
+                                onChange={(e) => setNotes(e.target.value)}
+                                rows={3}
+                                placeholder="Any specific instructions..."
+                                className="w-full px-3 py-2 bg-[#27272A] text-white rounded-lg border border-white/10 focus:border-[#10B981] focus:outline-none resize-none"
+                            />
+                        </div>
                     </div>
 
                     {/* Action Buttons */}

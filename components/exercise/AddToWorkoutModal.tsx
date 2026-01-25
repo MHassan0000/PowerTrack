@@ -29,6 +29,7 @@ export function AddToWorkoutModal({ isOpen, onClose, exerciseId, exerciseName }:
     const [reps, setReps] = useState(10)
     const [duration, setDuration] = useState<number | ''>('')
     const [rest, setRest] = useState(60)
+    const [notes, setNotes] = useState('')
     
     const [isLoading, setIsLoading] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
@@ -107,6 +108,7 @@ export function AddToWorkoutModal({ isOpen, onClose, exerciseId, exerciseName }:
             reps: reps > 0 ? reps : undefined,
             duration_seconds: duration || undefined,
             rest_seconds: rest,
+            notes: notes || undefined,
         })
 
         if (error) {
@@ -268,6 +270,18 @@ export function AddToWorkoutModal({ isOpen, onClose, exerciseId, exerciseName }:
                                             className="w-full px-3 py-2 bg-[#27272A] text-white rounded-lg border border-white/10 focus:border-[#10B981] focus:outline-none text-center"
                                         />
                                     </div>
+                                </div>
+
+                                {/* Notes */}
+                                <div>
+                                    <label className="text-xs text-zinc-500 uppercase tracking-wider mb-1 block">Notes (Optional)</label>
+                                    <textarea
+                                        value={notes}
+                                        onChange={(e) => setNotes(e.target.value)}
+                                        rows={3}
+                                        placeholder="Any specific instructions..."
+                                        className="w-full px-3 py-2 bg-[#27272A] text-white rounded-lg border border-white/10 focus:border-[#10B981] focus:outline-none resize-none"
+                                    />
                                 </div>
                             </div>
 
