@@ -77,7 +77,34 @@ export async function addBodyStat(weight_kg: number, measured_at: string, notes?
     return { data, error: null }
 }
 
-// ... getBodyStats ...
+/**
+ * Get body stats for a user
+ */
+export async function getBodyStats(days: number = 90) {
+    const supabase = await createClient()
+
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+        return { data: null, error: 'Not authenticated' }
+    }
+
+    const startDate = new Date()
+    startDate.setDate(startDate.getDate() - days)
+
+    const { data, error } = await supabase
+        .from('body_stats')
+        .select('*')
+        .eq('user_id', user.id)
+        .gte('measured_at', startDate.toISOString().split('T')[0])
+        .order('measured_at', { ascending: true })
+
+    if (error) {
+        return { data: null, error: error.message }
+    }
+
+    return { data, error: null }
+}
+
 
 /**
  * Update body stat
