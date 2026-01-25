@@ -2,8 +2,8 @@
 
 import { useState, useTransition, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, Apple, Coffee, Sun, Moon, Cookie, Trash2, ChevronLeft, ChevronRight, Calendar, Copy } from 'lucide-react'
-import { addNutritionLog, deleteNutritionLog, duplicateNutritionLog, copyYesterdaysMeals, MealType, NutritionLog, DailyNutritionSummary } from '@/lib/actions/nutrition'
+import { Plus, Apple, Coffee, Sun, Moon, Cookie, Trash2, ChevronLeft, ChevronRight, Calendar, Copy, Edit2 } from 'lucide-react'
+import { addNutritionLog, deleteNutritionLog, duplicateNutritionLog, copyYesterdaysMeals, updateNutritionLog, MealType, NutritionLog, DailyNutritionSummary } from '@/lib/actions/nutrition'
 import { CalendarModal } from './CalendarModal'
 import { FoodContextMenu } from './FoodContextMenu'
 
@@ -36,6 +36,8 @@ export function NutritionPageContent({ initialLogs, initialSummary, initialDate 
         logId: null,
     })
     const longPressTimerRef = useRef<NodeJS.Timeout | null>(null)
+    const [isEditing, setIsEditing] = useState(false)
+    const [editingLog, setEditingLog] = useState<NutritionLog | null>(null)
 
     const [formData, setFormData] = useState({
         food_item: '',
@@ -55,31 +57,72 @@ export function NutritionPageContent({ initialLogs, initialSummary, initialDate 
         e.preventDefault()
         
         startTransition(async () => {
-            const result = await addNutritionLog({
-                meal_type: selectedMeal,
-                food_item: formData.food_item,
-                calories: formData.calories ? parseInt(formData.calories) : undefined,
-                protein_g: formData.protein_g ? parseFloat(formData.protein_g) : undefined,
-                carbs_g: formData.carbs_g ? parseFloat(formData.carbs_g) : undefined,
-                fat_g: formData.fat_g ? parseFloat(formData.fat_g) : undefined,
-                notes: formData.notes || undefined,
-            })
+            if (isEditing && editingLog) {
+                // Update existing meal
+                const result = await updateNutritionLog(editingLog.id, {
+                    food_item: formData.food_item,
+                    calories: formData.calories ? parseInt(formData.calories) : undefined,
+                    protein_g: formData.protein_g ? parseFloat(formData.protein_g) : undefined,
+                    carbs_g: formData.carbs_g ? parseFloat(formData.carbs_g) : undefined,
+                    fat_g: formData.fat_g ? parseFloat(formData.fat_g) : undefined,
+                    notes: formData.notes || undefined,
+                })
 
-            if (result.data) {
-                setLogs(prev => ({
-                    ...prev,
-                    [selectedMeal]: [...prev[selectedMeal], result.data!]
-                }))
-                setSummary(prev => ({
-                    ...prev,
-                    totalCalories: prev.totalCalories + (result.data!.calories || 0),
-                    totalProtein: prev.totalProtein + (Number(result.data!.protein_g) || 0),
-                    totalCarbs: prev.totalCarbs + (Number(result.data!.carbs_g) || 0),
-                    totalFat: prev.totalFat + (Number(result.data!.fat_g) || 0),
-                    mealCount: prev.mealCount + 1,
-                }))
-                setFormData({ food_item: '', calories: '', protein_g: '', carbs_g: '', fat_g: '', notes: '' })
-                setShowAddModal(false)
+                if (result.data) {
+                    // Update local state
+                    setLogs(prev => ({
+                        ...prev,
+                        [editingLog.meal_type]: prev[editingLog.meal_type].map(log =>
+                            log.id === editingLog.id ? result.data! : log
+                        )
+                    }))
+                    // Recalculate summary (subtract old, add new)
+                    const oldCalories = editingLog.calories || 0
+                    const oldProtein = Number(editingLog.protein_g) || 0
+                    const oldCarbs = Number(editingLog.carbs_g) || 0
+                    const oldFat = Number(editingLog.fat_g) || 0
+
+                    setSummary(prev => ({
+                        ...prev,
+                        totalCalories: prev.totalCalories - oldCalories + (result.data!.calories || 0),
+                        totalProtein: prev.totalProtein - oldProtein + (Number(result.data!.protein_g) || 0),
+                        totalCarbs: prev.totalCarbs - oldCarbs + (Number(result.data!.carbs_g) || 0),
+                        totalFat: prev.totalFat - oldFat + (Number(result.data!.fat_g) || 0),
+                    }))
+                    setFormData({ food_item: '', calories: '', protein_g: '', carbs_g: '', fat_g: '', notes: '' })
+                    setShowAddModal(false)
+                    setIsEditing(false)
+                    setEditingLog(null)
+                }
+            } else {
+                // Add new meal
+                const result = await addNutritionLog({
+                    meal_type: selectedMeal,
+                    food_item: formData.food_item,
+                    calories: formData.calories ? parseInt(formData.calories) : undefined,
+                    protein_g: formData.protein_g ? parseFloat(formData.protein_g) : undefined,
+                    carbs_g: formData.carbs_g ? parseFloat(formData.carbs_g) : undefined,
+                    fat_g: formData.fat_g ? parseFloat(formData.fat_g) : undefined,
+                    notes: formData.notes || undefined,
+                    logged_at: currentDate.toISOString(), // Use the date being viewed, not today
+                })
+
+                if (result.data) {
+                    setLogs(prev => ({
+                        ...prev,
+                        [selectedMeal]: [...prev[selectedMeal], result.data!]
+                    }))
+                    setSummary(prev => ({
+                        ...prev,
+                        totalCalories: prev.totalCalories + (result.data!.calories || 0),
+                        totalProtein: prev.totalProtein + (Number(result.data!.protein_g) || 0),
+                        totalCarbs: prev.totalCarbs + (Number(result.data!.carbs_g) || 0),
+                        totalFat: prev.totalFat + (Number(result.data!.fat_g) || 0),
+                        mealCount: prev.mealCount + 1,
+                    }))
+                    setFormData({ food_item: '', calories: '', protein_g: '', carbs_g: '', fat_g: '', notes: '' })
+                    setShowAddModal(false)
+                }
             }
         })
     }
@@ -104,7 +147,20 @@ export function NutritionPageContent({ initialLogs, initialSummary, initialDate 
         })
     }
 
-
+    const handleEdit = (log: NutritionLog) => {
+        setEditingLog(log)
+        setIsEditing(true)
+        setSelectedMeal(log.meal_type)
+        setFormData({
+            food_item: log.food_item,
+            calories: log.calories?.toString() || '',
+            protein_g: log.protein_g?.toString() || '',
+            carbs_g: log.carbs_g?.toString() || '',
+            fat_g: log.fat_g?.toString() || '',
+            notes: log.notes || '',
+        })
+        setShowAddModal(true)
+    }
 
     const handleRightClick = (e: React.MouseEvent, logId: string) => {
         e.preventDefault()
@@ -136,7 +192,7 @@ export function NutritionPageContent({ initialLogs, initialSummary, initialDate 
 
     const handleDuplicateFood = async (logId: string) => {
         try {
-            const result = await duplicateNutritionLog(logId)
+            const result = await duplicateNutritionLog(logId, currentDate.toISOString())
             if (result.data) {
                 const newLog = result.data
                 setLogs(prev => ({
@@ -152,7 +208,10 @@ export function NutritionPageContent({ initialLogs, initialSummary, initialDate 
                     totalFiber: prev.totalFiber + (Number(newLog.fiber_g) || 0),
                     totalSugar: prev.totalSugar + (Number(newLog.sugar_g) || 0),
                     mealCount: prev.mealCount + 1,
+                    calorieGoal: prev.calorieGoal,
                     proteinGoal: prev.proteinGoal,
+                    carbsGoal: prev.carbsGoal,
+                    fatGoal: prev.fatGoal,
                 }))
                 setContextMenu({ isOpen: false, position: { x: 0, y: 0 }, logId: null })
             }
@@ -221,21 +280,23 @@ export function NutritionPageContent({ initialLogs, initialSummary, initialDate 
                     <p className="text-zinc-400">Track your daily meals and macros</p>
                 </div>
                 <div className="flex items-center gap-3">
-                    {/* Copy Yesterday's Meals Button - Only show if today has no entries */}
-                    {summary.mealCount === 0 && currentDate.toDateString() === new Date().toDateString() && (
-                        <motion.button
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            onClick={handleCopyYesterdaysMeals}
-                            disabled={isCopying}
-                            className="flex items-center gap-2 px-4 py-2 bg-[#10B981]/10 text-[#10B981] rounded-lg hover:bg-[#10B981]/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            <Copy className="w-4 h-4" />
-                            <span className="font-medium text-sm">
-                                {isCopying ? 'Copying...' : "Copy yesterday's meals"}
-                            </span>
-                        </motion.button>
-                    )}
+                    {/* Copy Yesterday's Meals Button - Shows when current date has no meals */}
+            {summary.mealCount === 0 && (
+                <motion.button
+                    onClick={handleCopyYesterdaysMeals}
+                    disabled={isCopying}
+                    className="w-full py-3 px-3 bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20 rounded-xl hover:bg-[#10B981]/20 transition-all font-bold flex items-center justify-center gap-2 disabled:opacity-50"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                >
+                    <Copy className="w-4 4-5" />
+                    {isCopying ? 'Copying...' : 
+                        formatDate(currentDate) === 'Today' 
+                            ? "Copy Yesterday's Meals" 
+                            : "Copy Previous Day's Meals"
+                    }
+                </motion.button>
+            )}
                     <div className="flex items-center gap-2 bg-[#18181B] rounded-xl p-1">
                     <button 
                         onClick={() => navigateDate('prev')}
@@ -414,13 +475,24 @@ export function NutritionPageContent({ initialLogs, initialSummary, initialDate 
                                                 {log.fat_g && ` • ${log.fat_g}g fat`}
                                             </p>
                                         </div>
-                                        <button
-                                            onClick={() => handleDelete(log)}
-                                            disabled={isPending}
-                                            className="opacity-0 group-hover:opacity-100 p-2 text-red-400 hover:bg-red-400/10 rounded-lg transition-all"
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => handleEdit(log)}
+                                                disabled={isPending}
+                                                className="p-2 text-zinc-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors disabled:opacity-50"
+                                                aria-label="Edit meal"
+                                            >
+                                                <Edit2 className="w-4 h-4" />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(log)}
+                                                disabled={isPending}
+                                                className="p-2 text-zinc-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors disabled:opacity-50"
+                                                aria-label="Delete meal"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
                                     </motion.div>
                                 ))}
                             </div>
@@ -448,7 +520,9 @@ export function NutritionPageContent({ initialLogs, initialSummary, initialDate 
                             className="bg-[#18181B] rounded-2xl p-6 w-full max-w-md border border-white/10"
                             onClick={e => e.stopPropagation()}
                         >
-                            <h3 className="text-xl font-bold mb-6">Log {MEAL_CONFIG[selectedMeal].label}</h3>
+                            <h3 className="text-xl font-bold mb-6">
+                                {isEditing ? 'Edit Meal' : `Log ${MEAL_CONFIG[selectedMeal].label}`}
+                            </h3>
                             
                             <form onSubmit={handleSubmit} className="space-y-4">
                                 <div>

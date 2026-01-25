@@ -214,6 +214,44 @@ export async function deleteNutritionLog(id: string): Promise<{ error: string | 
 }
 
 /**
+ * Update an existing nutrition log
+ */
+export async function updateNutritionLog(logId: string, input: Partial<CreateNutritionLogInput>): Promise<{ data: NutritionLog | null; error: string | null }> {
+    const supabase = await createClient()
+
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+        return { data: null, error: 'Not authenticated' }
+    }
+
+    const updateData: any = {}
+    if (input.food_item !== undefined) updateData.food_item = input.food_item
+    if (input.meal_type !== undefined) updateData.meal_type = input.meal_type
+    if (input.calories !== undefined) updateData.calories = input.calories || null
+    if (input.protein_g !== undefined) updateData.protein_g = input.protein_g || null
+    if (input.carbs_g !== undefined) updateData.carbs_g = input.carbs_g || null
+    if (input.fat_g !== undefined) updateData.fat_g = input.fat_g || null
+    if (input.fiber_g !== undefined) updateData.fiber_g = input.fiber_g || null
+    if (input.sugar_g !== undefined) updateData.sugar_g = input.sugar_g || null
+    if (input.notes !== undefined) updateData.notes = input.notes || null
+
+    const { data, error } = await supabase
+        .from('nutrition_logs')
+        .update(updateData)
+        .eq('id', logId)
+        .eq('user_id', user.id) // Ensure user owns this log
+        .select()
+        .single()
+
+    if (error) {
+        return { data: null, error: error.message }
+    }
+
+    revalidatePath('/nutrition')
+    return { data, error: null }
+}
+
+/**
  * Get nutrition logs grouped by meal type for a day
  */
 export async function getNutritionLogsByMeal(date?: string): Promise<{ data: Record<MealType, NutritionLog[]>; error: string | null }> {
