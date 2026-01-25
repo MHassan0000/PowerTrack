@@ -1,6 +1,7 @@
 
 import { getWorkoutHistory, type WorkoutSession } from '@/lib/actions/workout-sessions'
 import { WorkoutHistoryCard } from '@/components/workout/WorkoutHistoryCard'
+import { ClearHistoryButton } from '@/components/workout/ClearHistoryButton'
 import Link from 'next/link'
 import { Activity, Calendar, Award, TrendingUp } from 'lucide-react'
 
@@ -36,6 +37,7 @@ export default async function WorkoutHistoryPage() {
                         Track your progress and consistency over time
                     </p>
                 </div>
+                {!isEmpty && <ClearHistoryButton />}
             </div>
 
             {/* Stats Summary */}

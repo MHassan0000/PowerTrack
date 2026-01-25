@@ -331,3 +331,30 @@ export async function deleteSetLog(setId: string) {
     revalidatePath('/workouts/active')
     return { error: null }
 }
+
+/**
+ * Clear all workout history for the current user
+ */
+export async function clearAllWorkoutHistory() {
+    const supabase = await createClient()
+    
+    // Get current user
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (!user) {
+        return { error: 'Not authenticated' }
+    }
+
+    // Delete all workout sessions for this user
+    const { error } = await supabase
+        .from('workout_sessions')
+        .delete()
+        .eq('user_id', user.id)
+
+    if (error) {
+        return { error: error.message }
+    }
+
+    revalidatePath('/workouts/history')
+    return { error: null }
+}
