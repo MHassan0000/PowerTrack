@@ -48,7 +48,7 @@ const container = {
         opacity: 1,
         transition: {
             staggerChildren: 0.4, // Very distinct steps
-            delayChildren: 0.4
+            delayChildren: 0.1
         }
     }
 };
@@ -99,7 +99,7 @@ export function Features() {
                     variants={container}
                     initial="hidden"
                     whileInView="show"
-                    viewport={{ once: true, margin: "-50px", amount: 0.1 }}
+                    viewport={{ once: true, amount: 0.1 }}
                     className="grid grid-cols-1 md:grid-cols-3 gap-6"
                 >
                     {features.map((feature, i) => (
