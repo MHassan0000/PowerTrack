@@ -70,7 +70,7 @@ export default function FeaturesPage() {
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8 }}
+                    transition={{ duration: 0.5 }}
                 >
                     <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter mb-6">
                         The Ultimate <span className="text-[rgb(var(--primary))]">Toolkit</span>
@@ -90,7 +90,7 @@ export default function FeaturesPage() {
                             initial={{ opacity: 0, y: 20 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
-                            transition={{ delay: feature.delay, duration: 0.5 }}
+                            transition={{ delay: feature.delay, duration: 0.3 }}
                             className="bg-[#18181B] p-8 rounded-2xl border border-white/5 hover:border-[rgb(var(--primary))]/40 transition-all hover:-translate-y-1 group"
                         >
                             <div className="w-14 h-14 rounded-xl bg-[rgb(var(--background))] border border-white/10 flex items-center justify-center text-white mb-6 group-hover:scale-110 group-hover:border-[rgb(var(--primary))] group-hover:text-[rgb(var(--primary))] transition-all duration-300">
