@@ -1,4 +1,4 @@
-const CACHE_NAME = 'powertrack-v1';
+const CACHE_NAME = 'powertrack-v2';
 
 // Add key assets to cache immediately
 const PRECACHE_ASSETS = [
