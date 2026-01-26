@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/shared/Navbar";
+import SmoothScrolling from "@/components/shared/SmoothScrolling";
 import { PageTransition } from "@/components/shared/PageTransition";
 import { createClient } from "@/lib/supabase/server";
 import { Toaster } from "sonner";
@@ -32,17 +33,21 @@ export default async function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={`${inter.variable} antialiased matrix-lines bg-[rgb(var(--background))]`}>
-        {children}
-        <Script id="pwa-init" strategy="afterInteractive">
-          {`
-            // Register service worker
-            if ('serviceWorker' in navigator) {
-              window.addEventListener('load', function() {
-                navigator.serviceWorker.register('/sw.js');
-              });
-            }
-          `}
-        </Script>
+        <SmoothScrolling>
+          {children}
+        </SmoothScrolling>
+        {process.env.NODE_ENV === 'production' && (
+          <Script id="pwa-init" strategy="afterInteractive">
+            {`
+              // Register service worker
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js');
+                });
+              }
+            `}
+          </Script>
+        )}
         <Toaster
           theme="dark"
           position="top-center"

@@ -1,20 +1,30 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { useRef } from "react";
 import Link from "next/link";
 import { ArrowRight, Rocket } from "lucide-react";
 
 export function CTA() {
+    const sectionRef = useRef(null);
+    const { scrollYProgress } = useScroll({
+        target: sectionRef,
+        offset: ["start end", "end start"]
+    });
+
+    const y = useTransform(scrollYProgress, [0, 1], ["0%", "10%"]);
+    const opacity = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0, 1, 1, 1]);
+
     return (
-        <section className="bg-[#050505] relative pt-0 pb-12 border-t border-white/5">
-            <div className="container mx-auto px-4">
+        <section ref={sectionRef} className="bg-[#050505] relative pt-0 pb-12 border-t border-white/5">
+            <motion.div style={{ y, opacity }} className="container mx-auto px-4">
                 {/* Main CTA Content */}
                 <div className="py-24 md:py-32 text-center max-w-4xl mx-auto">
                     <motion.div
-                        initial={{ opacity: 0, y: 20 }}
+                        initial={{ opacity: 0, y: 40 }}
                         whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8 }}
-                        viewport={{ once: true }}
+                        transition={{ duration: 1.8, ease: [0.25, 0.1, 0.25, 1] }}
+                        viewport={{ once: true, margin: "-100px" }}
                     >
                         {/* Added padding px-4 to prevent italic clipping */}
                         <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 px-4">
@@ -57,7 +67,7 @@ export function CTA() {
                         &copy; 2024 Power Track Inc.
                     </p>
                 </div>
-            </div>
+            </motion.div>
         </section>
     );
 }

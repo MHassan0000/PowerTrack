@@ -1,27 +1,45 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { useRef } from "react";
 import Link from "next/link";
 import { ArrowRight, Activity, Zap, Star, TrendingUp, Play } from "lucide-react";
 
 export function Hero() {
-    return (
-        <section className="relative min-h-[90vh] flex items-center overflow-hidden bg-[rgb(var(--background))]">
-            {/* Background Elements */}
-            <div className="absolute inset-0 z-0">
-                <div className="absolute top-0 right-0 w-200 h-200 bg-[rgb(var(--primary))]/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2" />
-                <div className="absolute bottom-0 left-0 w-150 h-150 bg-blue-500/5 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2" />
-                <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.03]" />
-            </div>
+    const sectionRef = useRef(null);
+    const { scrollYProgress } = useScroll({
+        target: sectionRef,
+        offset: ["start start", "end start"]
+    });
 
-            <div className="container mx-auto px-4 z-10 relative">
+    // Smooth parallax transforms - slower and more subtle
+    const y = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
+    const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
+    const scale = useTransform(scrollYProgress, [0, 1], [1, 0.98]);
+
+    return (
+        <section ref={sectionRef} className="relative min-h-[90vh] flex items-center overflow-hidden bg-[rgb(var(--background))]">
+            {/* Background Elements */}
+            <motion.div style={{ y, opacity }} className="absolute inset-0 z-0">
+                <motion.div 
+                    style={{ y: useTransform(scrollYProgress, [0, 1], ["0%", "50%"]) }}
+                    className="absolute top-0 right-0 w-200 h-200 bg-[rgb(var(--primary))]/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2" 
+                />
+                <motion.div 
+                    style={{ y: useTransform(scrollYProgress, [0, 1], ["0%", "-30%"]) }}
+                    className="absolute bottom-0 left-0 w-150 h-150 bg-blue-500/5 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2" 
+                />
+                <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.03]" />
+            </motion.div>
+
+            <motion.div style={{ scale, opacity }} className="container mx-auto px-4 z-10 relative">
                 <div className="grid lg:grid-cols-2 gap-12 items-center">
 
                     {/* Text Content */}
                     <motion.div
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.8, ease: "easeOut" }}
+                        transition={{ duration: 2.0, ease: [0.25, 0.1, 0.25, 1] }} 
                         className="space-y-8 flex flex-col items-center lg:items-start text-center lg:text-left pt-20"
                     >
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[rgb(var(--border))] bg-[rgb(var(--card))]/50 backdrop-blur-sm">
@@ -102,7 +120,7 @@ export function Hero() {
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 1, delay: 0.2 }}
+                        transition={{ duration: 2.5, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
                         className="relative hidden lg:block"
                     >
                         <div className="relative w-full aspect-square max-w-150 mx-auto">
@@ -147,7 +165,7 @@ export function Hero() {
                     </motion.div>
 
                 </div>
-            </div>
+            </motion.div>
         </section>
     );
 }

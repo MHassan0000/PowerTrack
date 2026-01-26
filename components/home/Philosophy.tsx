@@ -1,6 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { useRef } from "react";
 import { Swords, Dumbbell, Zap, Mountain } from "lucide-react";
 
 const PARTNERS = [
@@ -11,19 +12,34 @@ const PARTNERS = [
 ];
 
 export function Philosophy() {
+    const sectionRef = useRef(null);
+    const { scrollYProgress } = useScroll({
+        target: sectionRef,
+        offset: ["start end", "end start"]
+    });
+
+    const y = useTransform(scrollYProgress, [0, 1], ["0%", "15%"]);
+    const opacity = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0, 1, 1, 0.6]);
+
     return (
-        <section className="py-24 md:py-32 bg-[#050505] relative overflow-hidden border-t border-white/5">
+        <section ref={sectionRef} className="py-24 md:py-32 bg-[#050505] relative overflow-hidden border-t border-white/5">
             {/* Background Texture/Gradient */}
-            <div className="absolute inset-0 bg-radial-[at_center_top] from-zinc-900/30 via-[#050505]/80 to-[#050505] pointer-events-none" />
+            <motion.div 
+                style={{ opacity }}
+                className="absolute inset-0 bg-radial-[at_center_top] from-zinc-900/30 via-[#050505]/80 to-[#050505] pointer-events-none" 
+            />
             
-            <div className="container mx-auto px-4 relative z-10 block">
+            <motion.div 
+                style={{ y }}
+                className="container mx-auto px-4 relative z-10 block"
+            >
                 {/* Quote Section */}
                 <div className="max-w-4xl mx-auto text-center mb-24 md:mb-32">
                     <motion.div
-                        initial={{ opacity: 0, y: 20 }}
+                        initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8 }}
-                        viewport={{ once: true }}
+                        transition={{ duration: 1.8, ease: [0.25, 0.1, 0.25, 1] }}
+                        viewport={{ once: true, margin: "-100px" }}
                     >
                         {/* Added px-4 py-2 to prevent italic clipping */}
                         <h2 className="text-3xl md:text-5xl lg:text-6xl font-black uppercase italic tracking-tighter text-white leading-tight mb-8 px-4 py-2">
@@ -52,8 +68,8 @@ export function Philosophy() {
                                 key={partner.name}
                                 initial={{ opacity: 0, y: 20 }}
                                 whileInView={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.5, delay: index * 0.1 }}
-                                viewport={{ once: true }}
+                                transition={{ duration: 1.5, delay: index * 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+                                viewport={{ once: true, margin: "-50px" }}
                                 className="flex items-center gap-2 group cursor-default"
                             >
                                 <partner.icon className="w-5 h-5 md:w-6 md:h-6 text-white group-hover:text-[rgb(var(--primary))] transition-colors" />
@@ -64,7 +80,7 @@ export function Philosophy() {
                         ))}
                     </div>
                 </div>
-            </div>
+            </motion.div>
         </section>
     );
 }

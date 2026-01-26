@@ -11,10 +11,10 @@ export default async function Home() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Redirect logic removed to allow authenticated users to visit home
+ 
 
   return (
-    <main className="min-h-screen bg-[rgb(var(--background))] text-[rgb(var(--foreground))] overflow-x-hidden selection:bg-[rgb(var(--primary))] selection:text-black">
+    <main className="min-h-screen bg-[rgb(var(--background))] text-[rgb(var(--foreground))] overflow-x-hidden selection:bg-[rgb(var(--primary))] selection:text-black" style={{ scrollBehavior: 'smooth' }}>
       <Hero/>
       <Features />
       <Philosophy />

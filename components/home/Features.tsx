@@ -1,6 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { useRef } from "react";
 import { BarChart3, Target, Users, Smartphone, Trophy, Zap } from "lucide-react";
 
 const features = [
@@ -46,40 +47,66 @@ const container = {
     show: {
         opacity: 1,
         transition: {
-            staggerChildren: 0.1
+            staggerChildren: 0.4, // Very distinct steps
+            delayChildren: 0.4
         }
     }
 };
 
 const item = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, y: 40 },
     show: { opacity: 1, y: 0 }
 };
 
 export function Features() {
+    const sectionRef = useRef(null);
+    const { scrollYProgress } = useScroll({
+        target: sectionRef,
+        offset: ["start end", "end start"]
+    });
+
+    const y = useTransform(scrollYProgress, [0, 1], ["0%", "10%"]);
+    const opacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0.7]);
+
     return (
-        <section className="py-24 px-4 bg-[rgb(var(--background-secondary))]">
+        <section ref={sectionRef} className="py-24 px-4 bg-[rgb(var(--background-secondary))] relative overflow-hidden">
             <div className="container mx-auto max-w-7xl">
-                <div className="mb-16 md:text-center max-w-3xl mx-auto">
-                    <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tight mb-6">
+                <motion.div 
+                    style={{ y, opacity }}
+                    className="mb-16 md:text-center max-w-3xl mx-auto"
+                >
+                    <motion.h2 
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6, ease: "easeOut" }}
+                        viewport={{ once: true, margin: "-100px" }}
+                        className="text-4xl md:text-5xl font-black uppercase tracking-tight mb-6"
+                    >
                         Elite Performance <span className="text-[rgb(var(--primary))]">Tools</span>
-                    </h2>
-                    <p className="text-xl text-[rgb(var(--foreground-muted))]">
+                    </motion.h2>
+                    <motion.p 
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+                        viewport={{ once: true, margin: "-100px" }}
+                        className="text-xl text-[rgb(var(--foreground-muted))]"
+                    >
                         Everything you need to reach your peak potential, engineered into one seamless platform.
-                    </p>
-                </div>
+                    </motion.p>
+                </motion.div>
 
                 <motion.div
                     variants={container}
                     initial="hidden"
                     whileInView="show"
-                    viewport={{ once: true, margin: "-100px" }}
+                    viewport={{ once: true, margin: "-150px", amount: 0.2 }}
                     className="grid grid-cols-1 md:grid-cols-3 gap-6"
                 >
                     {features.map((feature, i) => (
                         <motion.div
                             key={i}
                             variants={item}
+                            transition={{ duration: 2.0, ease: [0.25, 0.1, 0.25, 1] }}
                             className={`${feature.colSpan} group relative overflow-hidden rounded-xl border border-[rgb(var(--border))] hover:border-[rgb(var(--primary))]/50 transition-colors duration-300`}
                         >
                             <div className={`${feature.bg} p-8 h-full flex flex-col justify-between relative z-10`}>
