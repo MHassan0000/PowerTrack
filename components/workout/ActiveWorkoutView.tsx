@@ -348,47 +348,36 @@ export function ActiveWorkoutView({ session: initialSession, sets: initialSets }
     // Start Overlay Logic
     if (!hasStarted && workoutExercises.length > 0) {
        return (
-           <div className="container mx-auto px-4 py-6 relative min-h-[80vh]">
+           <div className="container mx-auto px-4 py-6 relative min-h-[80vh] flex flex-col justify-center">
                {/* Blurred Background Content Preview */}
-               <div className="opacity-10 pointer-events-none blur-xs filter select-none">
-                    <div className="bg-[#18181B] border border-white/5 rounded-2xl p-6 mb-6">
+               <div className="opacity-10 pointer-events-none blur-xs filter select-none absolute inset-0 py-6 overflow-hidden">
+                    <div className="bg-[#18181B] border border-white/5 rounded-2xl p-4 md:p-6 mb-6 mx-4">
                         <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-xl bg-[#10B981]/10 flex items-center justify-center">
-                                <Dumbbell className="w-6 h-6 text-[#10B981]" />
+                            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-[#10B981]/10 flex items-center justify-center">
+                                <Dumbbell className="w-5 h-5 md:w-6 md:h-6 text-[#10B981]" />
                             </div>
                             <div>
-                                <h1 className="text-2xl font-bold text-white">{session.workout_name}</h1>
-                                <div className="text-4xl font-bold text-[#10B981] mt-2 font-mono">00:00</div>
-                            </div>
-                        </div>
-                    </div>
-                    {/* Fake Exercise Card Preview */}
-                    <div className="bg-[#18181B] rounded-3xl p-8 border border-white/5 opacity-50">
-                        <div className="text-center">
-                             <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#10B981]/10 rounded-full text-[#10B981] text-sm font-bold mb-4">
-                                <Dumbbell className="w-4 h-4" />
-                                SET 1
+                                <h1 className="text-xl md:text-2xl font-bold text-white">{session.workout_name}</h1>
+                                <div className="text-3xl md:text-4xl font-bold text-[#10B981] mt-2 font-mono">00:00</div>
                             </div>
                         </div>
                     </div>
                </div>
 
                {/* Start Button Overlay */}
-               <div className="absolute inset-0 flex items-center justify-center z-50">
-                   <div className="flex flex-col items-center gap-6">
-                       <motion.button
-                           whileHover={{ scale: 1.05 }}
-                           whileTap={{ scale: 0.95 }}
-                           onClick={handleStartTimer}
-                           className="group relative flex items-center justify-center w-28 h-28 rounded-full bg-[#10B981] shadow-2xl shadow-[#10B981]/30 transition-all hover:shadow-[#10B981]/50"
-                       >
-                           <div className="absolute inset-0 rounded-full border border-white/20" />
-                           <Play className="w-10 h-10 text-[#000000] fill-current ml-1" />
-                       </motion.button>
-                       <div className="text-center space-y-2">
-                           <h2 className="text-2xl font-bold text-white tracking-tight">Start Workout</h2>
-                           <p className="text-zinc-400 font-medium text-sm">Tap to begin tracking</p>
-                       </div>
+               <div className="relative z-50 flex flex-col items-center gap-6 md:gap-8 hover:scale-105 transition-transform duration-300">
+                   <motion.button
+                       whileHover={{ scale: 1.05 }}
+                       whileTap={{ scale: 0.95 }}
+                       onClick={handleStartTimer}
+                       className="group relative flex items-center justify-center w-24 h-24 md:w-32 md:h-32 rounded-full bg-[#10B981] shadow-2xl shadow-[#10B981]/30 transition-all hover:shadow-[#10B981]/50"
+                   >
+                       <div className="absolute inset-0 rounded-full border-2 border-white/20 animate-pulse" />
+                       <Play className="w-10 h-10 md:w-12 md:h-12 text-[#000000] fill-current ml-1" />
+                   </motion.button>
+                   <div className="text-center space-y-2">
+                       <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight">Start Workout</h2>
+                       <p className="text-zinc-400 font-medium text-sm md:text-base">Tap to begin tracking</p>
                    </div>
                </div>
            </div>
@@ -428,30 +417,38 @@ export function ActiveWorkoutView({ session: initialSession, sets: initialSets }
 
     return (
         <>
-            <div className="container mx-auto px-4 py-6 max-w-2xl">
-                <div className="bg-[#18181B] border border-white/5 rounded-2xl p-6 mb-6">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-xl bg-[#10B981]/10 flex items-center justify-center">
+            <div className="container mx-auto px-4 pb-32 pt-4 max-w-2xl relative">
+                {/* Header Card */}
+                <div className="bg-[#18181B] border border-white/5 rounded-2xl p-4 md:p-6 mb-6 shadow-sm relative overflow-hidden">
+                    <div className="flex flex-col gap-4">
+                        {/* Top Row: Name and Cancel */}
+                        <div className="flex items-start justify-between relative">
+                            {/* Icon hidden on mobile, visible on desktop */}
+                            <div className="hidden md:flex w-12 h-12 rounded-xl bg-[#10B981]/10 items-center justify-center shrink-0">
                                 <Dumbbell className="w-6 h-6 text-[#10B981]" />
                             </div>
-                            <div>
-                                <h1 className="text-2xl font-bold text-white">{session.workout_name}</h1>
-                                <DurationCounter 
-                                    startedAt={session.started_at}
-                                    isPaused={isPaused && !showRestTimer}
-                                    totalPaused={totalWorkoutPaused}
-                                    activePauseStartTime={activePauseStartTime}
-                                    onPauseToggle={handlePauseToggle}
-                                />
-                            </div>
+                            
+                            {/* Title: Left aligned on mobile, Centered on desktop (via flex-1) */}
+                            <h1 className="text-xl md:text-2xl font-bold text-white text-left md:text-center flex-1 pr-2 md:px-2">{session.workout_name}</h1>
+                            
+                            <button
+                                onClick={() => setShowCancelDialog(true)}
+                                className="w-10 h-10 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-500 flex items-center justify-center transition-colors shrink-0 md:static"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
                         </div>
-                        <button
-                            onClick={() => setShowCancelDialog(true)}
-                            className="w-10 h-10 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-500 flex items-center justify-center transition-colors"
-                        >
-                            <X className="w-5 h-5" />
-                        </button>
+                        
+                        {/* Bottom Row: Timer - Centered on ALL devices */}
+                        <div className="flex justify-center w-full">
+                             <DurationCounter 
+                                startedAt={session.started_at}
+                                isPaused={isPaused && !showRestTimer}
+                                totalPaused={totalWorkoutPaused}
+                                activePauseStartTime={activePauseStartTime}
+                                onPauseToggle={handlePauseToggle}
+                            />
+                        </div>
                     </div>
                 </div>
                 {/* Progress Bar */}
@@ -468,17 +465,17 @@ export function ActiveWorkoutView({ session: initialSession, sets: initialSets }
 
                 {/* Current Exercise */}
                 {currentExercise && !isWorkoutComplete && (
-                    <div className="mb-8">
-                        <div className="bg-[#18181B] rounded-3xl p-8 border border-white/5">
+                    <div className="mb-6 md:mb-8">
+                        <div className="bg-[#18181B] rounded-3xl p-5 md:p-8 border border-white/5 shadow-lg relative overflow-hidden">
                             <div className="text-center mb-6">
-                                <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#10B981]/10 rounded-full text-[#10B981] text-sm font-bold mb-4">
-                                    <Dumbbell className="w-4 h-4" />
+                                <div className="inline-flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-[#10B981]/10 rounded-full text-[#10B981] text-xs md:text-sm font-bold mb-4">
+                                    <Dumbbell className="w-3 h-3 md:w-4 md:h-4" />
                                     SET {currentSetNumber} OF {currentExercise.sets}
                                 </div>
-                                <h2 className="text-3xl font-bold text-white mb-2">
+                                <h2 className="text-2xl md:text-3xl font-bold text-white mb-2 break-all">
                                     {currentExercise.exercise_library.name}
                                 </h2>
-                                <p className="text-zinc-400">
+                                <p className="text-sm md:text-base text-zinc-400">
                                     {currentExercise.exercise_library.primary_muscle} • {currentExercise.exercise_library.equipment}
                                 </p>
                             </div>
@@ -525,24 +522,28 @@ export function ActiveWorkoutView({ session: initialSession, sets: initialSets }
                     </div>
                 )}
 
-                {/* Complete Workout Button - Only show if not auto-completing */}
+                {/* Complete Workout Button - Fixed Bottom for Mobile */}
                 {(sets.length > 0) && !completing && (
-                    <motion.button
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        onClick={handleCompleteWorkout}
-                        disabled={completing}
-                        className="w-full py-4 rounded-2xl bg-[#10B981] hover:bg-[#059669] text-black font-bold shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-                    >
-                        {completing ? (
-                            'Completing...'
-                        ) : (
-                            <>
-                                <Trophy className="w-5 h-5" />
-                                Complete Workout
-                            </>
-                        )}
-                    </motion.button>
+                    <div className="fixed bottom-0 left-0 right-0 p-4 bg-[#09090b]/80 backdrop-blur-xl border-t border-white/10 z-40 md:relative md:bg-transparent md:border-t-0 md:p-0">
+                         <div className="container mx-auto max-w-2xl">
+                            <motion.button
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                onClick={handleCompleteWorkout}
+                                disabled={completing}
+                                className="w-full py-4 rounded-xl md:rounded-2xl bg-[#10B981] hover:bg-[#059669] text-black font-bold shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2 text-lg"
+                            >
+                                {completing ? (
+                                    'Completing...'
+                                ) : (
+                                    <>
+                                        <Trophy className="w-5 h-5" />
+                                        Complete Workout
+                                    </>
+                                )}
+                            </motion.button>
+                        </div>
+                    </div>
                 )}
             </div>
 

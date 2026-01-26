@@ -50,7 +50,7 @@ export function DurationCounter({ startedAt, isPaused, totalPaused, activePauseS
     }
 
     return (
-        <div className="flex items-center gap-4 mt-2">
+        <div className="flex items-center gap-6 mt-2">
             <motion.div
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
@@ -61,8 +61,8 @@ export function DurationCounter({ startedAt, isPaused, totalPaused, activePauseS
                     <div className={`absolute inset-0 ${isPaused ? 'bg-orange-500/20' : 'bg-[#10B981]/20'} blur-xl rounded-full ${!isPaused && 'animate-pulse'}`} />
                     
                     {/* Icon container with glassmorphic effect */}
-                    <div className={`relative w-12 h-12 rounded-xl bg-linear-to-br ${isPaused ? 'from-orange-500/20 to-orange-600/20 border-orange-500/30' : 'from-[#10B981]/20 to-[#059669]/20 border-[#10B981]/30'} border flex items-center justify-center backdrop-blur-sm transition-all duration-300`}>
-                        <Timer className={`w-6 h-6 ${isPaused ? 'text-orange-500' : 'text-[#10B981]'}`} />
+                    <div className={`relative w-10 h-10 md:w-12 md:h-12 rounded-xl bg-linear-to-br ${isPaused ? 'from-orange-500/20 to-orange-600/20 border-orange-500/30' : 'from-[#10B981]/20 to-[#059669]/20 border-[#10B981]/30'} border flex items-center justify-center backdrop-blur-sm transition-all duration-300`}>
+                        <Timer className={`w-5 h-5 md:w-6 md:h-6 ${isPaused ? 'text-orange-500' : 'text-[#10B981]'}`} />
                     </div>
                 </div>
 
@@ -73,7 +73,7 @@ export function DurationCounter({ startedAt, isPaused, totalPaused, activePauseS
                         initial={{ scale: 1.05 }}
                         animate={{ scale: 1 }}
                         transition={{ duration: 0.2 }}
-                        className={`text-4xl font-bold ${isPaused ? 'text-orange-400' : 'bg-linear-to-r from-[#10B981] to-[#34D399] bg-clip-text text-transparent'} tabular-nums`}
+                        className={`text-2xl md:text-4xl font-bold ${isPaused ? 'text-orange-400' : 'bg-linear-to-r from-[#10B981] to-[#34D399] bg-clip-text text-transparent'} tabular-nums`}
                     >
                         {formatDuration(elapsed)}
                     </motion.div>
@@ -98,7 +98,7 @@ export function DurationCounter({ startedAt, isPaused, totalPaused, activePauseS
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={onPauseToggle}
-                className={`w-12 h-12 rounded-xl ${
+                className={`w-10 h-10 md:w-12 md:h-12 rounded-xl ${
                     isPaused 
                         ? 'bg-[#10B981] hover:bg-[#059669] text-black' 
                         : 'bg-orange-500/10 hover:bg-orange-500/20 text-orange-500 border border-orange-500/30'
