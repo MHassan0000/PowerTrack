@@ -112,6 +112,13 @@ export function GoalCard({ goal, index = 0, compact = false }: GoalCardProps) {
                             unit={goal.unit}
                         />
                     </div>
+                    
+                    {/* Description */}
+                    {goal.description && (
+                        <p className="text-sm text-zinc-400 mb-4 line-clamp-2">
+                            {goal.description}
+                        </p>
+                    )}
                 </div>
 
                 {/* Footer */}

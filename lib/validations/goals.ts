@@ -5,7 +5,7 @@ export const goalStatusSchema = z.enum(['active', 'completed', 'archived'])
 
 export const createGoalSchema = z.object({
     title: z.string().min(1, 'Title is required').max(100),
-    description: z.string().max(500).optional().nullable(),
+    description: z.string().max(500, { message: 'Description must be 500 characters or less' }).optional().nullable(),
     goal_type: goalTypeSchema,
     target_value: z.number().positive('Target value must be positive'),
     unit: z.string().min(1, 'Unit is required').max(20),
