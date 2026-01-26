@@ -174,6 +174,7 @@ export async function updateSessionStart(sessionId: string, startedAt: string) {
         return { error: error.message }
     }
     
+    revalidatePath('/workouts')
     return { error: null }
 }
 
@@ -242,7 +243,7 @@ export async function completeWorkoutSession(sessionId: string, notes?: string, 
         .eq('id', sessionId)
         .single()
 
-    // Don't revalidate here - let the user navigate manually from completion summary
+    // Revalidate paths logic moved to separate action to prevent premature redirect from active view
     
     return { 
         data: {
@@ -252,6 +253,12 @@ export async function completeWorkoutSession(sessionId: string, notes?: string, 
         },
         error: null 
     }
+}
+
+export async function revalidateWorkoutDashboard() {
+    revalidatePath('/workouts')
+    revalidatePath('/workouts/history')
+    revalidatePath('/workouts/active')
 }
 
 /**
@@ -385,6 +392,8 @@ export async function deleteWorkoutSession(sessionId: string) {
     }
 
     revalidatePath('/workouts/history')
+    revalidatePath('/workouts') // Clear active banner
+    revalidatePath('/workouts/active')
     return { error: null }
 }
 

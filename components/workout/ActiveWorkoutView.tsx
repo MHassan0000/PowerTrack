@@ -8,7 +8,7 @@ import { SetLogger } from './SetLogger'
 import { RestTimer } from './RestTimer'
 import { DurationCounter } from './DurationCounter'
 import { WorkoutCompletionSummary } from './WorkoutCompletionSummary'
-import { logSet, completeWorkoutSession, deleteWorkoutSession, updateSessionStart, type SetLog, type WorkoutSession } from '@/lib/actions/workout-sessions'
+import { logSet, completeWorkoutSession, deleteWorkoutSession, updateSessionStart, revalidateWorkoutDashboard, type SetLog, type WorkoutSession } from '@/lib/actions/workout-sessions'
 import { getWorkoutById, type WorkoutWithExercises } from '@/lib/actions/workouts'
 import { toast } from 'sonner'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
@@ -57,6 +57,36 @@ export function ActiveWorkoutView({ session: initialSession, sets: initialSets }
                 if (data?.exercises) {
                     setWorkoutExercises(data.exercises)
                     setWorkoutData(data)
+
+                    // Restore state from existing logs
+                    if (sets.length > 0) {
+                        let foundIndex = 0
+                        let foundSet = 1
+
+                        for (let i = 0; i < data.exercises.length; i++) {
+                            const exercise = data.exercises[i]
+                            // Count logs for this specific exercise
+                            const existingLogs = sets.filter(s => s.exercise_id === exercise.exercise_id).length
+                            
+                            if (existingLogs < exercise.sets) {
+                                // We are still working on this exercise
+                                foundIndex = i
+                                foundSet = existingLogs + 1
+                                break
+                            } else if (i === data.exercises.length - 1) {
+                                // If this is the last exercise and it's full, stay here (or shows complete)
+                                foundIndex = i
+                                foundSet = existingLogs // Sets it to max, UI handles "Complete" state
+                            } else {
+                                // This exercise is done, move to next
+                                foundIndex = i + 1
+                                foundSet = 1
+                            }
+                        }
+                        
+                        setCurrentExerciseIndex(foundIndex)
+                        setCurrentSetNumber(foundSet)
+                    }
                 }
             }
             setLoading(false)
@@ -277,9 +307,13 @@ export function ActiveWorkoutView({ session: initialSession, sets: initialSets }
         }
     }
 
-    const handleCloseSummary = () => {
+    const handleCloseSummary = async () => {
         setShowCompletionSummary(false)
         setCompleting(false)
+        // Revalidate and redirect safely after user is done viewing summary
+        await revalidateWorkoutDashboard()
+        router.push('/workouts')
+        router.refresh()
     }
 
     const handleCancel = () => {
