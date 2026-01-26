@@ -15,9 +15,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "PowerTrack - Your AI-Powered Fitness Companion",
-  description: "Track workouts, monitor progress, and achieve your fitness goals with PowerTrack - the ultimate fitness tracking app powered by AI.",
   keywords: ["fitness", "workout", "tracking", "health", "nutrition", "exercise"],
-  manifest: "/manifest.json",
 };
 
 export default async function RootLayout({
@@ -36,18 +34,7 @@ export default async function RootLayout({
         <SmoothScrolling>
           {children}
         </SmoothScrolling>
-        {process.env.NODE_ENV === 'production' && (
-          <Script id="pwa-init" strategy="afterInteractive">
-            {`
-              // Register service worker
-              if ('serviceWorker' in navigator) {
-                window.addEventListener('load', function() {
-                  navigator.serviceWorker.register('/sw.js');
-                });
-              }
-            `}
-          </Script>
-        )}
+
         <Toaster
           theme="dark"
           position="top-center"
