@@ -2,13 +2,13 @@
 
 import { use, useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CheckCircle2, Dumbbell, X, Trophy } from 'lucide-react'
+import { CheckCircle2, Dumbbell, X, Trophy, Play } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { SetLogger } from './SetLogger'
 import { RestTimer } from './RestTimer'
 import { DurationCounter } from './DurationCounter'
 import { WorkoutCompletionSummary } from './WorkoutCompletionSummary'
-import { logSet, completeWorkoutSession, deleteWorkoutSession, type SetLog, type WorkoutSession } from '@/lib/actions/workout-sessions'
+import { logSet, completeWorkoutSession, deleteWorkoutSession, updateSessionStart, type SetLog, type WorkoutSession } from '@/lib/actions/workout-sessions'
 import { getWorkoutById, type WorkoutWithExercises } from '@/lib/actions/workouts'
 import { toast } from 'sonner'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
@@ -18,9 +18,12 @@ interface ActiveWorkoutViewProps {
     sets: SetLog[]
 }
 
-export function ActiveWorkoutView({ session, sets: initialSets }: ActiveWorkoutViewProps) {
+export function ActiveWorkoutView({ session: initialSession, sets: initialSets }: ActiveWorkoutViewProps) {
     const router = useRouter()
+    const [session, setSession] = useState(initialSession)
     const [sets, setSets] = useState(initialSets)
+    const [hasStarted, setHasStarted] = useState(initialSets.length > 0)
+
     const [showRestTimer, setShowRestTimer] = useState(false)
     const [workoutExercises, setWorkoutExercises] = useState<any[]>([])
     const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0)
@@ -37,6 +40,14 @@ export function ActiveWorkoutView({ session, sets: initialSets }: ActiveWorkoutV
     const [completionStats, setCompletionStats] = useState<any>(null)
     const [workoutData, setWorkoutData] = useState<WorkoutWithExercises | null>(null)
     const workoutEndTimeRef = useRef<number | null>(null)
+
+    const handleStartTimer = async () => {
+        const now = new Date().toISOString()
+        setSession(prev => ({ ...prev, started_at: now }))
+        setHasStarted(true)
+        await updateSessionStart(session.id, now)
+        toast.success('Timer Started! Go get it! 🚀')
+    }
 
     // Load workout exercises
     useEffect(() => {
@@ -300,6 +311,55 @@ export function ActiveWorkoutView({ session, sets: initialSets }: ActiveWorkoutV
                 </div>
             </div>
         )
+    }
+
+    // Start Overlay Logic
+    if (!hasStarted && workoutExercises.length > 0) {
+       return (
+           <div className="container mx-auto px-4 py-6 relative min-h-[80vh]">
+               {/* Blurred Background Content Preview */}
+               <div className="opacity-10 pointer-events-none blur-xs filter select-none">
+                    <div className="bg-[#18181B] border border-white/5 rounded-2xl p-6 mb-6">
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-xl bg-[#10B981]/10 flex items-center justify-center">
+                                <Dumbbell className="w-6 h-6 text-[#10B981]" />
+                            </div>
+                            <div>
+                                <h1 className="text-2xl font-bold text-white">{session.workout_name}</h1>
+                                <div className="text-4xl font-bold text-[#10B981] mt-2 font-mono">00:00</div>
+                            </div>
+                        </div>
+                    </div>
+                    {/* Fake Exercise Card Preview */}
+                    <div className="bg-[#18181B] rounded-3xl p-8 border border-white/5 opacity-50">
+                        <div className="text-center">
+                             <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#10B981]/10 rounded-full text-[#10B981] text-sm font-bold mb-4">
+                                <Dumbbell className="w-4 h-4" />
+                                SET 1
+                            </div>
+                        </div>
+                    </div>
+               </div>
+
+               {/* Start Button Overlay */}
+               <div className="absolute inset-0 flex items-center justify-center z-50">
+                   <div className="text-center">
+                       <motion.button
+                           whileHover={{ scale: 1.05 }}
+                           whileTap={{ scale: 0.95 }}
+                           onClick={handleStartTimer}
+                           className="w-32 h-32 rounded-full bg-[#10B981] hover:bg-[#059669] text-black font-bold text-xl shadow-[0_0_40px_rgba(16,185,129,0.3)] flex flex-col items-center justify-center gap-2 transition-all border-4 border-[#059669] cursor-pointer"
+                       >
+                           <Play className="w-8 h-8 fill-current" />
+                           START
+                       </motion.button>
+                       <p className="text-zinc-400 mt-6 font-medium animate-pulse">
+                           Ready to crush it?
+                       </p>
+                   </div>
+               </div>
+           </div>
+       )
     }
 
     if (workoutExercises.length === 0) {

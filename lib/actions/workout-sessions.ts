@@ -160,6 +160,24 @@ export async function updateSessionStats(sessionId: string) {
 }
 
 /**
+ * Update session start time (for manual start sync)
+ */
+export async function updateSessionStart(sessionId: string, startedAt: string) {
+    const supabase = await createClient()
+    
+    const { error } = await supabase
+        .from('workout_sessions')
+        .update({ started_at: startedAt })
+        .eq('id', sessionId)
+        
+    if (error) {
+        return { error: error.message }
+    }
+    
+    return { error: null }
+}
+
+/**
  * Complete workout session
  */
 export async function completeWorkoutSession(sessionId: string, notes?: string, activeDurationSeconds?: number) {

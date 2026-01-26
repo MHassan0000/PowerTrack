@@ -1,12 +1,14 @@
 import { getWorkouts } from '@/lib/actions/workouts'
+import { getActiveSession } from '@/lib/actions/workout-sessions'
 import { WorkoutCard } from '@/components/shared/WorkoutCard'
 import Link from 'next/link'
-import { History } from 'lucide-react'
+import { History, PlayCircle, ChevronRight } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
 export default async function WorkoutsPage() {
     const { data: workouts, error } = await getWorkouts()
+    const { data: activeSession } = await getActiveSession()
 
     if (error) {
         return (
@@ -42,6 +44,39 @@ export default async function WorkoutsPage() {
                     </Link>
                 </div>
             </div>
+
+            {/* Active Session Banner */}
+            {activeSession && (
+                <Link 
+                    href="/workouts/active"
+                    className="group block relative overflow-hidden rounded-2xl bg-[#10B981] p-1 transition-all hover:scale-[1.01] active:scale-[0.99]"
+                >
+                    <div className="absolute inset-0 bg-gradient-to-r from-black/20 to-transparent" />
+                    <div className="relative flex items-center justify-between bg-[#059669]/50 p-6 backdrop-blur-sm rounded-xl border border-white/10">
+                        <div className="flex items-center gap-4">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-[#10B981] shadow-lg animate-pulse">
+                                <PlayCircle className="h-6 w-6 fill-current" />
+                            </div>
+                            <div>
+                                <div className="flex items-center gap-2 mb-1">
+                                    <span className="inline-flex items-center rounded-full bg-white/20 px-2.5 py-0.5 text-xs font-medium text-white ring-1 ring-inset ring-white/10">
+                                        Active Now
+                                    </span>
+                                    <span className="text-xs text-white/80 font-mono">
+                                        Started {new Date(activeSession.started_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                    </span>
+                                </div>
+                                <h3 className="text-xl font-bold text-white group-hover:underline decoration-2 underline-offset-4">
+                                    Resume: {activeSession.workout_name}
+                                </h3>
+                            </div>
+                        </div>
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-all group-hover:bg-white group-hover:text-[#10B981]">
+                            <ChevronRight className="h-6 w-6" />
+                        </div>
+                    </div>
+                </Link>
+            )}
 
             {/* Workouts Grid */}
             {workouts && workouts.length > 0 ? (
