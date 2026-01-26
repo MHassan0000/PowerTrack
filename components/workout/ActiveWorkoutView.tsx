@@ -1,6 +1,6 @@
 'use client'
 
-import { use, useState, useEffect } from 'react'
+import { use, useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { CheckCircle2, Dumbbell, X, Trophy } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -8,7 +8,7 @@ import { SetLogger } from './SetLogger'
 import { RestTimer } from './RestTimer'
 import { DurationCounter } from './DurationCounter'
 import { WorkoutCompletionSummary } from './WorkoutCompletionSummary'
-import { logSet, completeWorkoutSession, type SetLog, type WorkoutSession } from '@/lib/actions/workout-sessions'
+import { logSet, completeWorkoutSession, deleteWorkoutSession, type SetLog, type WorkoutSession } from '@/lib/actions/workout-sessions'
 import { getWorkoutById, type WorkoutWithExercises } from '@/lib/actions/workouts'
 import { toast } from 'sonner'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
@@ -32,9 +32,11 @@ export function ActiveWorkoutView({ session, sets: initialSets }: ActiveWorkoutV
     const [setStartTime, setSetStartTime] = useState<number | null>(null)
     const [pausedTime, setPausedTime] = useState(0)
     const [totalWorkoutPaused, setTotalWorkoutPaused] = useState(0)
+    const [activePauseStartTime, setActivePauseStartTime] = useState<number | null>(null)
     const [showCompletionSummary, setShowCompletionSummary] = useState(false)
     const [completionStats, setCompletionStats] = useState<any>(null)
     const [workoutData, setWorkoutData] = useState<WorkoutWithExercises | null>(null)
+    const workoutEndTimeRef = useRef<number | null>(null)
 
     // Load workout exercises
     useEffect(() => {
@@ -56,10 +58,14 @@ export function ActiveWorkoutView({ session, sets: initialSets }: ActiveWorkoutV
         const effectiveIsPaused = isPaused && !showRestTimer
         if (effectiveIsPaused) {
             const pauseStart = Date.now()
+            setActivePauseStartTime(pauseStart)
             return () => {
                 const pauseEnd = Date.now()
                 setTotalWorkoutPaused(prev => prev + (pauseEnd - pauseStart))
+                setActivePauseStartTime(null)
             }
+        } else {
+            setActivePauseStartTime(null)
         }
     }, [isPaused, showRestTimer])
 
@@ -81,10 +87,17 @@ export function ActiveWorkoutView({ session, sets: initialSets }: ActiveWorkoutV
                               currentSetNumber > (currentExercise?.sets || 0)
 
     const handlePauseToggle = () => {
-        setIsPaused(!isPaused)
-        // Start tracking set duration when unpausing
-        if (isPaused && !setStartTime) {
-            setSetStartTime(Date.now())
+        const newIsPaused = !isPaused
+        setIsPaused(newIsPaused)
+        
+        if (newIsPaused) {
+            // Set pause start time IMMEDIATELY to prevent 1s lag in display
+            setActivePauseStartTime(Date.now())
+        } else {
+            // Start tracking set duration when unpausing
+            if (!setStartTime) {
+                setSetStartTime(Date.now())
+            }
         }
     }
 
@@ -133,6 +146,9 @@ export function ActiveWorkoutView({ session, sets: initialSets }: ActiveWorkoutV
                 } else {
                     // Workout complete - auto-trigger completion
                     toast.success('All exercises complete! 🎉')
+                    // Capture exact end time NOW before the delay
+                    workoutEndTimeRef.current = Date.now()
+                    
                     // Small delay then auto-complete
                     setTimeout(() => {
                         handleCompleteWorkout()
@@ -182,6 +198,7 @@ export function ActiveWorkoutView({ session, sets: initialSets }: ActiveWorkoutV
         } else {
             // Workout complete
             toast.success('All exercises complete! 🎉')
+            workoutEndTimeRef.current = Date.now()
             setTimeout(() => {
                 handleCompleteWorkout()
             }, 1500)
@@ -189,8 +206,25 @@ export function ActiveWorkoutView({ session, sets: initialSets }: ActiveWorkoutV
     }
 
     const handleCompleteWorkout = async () => {
+        // Freeze time IMMEDIATELY when determining completion
+        if (!workoutEndTimeRef.current) {
+            workoutEndTimeRef.current = Date.now()
+        }
+        
         setCompleting(true)
-        const result = await completeWorkoutSession(session.id)
+        
+        // Calculate active duration using client-side tracked pauses for consistency
+        let currentTotalPaused = totalWorkoutPaused
+        
+        // Add pending pause if currently paused
+        if (activePauseStartTime) {
+            currentTotalPaused += (Date.now() - activePauseStartTime)
+        }
+
+        const endTime = workoutEndTimeRef.current || Date.now()
+        const currentActiveDuration = Math.max(0, Math.floor((endTime - new Date(session.started_at).getTime() - currentTotalPaused) / 1000))
+
+        const result = await completeWorkoutSession(session.id, undefined, currentActiveDuration)
 
         if (!result.error && result.data) {
             // Fetch estimated duration from workout if not already loaded
@@ -206,7 +240,16 @@ export function ActiveWorkoutView({ session, sets: initialSets }: ActiveWorkoutV
             }
 
             // Calculate active duration using client-side tracked pauses for consistency
-            const currentActiveDuration = Math.max(0, Math.floor((Date.now() - new Date(session.started_at).getTime() - totalWorkoutPaused) / 1000))
+            // Calculate active duration using client-side tracked pauses for consistency
+            // Note: We use the already calculated currentActiveDuration from above, or recalculate if needed (but above value is sent to server so use that)
+            // But for display consistency, we recalculate using the same logic just to be safe, or just reuse the var? 
+            // Reuse the logic:
+            let displayTotalPaused = totalWorkoutPaused
+            if (activePauseStartTime) {
+                displayTotalPaused += (Date.now() - activePauseStartTime)
+            }
+            const displayEndTime = workoutEndTimeRef.current || Date.now()
+            const displayActiveDuration = Math.max(0, Math.floor((displayEndTime - new Date(session.started_at).getTime() - displayTotalPaused) / 1000))
 
             // Show completion summary
             setCompletionStats({
@@ -214,7 +257,7 @@ export function ActiveWorkoutView({ session, sets: initialSets }: ActiveWorkoutV
                 totalSets: result.data.session?.total_sets || sets.length,
                 totalReps: result.data.session?.total_reps || 0,
                 totalVolume: result.data.session?.total_volume_kg || 0,
-                actualDurationSeconds: currentActiveDuration, // Use our tracked active duration
+                actualDurationSeconds: displayActiveDuration, // Use our tracked active duration
                 estimatedDurationMinutes: estimatedMinutes
             })
             setShowCompletionSummary(true)
@@ -236,8 +279,16 @@ export function ActiveWorkoutView({ session, sets: initialSets }: ActiveWorkoutV
         }
     }
 
-    const handleCancelConfirm = () => {
+    const handleCancelConfirm = async () => {
+        await deleteWorkoutSession(session.id)
         router.push('/workouts')
+    }
+
+    const handleDiscardSession = async () => {
+        if (confirm('This session seems to be broken (the workout template might have been deleted). Do you want to discard it?')) {
+            await deleteWorkoutSession(session.id)
+            router.push('/workouts')
+        }
     }
 
     if (loading) {
@@ -255,13 +306,25 @@ export function ActiveWorkoutView({ session, sets: initialSets }: ActiveWorkoutV
         return (
             <div className="container mx-auto px-4 py-6">
                 <div className="text-center py-20">
-                    <p className="text-zinc-400 mb-4">This workout has no exercises</p>
-                    <button
-                        onClick={() => router.push('/workouts')}
-                        className="px-6 py-3 bg-[#10B981] text-black font-bold rounded-xl hover:bg-[#059669] transition-colors"
-                    >
-                        Back to Workouts
-                    </button>
+                    <Dumbbell className="w-16 h-16 text-zinc-700 mx-auto mb-4" />
+                    <h3 className="text-xl font-bold text-white mb-2">Workout Not Found</h3>
+                    <p className="text-zinc-500 max-w-sm mx-auto mb-6">
+                        The workout template for this session appears to be empty or deleted.
+                    </p>
+                    <div className="flex flex-col gap-3 min-w-[200px] mx-auto w-fit">
+                        <button
+                            onClick={() => router.push('/workouts')}
+                            className="px-6 py-3 bg-[#27272A] text-white font-bold rounded-xl hover:bg-[#3F3F46] transition-colors"
+                        >
+                            Back to Workouts
+                        </button>
+                        <button
+                            onClick={handleDiscardSession}
+                            className="px-6 py-3 bg-red-500/10 text-red-500 font-bold rounded-xl hover:bg-red-500/20 border border-red-500/20 transition-colors"
+                        >
+                            Discard Broken Session
+                        </button>
+                    </div>
                 </div>
             </div>
         )
@@ -283,9 +346,9 @@ export function ActiveWorkoutView({ session, sets: initialSets }: ActiveWorkoutV
                                 <h1 className="text-2xl font-bold text-white">{session.workout_name}</h1>
                                 <DurationCounter 
                                     startedAt={session.started_at}
-                                    delaySeconds={3} 
                                     isPaused={isPaused && !showRestTimer}
                                     totalPaused={totalWorkoutPaused}
+                                    activePauseStartTime={activePauseStartTime}
                                     onPauseToggle={handlePauseToggle}
                                 />
                             </div>

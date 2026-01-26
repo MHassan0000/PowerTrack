@@ -162,7 +162,7 @@ export async function updateSessionStats(sessionId: string) {
 /**
  * Complete workout session
  */
-export async function completeWorkoutSession(sessionId: string, notes?: string) {
+export async function completeWorkoutSession(sessionId: string, notes?: string, activeDurationSeconds?: number) {
     const supabase = await createClient()
 
     const { data: { user } } = await supabase.auth.getUser()
@@ -188,16 +188,22 @@ export async function completeWorkoutSession(sessionId: string, notes?: string) 
         return { error: 'Session not found' }
     }
 
-    const startedAt = new Date(session.started_at)
     const completedAt = new Date()
-    const durationSeconds = Math.floor((completedAt.getTime() - startedAt.getTime()) / 1000)
+    let finalDurationSeconds = 0
+
+    if (activeDurationSeconds !== undefined) {
+        finalDurationSeconds = activeDurationSeconds
+    } else {
+        const startedAt = new Date(session.started_at)
+        finalDurationSeconds = Math.floor((completedAt.getTime() - startedAt.getTime()) / 1000)
+    }
 
     // Update session
     const { error: updateError } = await supabase
         .from('workout_sessions')
         .update({
             completed_at: completedAt.toISOString(),
-            duration_seconds: durationSeconds,
+            duration_seconds: finalDurationSeconds,
             notes: validatedData.notes || null,
         })
         .eq('id', sessionId)
@@ -223,7 +229,7 @@ export async function completeWorkoutSession(sessionId: string, notes?: string) 
     return { 
         data: {
             session: finalSession,
-            durationSeconds,
+            durationSeconds: finalDurationSeconds,
             workoutId: session.workout_id
         },
         error: null 

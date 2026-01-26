@@ -8,20 +8,22 @@ interface DurationCounterProps {
     startedAt: string // ISO timestamp
     isPaused: boolean
     totalPaused: number
+    activePauseStartTime?: number | null // NEW: Exact time pause started
     onPauseToggle: () => void
-    delaySeconds?: number // Optional delay to offset timer start
+    delaySeconds?: number 
 }
 
-export function DurationCounter({ startedAt, isPaused, totalPaused, onPauseToggle, delaySeconds = 0 }: DurationCounterProps) {
+export function DurationCounter({ startedAt, isPaused, totalPaused, activePauseStartTime, onPauseToggle, delaySeconds = 0 }: DurationCounterProps) {
     const [elapsed, setElapsed] = useState(0)
     
-    // Internal pause tracking removed. Using parent's totalPaused prop.
-
     useEffect(() => {
         const startTime = new Date(startedAt).getTime() + (delaySeconds * 1000)
         
         const calculateElapsed = () => {
-            const now = Date.now()
+            // If paused and we have a specific pause start time, use IT as the "current time" anchor
+            // This ensures the displayed time freezes EXACTLY when the user clicked pause
+            const now = (isPaused && activePauseStartTime) ? activePauseStartTime : Date.now()
+            
             const effectiveElapsed = now - startTime - totalPaused
             return Math.max(0, Math.floor(effectiveElapsed / 1000))
         }
@@ -34,7 +36,7 @@ export function DurationCounter({ startedAt, isPaused, totalPaused, onPauseToggl
             }, 1000)
             return () => clearInterval(interval)
         }
-    }, [startedAt, isPaused, totalPaused, delaySeconds])
+    }, [startedAt, isPaused, totalPaused, activePauseStartTime, delaySeconds])
 
     const formatDuration = (seconds: number) => {
         const hours = Math.floor(seconds / 3600)

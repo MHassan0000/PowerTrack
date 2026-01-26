@@ -90,7 +90,7 @@ export default async function WorkoutDetailPage({ params }: WorkoutDetailPagePro
                                 <Clock className="w-4 h-4" />
                                 <span className="text-xs font-bold uppercase tracking-wider">Est. Duration</span>
                             </div>
-                            <span className="text-2xl font-bold text-white">{Math.round(estimatedDuration / 60)}m</span>
+                            <span className="text-2xl font-bold text-white">{Math.ceil(estimatedDuration / 60)}m</span>
                         </div>
                         <div className="bg-[#27272A]/50 p-4 rounded-2xl border border-white/5">
                             <div className="flex items-center gap-2 text-zinc-400 mb-1">
