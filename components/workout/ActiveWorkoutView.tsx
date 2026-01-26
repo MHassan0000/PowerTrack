@@ -341,19 +341,20 @@ export function ActiveWorkoutView({ session: initialSession, sets: initialSets }
 
                {/* Start Button Overlay */}
                <div className="absolute inset-0 flex items-center justify-center z-50">
-                   <div className="text-center">
+                   <div className="flex flex-col items-center gap-6">
                        <motion.button
                            whileHover={{ scale: 1.05 }}
                            whileTap={{ scale: 0.95 }}
                            onClick={handleStartTimer}
-                           className="w-32 h-32 rounded-full bg-[#10B981] hover:bg-[#059669] text-black font-bold text-xl shadow-[0_0_40px_rgba(16,185,129,0.3)] flex flex-col items-center justify-center gap-2 transition-all border-4 border-[#059669] cursor-pointer"
+                           className="group relative flex items-center justify-center w-28 h-28 rounded-full bg-[#10B981] shadow-2xl shadow-[#10B981]/30 transition-all hover:shadow-[#10B981]/50"
                        >
-                           <Play className="w-8 h-8 fill-current" />
-                           START
+                           <div className="absolute inset-0 rounded-full border border-white/20" />
+                           <Play className="w-10 h-10 text-[#000000] fill-current ml-1" />
                        </motion.button>
-                       <p className="text-zinc-400 mt-6 font-medium animate-pulse">
-                           Ready to crush it?
-                       </p>
+                       <div className="text-center space-y-2">
+                           <h2 className="text-2xl font-bold text-white tracking-tight">Start Workout</h2>
+                           <p className="text-zinc-400 font-medium text-sm">Tap to begin tracking</p>
+                       </div>
                    </div>
                </div>
            </div>

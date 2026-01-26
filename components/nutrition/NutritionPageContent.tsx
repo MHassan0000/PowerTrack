@@ -242,7 +242,12 @@ export function NutritionPageContent({ initialLogs, initialSummary, initialDate 
     }
 
     const handleDateSelect = (date: Date) => {
-        window.location.href = `/nutrition?date=${date.toISOString().split('T')[0]}`
+        // Construct YYYY-MM-DD from local components to avoid UTC timezone shifts
+        const year = date.getFullYear()
+        const month = String(date.getMonth() + 1).padStart(2, '0')
+        const day = String(date.getDate()).padStart(2, '0')
+        const dateString = `${year}-${month}-${day}`
+        window.location.href = `/nutrition?date=${dateString}`
     }
 
     // Helper function to get progress bar color based on percentage
