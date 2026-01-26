@@ -224,17 +224,20 @@ export function ActiveWorkoutView({ session: initialSession, sets: initialSets }
         
         setCompleting(true)
         
+        const endTime = workoutEndTimeRef.current || Date.now()
+        
         // Calculate active duration using client-side tracked pauses for consistency
         let currentTotalPaused = totalWorkoutPaused
         
         // Add pending pause if currently paused
+        // CRITICAL: Use endTime instead of Date.now() to ensure pause stops counting WHEN workout stops
+        // Otherwise pause keeps growing during the 1.5s delay, shrinking the final duration.
         if (activePauseStartTime) {
-            currentTotalPaused += (Date.now() - activePauseStartTime)
+            currentTotalPaused += (endTime - activePauseStartTime)
         }
 
-        const endTime = workoutEndTimeRef.current || Date.now()
         const currentActiveDuration = Math.max(0, Math.floor((endTime - new Date(session.started_at).getTime() - currentTotalPaused) / 1000))
-
+        
         const result = await completeWorkoutSession(session.id, undefined, currentActiveDuration)
 
         if (!result.error && result.data) {
@@ -250,17 +253,12 @@ export function ActiveWorkoutView({ session: initialSession, sets: initialSets }
                 estimatedMinutes = workoutInfo?.duration_minutes || null
             }
 
-            // Calculate active duration using client-side tracked pauses for consistency
-            // Calculate active duration using client-side tracked pauses for consistency
-            // Note: We use the already calculated currentActiveDuration from above, or recalculate if needed (but above value is sent to server so use that)
-            // But for display consistency, we recalculate using the same logic just to be safe, or just reuse the var? 
-            // Reuse the logic:
+            // Reuse the logic for display consistency
             let displayTotalPaused = totalWorkoutPaused
             if (activePauseStartTime) {
-                displayTotalPaused += (Date.now() - activePauseStartTime)
+                displayTotalPaused += (endTime - activePauseStartTime) 
             }
-            const displayEndTime = workoutEndTimeRef.current || Date.now()
-            const displayActiveDuration = Math.max(0, Math.floor((displayEndTime - new Date(session.started_at).getTime() - displayTotalPaused) / 1000))
+            const displayActiveDuration = Math.max(0, Math.floor((endTime - new Date(session.started_at).getTime() - displayTotalPaused) / 1000))
 
             // Show completion summary
             setCompletionStats({
