@@ -355,8 +355,8 @@ export async function recalculateWorkoutDuration(workoutId: string) {
     // No rest after the last set!
     let totalSeconds = 0
     exercises.forEach(exercise => {
-        const setDuration = exercise.duration_seconds || (exercise.reps ? exercise.reps * 4 : 0)
-        const restTime = exercise.rest_seconds || 60
+        const setDuration = exercise.duration_seconds || 0
+        const restTime = exercise.rest_seconds || 0
         const sets = exercise.sets || 1
         
         // Total time = all sets + rest between sets (not after last set)

@@ -7,35 +7,34 @@ import { Timer, Pause, Play } from 'lucide-react'
 interface DurationCounterProps {
     startedAt: string // ISO timestamp
     isPaused: boolean
+    totalPaused: number
     onPauseToggle: () => void
     delaySeconds?: number // Optional delay to offset timer start
 }
 
-export function DurationCounter({ startedAt, isPaused, onPauseToggle, delaySeconds = 0 }: DurationCounterProps) {
+export function DurationCounter({ startedAt, isPaused, totalPaused, onPauseToggle, delaySeconds = 0 }: DurationCounterProps) {
     const [elapsed, setElapsed] = useState(0)
+    
+    // Internal pause tracking removed. Using parent's totalPaused prop.
 
     useEffect(() => {
-        // Calculate initial elapsed time with delay offset
         const startTime = new Date(startedAt).getTime() + (delaySeconds * 1000)
+        
         const calculateElapsed = () => {
             const now = Date.now()
-            const elapsedMs = now - startTime
-            // Don't show negative time during delay period
-            return Math.max(0, Math.floor(elapsedMs / 1000))
+            const effectiveElapsed = now - startTime - totalPaused
+            return Math.max(0, Math.floor(effectiveElapsed / 1000))
         }
 
-        // Set initial value
         setElapsed(calculateElapsed())
 
-        // Update every second only if not paused
         if (!isPaused) {
             const interval = setInterval(() => {
                 setElapsed(calculateElapsed())
             }, 1000)
-
             return () => clearInterval(interval)
         }
-    }, [startedAt, isPaused])
+    }, [startedAt, isPaused, totalPaused, delaySeconds])
 
     const formatDuration = (seconds: number) => {
         const hours = Math.floor(seconds / 3600)

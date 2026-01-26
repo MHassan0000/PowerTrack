@@ -31,6 +31,7 @@ export function ActiveWorkoutView({ session, sets: initialSets }: ActiveWorkoutV
     const [isPaused, setIsPaused] = useState(false)
     const [setStartTime, setSetStartTime] = useState<number | null>(null)
     const [pausedTime, setPausedTime] = useState(0)
+    const [totalWorkoutPaused, setTotalWorkoutPaused] = useState(0)
     const [showCompletionSummary, setShowCompletionSummary] = useState(false)
     const [completionStats, setCompletionStats] = useState<any>(null)
     const [workoutData, setWorkoutData] = useState<WorkoutWithExercises | null>(null)
@@ -50,7 +51,19 @@ export function ActiveWorkoutView({ session, sets: initialSets }: ActiveWorkoutV
         loadWorkout()
     }, [session.workout_id])
 
-    // Track paused time
+    // Track total active workout paused time (excluding rest which is active)
+    useEffect(() => {
+        const effectiveIsPaused = isPaused && !showRestTimer
+        if (effectiveIsPaused) {
+            const pauseStart = Date.now()
+            return () => {
+                const pauseEnd = Date.now()
+                setTotalWorkoutPaused(prev => prev + (pauseEnd - pauseStart))
+            }
+        }
+    }, [isPaused, showRestTimer])
+
+    // Track set paused time (for set logging logic only)
     useEffect(() => {
         if (isPaused && setStartTime) {
             const pauseStart = Date.now()
@@ -192,13 +205,16 @@ export function ActiveWorkoutView({ session, sets: initialSets }: ActiveWorkoutV
                 estimatedMinutes = workoutInfo?.duration_minutes || null
             }
 
+            // Calculate active duration using client-side tracked pauses for consistency
+            const currentActiveDuration = Math.max(0, Math.floor((Date.now() - new Date(session.started_at).getTime() - totalWorkoutPaused) / 1000))
+
             // Show completion summary
             setCompletionStats({
                 workoutName: session.workout_name,
                 totalSets: result.data.session?.total_sets || sets.length,
                 totalReps: result.data.session?.total_reps || 0,
                 totalVolume: result.data.session?.total_volume_kg || 0,
-                actualDurationSeconds: result.data.durationSeconds,
+                actualDurationSeconds: currentActiveDuration, // Use our tracked active duration
                 estimatedDurationMinutes: estimatedMinutes
             })
             setShowCompletionSummary(true)
@@ -268,7 +284,8 @@ export function ActiveWorkoutView({ session, sets: initialSets }: ActiveWorkoutV
                                 <DurationCounter 
                                     startedAt={session.started_at}
                                     delaySeconds={3} 
-                                    isPaused={isPaused}
+                                    isPaused={isPaused && !showRestTimer}
+                                    totalPaused={totalWorkoutPaused}
                                     onPauseToggle={handlePauseToggle}
                                 />
                             </div>
