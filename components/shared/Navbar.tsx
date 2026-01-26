@@ -140,6 +140,7 @@ export default function Navbar({ user }: NavbarProps) {
                         exit={{ opacity: 0, y: -20 }}
                         transition={{ duration: 0.2 }}
                         className="fixed inset-0 z-40 bg-[rgb(var(--background))]/95 backdrop-blur-3xl pt-24 px-4 md:hidden flex flex-col items-center gap-8"
+                        data-lenis-prevent
                     >
                         <div className="flex flex-col items-center gap-6 w-full">
                             {navLinks.map((item) => (

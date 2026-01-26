@@ -45,7 +45,7 @@ export function ExercisePicker({ onSelect, onClose }: ExercisePickerProps) {
     }
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" data-lenis-prevent>
             <div className="relative w-full max-w-4xl max-h-[90vh] bg-[#18181B] rounded-3xl border border-white/10 overflow-hidden flex flex-col">
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-white/5">

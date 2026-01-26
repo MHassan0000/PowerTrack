@@ -48,7 +48,7 @@ export function QuickSessionConfigModal({ isOpen, onClose, onConfirm, exerciseNa
     if (!isOpen) return null
 
     return (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" data-lenis-prevent>
             <div className="bg-[#18181B] border border-white/10 rounded-2xl max-w-md w-full">
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-white/10">

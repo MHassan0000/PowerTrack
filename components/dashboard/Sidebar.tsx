@@ -185,6 +185,7 @@ export function Sidebar({ user }: { user: any }) {
                             exit={{ x: '-100%' }}
                             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
                             className="fixed top-0 left-0 bottom-0 w-[85%] max-w-[320px] z-50 lg:hidden shadow-2xl"
+                            data-lenis-prevent
                         >
                             <SidebarContent />
                             <button 
@@ -209,6 +210,7 @@ export function Sidebar({ user }: { user: any }) {
                             exit={{ opacity: 0 }}
                             onClick={() => setShowSignOutConfirm(false)}
                             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-100"
+                            data-lenis-prevent
                         />
                         
                         {/* Modal */}

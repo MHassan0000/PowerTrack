@@ -66,6 +66,7 @@ export function ConfirmDialog({
                         exit={{ opacity: 0 }}
                         onClick={onClose}
                         className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                        data-lenis-prevent
                     >
                         {/* Dialog */}
                         <motion.div

@@ -172,6 +172,7 @@ export function UserMenu({ user }: UserMenuProps) {
                             exit={{ opacity: 0 }}
                             onClick={() => setShowSignOutConfirm(false)}
                             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+                            data-lenis-prevent
                         />
                         
                         {/* Modal */}

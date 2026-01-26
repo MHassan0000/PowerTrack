@@ -23,8 +23,7 @@ export default async function WorkoutDetailPage({ params }: WorkoutDetailPagePro
 
     const totalSets = workout.exercises.reduce((sum, ex) => sum + ex.sets, 0)
     const estimatedDuration = workout.exercises.reduce((sum, ex) => {
-        // For timed exercises (like planks), use duration_seconds directly
-        // Standardized formula matching lib/actions/workouts.ts (User Input Only)
+       
         const setTime = ex.duration_seconds || 0
         const restTime = ex.rest_seconds || 0
         
