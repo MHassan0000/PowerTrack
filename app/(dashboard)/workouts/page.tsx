@@ -51,7 +51,7 @@ export default async function WorkoutsPage() {
                     href="/workouts/active"
                     className="group block relative overflow-hidden rounded-2xl bg-[#10B981] p-1 transition-all hover:scale-[1.01] active:scale-[0.99]"
                 >
-                    <div className="absolute inset-0 bg-gradient-to-r from-black/20 to-transparent" />
+                    <div className="absolute inset-0 bg-linear-to-r from-black/20 to-transparent" />
                     <div className="relative flex items-center justify-between bg-[#059669]/50 p-6 backdrop-blur-sm rounded-xl border border-white/10">
                         <div className="flex items-center gap-4">
                             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-[#10B981] shadow-lg animate-pulse">

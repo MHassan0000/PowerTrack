@@ -370,7 +370,7 @@ export function ActiveWorkoutView({ session: initialSession, sets: initialSets }
                     <p className="text-zinc-500 max-w-sm mx-auto mb-6">
                         The workout template for this session appears to be empty or deleted.
                     </p>
-                    <div className="flex flex-col gap-3 min-w-[200px] mx-auto w-fit">
+                    <div className="flex flex-col gap-3 min-w-50 mx-auto w-fit">
                         <button
                             onClick={() => router.push('/workouts')}
                             className="px-6 py-3 bg-[#27272A] text-white font-bold rounded-xl hover:bg-[#3F3F46] transition-colors"
