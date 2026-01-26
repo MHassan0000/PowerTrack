@@ -2,7 +2,7 @@ import { ChatInterface } from '@/components/ai/ChatInterface'
 
 export default function AICoachPage() {
     return (
-        <div className="fixed inset-0 lg:left-72 top-0 lg:top-0 flex flex-col bg-[#0F0F10]">
+        <div className="fixed inset-0 lg:left-72 h-dvh flex flex-col bg-[#0F0F10]">
             {/* Minimal Header */}
             <div className="shrink-0 px-6 py-4 border-b border-white/5 bg-[#0F0F10]">
                 <div className="flex items-center gap-3">

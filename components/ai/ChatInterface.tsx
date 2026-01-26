@@ -88,7 +88,7 @@ export function ChatInterface() {
     return (
         <div className="flex flex-col h-full relative font-sans">
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
+            <div data-lenis-prevent className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
                 <div className="max-w-3xl mx-auto px-4 py-8 space-y-8">
                     {/* Loading History */}
                     {isLoadingHistory ? (
