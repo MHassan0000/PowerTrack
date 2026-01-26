@@ -185,6 +185,7 @@ export default function ContactPage() {
                         </form>
                     </motion.div>
                 </div>
+                <CTA />
             </section>
 
            
