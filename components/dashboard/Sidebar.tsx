@@ -72,7 +72,7 @@ export function Sidebar({ user }: { user: any }) {
             {/* Logo */}
             <div className="p-6 border-b border-white/5">
                 <Link href="/" onClick={() => setIsMobileOpen(false)} className="flex items-center gap-2">
-                    <span className="text-2xl font-black italic tracking-tighter text-white">
+                    <span className="text-3xl font-black italic tracking-tighter text-white">
                         POWER<span className="text-[#10B981]">TRACK</span>
                     </span>
                 </Link>
@@ -154,9 +154,9 @@ export function Sidebar({ user }: { user: any }) {
             </div>
 
             {/* Mobile Header */}
-            <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-[#18181B]/90 backdrop-blur-md border-b border-white/5 flex items-center justify-between px-4 z-40">
+            <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-[#18181B]/90 backdrop-blur-md border-b border-white/5 flex items-center justify-between px-4 z-40 ">
                 <Link href="/">
-                     <span className="text-xl font-black italic tracking-tighter text-white">
+                     <span className="text-3xl font-black italic tracking-tighter text-white">
                         POWER<span className="text-[#10B981]">TRACK</span>
                     </span>
                 </Link>

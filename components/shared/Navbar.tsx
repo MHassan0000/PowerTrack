@@ -65,7 +65,7 @@ export default function Navbar({ user }: NavbarProps) {
                         {/* Logo */}
                         <Link href={user ? '/dashboard' : '/'} className="flex items-center gap-2 relative z-50">
                             <motion.span
-                                className="text-2xl font-black italic tracking-tighter glow-text py-2 pr-2"
+                                className="text-3xl font-black italic tracking-tighter glow-text py-2 pr-2"
                                 whileHover={{ scale: 1.05 }}
                                 transition={{ type: 'spring', stiffness: 400 }}
                             >

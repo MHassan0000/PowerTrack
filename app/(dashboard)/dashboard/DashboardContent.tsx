@@ -44,8 +44,8 @@ export default async function DashboardContent() {
     return (
         <div className="space-y-8 text-white">
             {/* Header Section */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-                <div>
+            <div className="flex flex-col items-center md:flex-row md:items-end justify-between gap-4 mt-10 md:mt-5">
+                <div className="text-center md:text-left">
                     <h1 className="text-4xl font-bold tracking-tight text-white mb-2">
                         {greeting}, {profile?.full_name?.split(' ')[0] || 'Athlete'}
                     </h1>
